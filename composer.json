@@ -20,6 +20,11 @@
       "email": "aiweline@qq.com"
     }
   ],
+  "autoload": {
+    "psr-4": {
+      "Weline\\Framework\\": ""
+    }
+  },
   "require": {
     "php": ">=8.1",
     "ext-iconv": "*",
