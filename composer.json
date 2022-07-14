@@ -38,7 +38,6 @@
     "ext-gd": "*",
     "wikimedia/less.php": "^3.1",
     "mrclay/jsmin-php": "^2.4",
-    "aiweline/website-monitoring": "dev-master",
     "guzzlehttp/guzzle": "^7.4",
     "friendsofphp/php-cs-fixer": "^3.8"
   }
