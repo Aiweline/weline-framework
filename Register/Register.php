@@ -115,6 +115,11 @@ class Register implements RegisterDataInterface
             $item = ucfirst($item);
         }
         $name = implode('\\', $name);
+        $name_arr = explode(DS, $name);
+        foreach ($name_arr as &$item_name) {
+            $item_name = ucfirst($item_name);
+        }
+        $name = implode('\\', $name_arr);
         return str_replace(DS, '\\', $name);
     }
 }

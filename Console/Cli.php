@@ -13,6 +13,7 @@ use Weline\Framework\App;
 use Weline\Framework\App\Env;
 use Weline\Framework\App\Exception;
 use Weline\Framework\Manager\ObjectManager;
+use Weline\Framework\Register\Register;
 
 class Cli extends CliAbstract
 {
@@ -29,7 +30,7 @@ class Cli extends CliAbstract
     public function run()
     {
         // 没有任何参数
-        if (! isset($this->argv[0])) {
+        if (!isset($this->argv[0])) {
             exit($this->execute());
         }
         $command_class = $this->checkCommand();
@@ -50,6 +51,7 @@ class Cli extends CliAbstract
      * 参数区：
      *
      * @param array $commands
+     *
      * @return array
      */
     private function recommendCommand(array $commands): array
@@ -68,6 +70,7 @@ class Cli extends CliAbstract
                 if (is_int(strpos($command_key, $arg0))) {
                     $matchCommand[$group][] = [$command_key => $command[$command_key]];
                 }
+
                 $command_key_arr = explode(':', $command_key);
                 $k               = 0;
                 foreach ($input_command_arr as $input_key => $input_command_head) {
@@ -75,7 +78,7 @@ class Cli extends CliAbstract
                     if (count($command_key_arr) === count($input_command_arr)) {
                         if ($input_command_head) {
                             $input_str_pos = strpos($command_key_arr[$input_key], $input_command_head);
-                            if (isset($command_key_arr[$input_key]) && ! is_bool($input_str_pos) && $input_str_pos === 0) {
+                            if (isset($command_key_arr[$input_key]) && !is_bool($input_str_pos) && $input_str_pos === 0) {
                                 $k += 1;
                             }
                         }
@@ -89,8 +92,7 @@ class Cli extends CliAbstract
                 }
             }
         }
-
-        return $matchCommand ?? $recommendCommands;
+        return $matchCommand ?: $recommendCommands;
     }
 
     /**
@@ -98,9 +100,9 @@ class Cli extends CliAbstract
      *
      * 参数区：
      *
-     * @throws ConsoleException
-     * @throws Exception
      * @return array
+     * @throws Exception
+     * @throws ConsoleException
      */
     private function checkCommand(): array
     {
@@ -131,6 +133,7 @@ class Cli extends CliAbstract
             // 获取类的真实路径和命名空间位置
             $command_class_path = $command_path . $this->getCommandPath($arg0);
             $command_real_path  = APP_CODE_PATH . str_replace('\\', DS, $command_class_path) . '.php';
+            // TODO 等待编辑处理composer环境下的命令无效问题
             if (file_exists($command_real_path)) {
                 return ['class' => $command_class_path, 'command' => $arg0];
             }
@@ -148,10 +151,15 @@ class Cli extends CliAbstract
             $group_keys         = array_keys($recommendCommands);
             $group              = array_shift($group_keys);
             $group_arr          = explode('#', $group);
-            $command_path       = array_pop($group_arr);
+            $command_path       = Register::composerNameConvertToNamespace(array_pop($group_arr));
             $command_class_path = $command_path . $this->getCommandPath($command);
 
             $command_real_path = APP_CODE_PATH . str_replace('\\', DS, $command_class_path) . '.php';
+            if (file_exists($command_real_path)) {
+                return ['class' => $command_class_path, 'command' => $command];
+            }
+
+            $command_real_path = VENDOR_PATH . str_replace('\\', DS, $command_class_path) . '.php';
             if (file_exists($command_real_path)) {
                 return ['class' => $command_class_path, 'command' => $command];
             }

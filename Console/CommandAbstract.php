@@ -10,6 +10,7 @@
 namespace Weline\Framework\Console;
 
 use Weline\Framework\Output\Cli\Printing;
+use Weline\Framework\Register\Register;
 
 abstract class CommandAbstract implements CommandInterface
 {
@@ -40,6 +41,7 @@ abstract class CommandAbstract implements CommandInterface
         foreach ($command_array as &$command) {
             $command = ucfirst($command);
         }
+        $module_path = Register::composerNameConvertToNamespace($module_path);
 
         return $module_path . '\\' . self::dir . '\\' . implode('\\', $command_array);
     }
