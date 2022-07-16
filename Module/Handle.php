@@ -291,7 +291,6 @@ class Handle implements HandleInterface, RegisterInterface
                 $modelManager->update($module->getName(), $this->setup_context, 'setup');
             }
             $this->modules[$module->getName()] = $module->getData();
-            // 更新路由
             $this->helper->registerModuleRouter($this->modules, $module->getBasePath(), $module->getName(), $router);
             $this->printer->success(str_pad($module->getName(), 45) . __('已安装！'));
         }

@@ -149,10 +149,16 @@ class Data extends AbstractHelper
                         $baseRouter = trim($router . $baseRouter, '/');
 
                         $controllerClassName = Register::moduleNameToNamespacePath($name) . '\\' . $this->getClassNamespace($controllerFile) . '\\' . $controllerFile->getFilename();
+
                         $controllerClassName = str_replace("\\\\", "\\", $controllerClassName);
                         // 删除父类方法：注册控制器方法
                         $this->parent_class_arr = [];// 清空父类信息
                         $ctl_data               = $this->parserController($controllerClassName);
+                        // 更新路由
+//                        if($name ==='Weline_CacheManger'){
+//                            p($controllerClassName);
+//                            p($ctl_data);
+//                        }
                         if (empty($ctl_data)) {
                             continue;
                         }
@@ -266,9 +272,13 @@ class Data extends AbstractHelper
     {
         // 默认前端控制器
 //        $ctl_area = \Weline\Framework\Controller\Data\DataInterface::type_pc_FRONTEND;
+//        if($class ==='Weline\CacheManger\Controller\System\Cache'){
+//            p( class_exists($class) );
+//        }
         if (class_exists($class)) {
             $reflect            = new \ReflectionClass($class);
             $controller_methods = [];
+
             foreach ($reflect->getMethods() as $method) {
                 if (is_int(strpos($method->getName(), '__'))) {
                     continue;
