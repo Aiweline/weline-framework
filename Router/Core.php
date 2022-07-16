@@ -86,9 +86,9 @@ class Core
     public function start()
     {
         # 获取URL
-        $url              = $this->processUrl();
+        $url = $this->processUrl();
 //        $url                     = str_replace('-', '', $origin_url);
-        $this->_router_cache_key = 'router_start_cache_key_'.$this->request->getUri();
+        $this->_router_cache_key = 'router_start_cache_key_' . $this->request->getUri();
         if ($router = $this->cache->get($this->_router_cache_key)) {
             $this->router = $router;
             return $this->route();
@@ -124,13 +124,13 @@ class Core
         $cached_url     = $this->cache->get($url_cache_key);
         $rule           = $this->cache->get($rule_cache_key);
 
-        if (/*PROD&&*/false !== $cached_url) {
+        if (/*PROD&&*/ false !== $cached_url) {
             $url = $cached_url;
             # 将规则设置到请求类
             $this->request->setRule($rule);
             $this->request->setData($rule);
         } else {
-            $url            = $this->request->getUrlPath();
+            $url = $this->request->getUrlPath();
             if ($this->is_admin) {
                 $url = str_replace($this->area_router, '', $url);
                 $url = str_replace('//', '/', $url);
@@ -235,9 +235,9 @@ class Core
             $routers = include $router_filepath;
             $method  = '::' . strtoupper($this->request->getMethod());
             if (
-                isset($routers[$url])||isset($routers[$url.$method])
+                isset($routers[$url]) || isset($routers[$url . $method])
             ) {
-                $this->router = $routers[$url]??$routers[$url.$method];
+                $this->router = $routers[$url] ?? $routers[$url . $method];
                 # 缓存路由结果
                 $this->router['type'] = 'pc';
                 $this->cache->set($this->_router_cache_key, $this->router);
@@ -272,6 +272,11 @@ class Core
         if (is_bool(strpos($filename, \Weline\Framework\View\Data\DataInterface::dir))) {
             $this->request->getResponse()->noRouter();
         }
+        if(!is_file($filename)){
+            # 检测vendor目录的组件文件
+            $filename = VENDOR_PATH . trim($url, DS);
+            $filename = str_replace('/', DS, $filename);
+        }
         if (is_file($filename)) {
             $filename_arr = explode('.', $filename);
             $file_ext     = end($filename_arr);
@@ -299,7 +304,7 @@ class Core
         if ($dispatch && $dispatch_method) {
             return [$dispatch, $dispatch_method];
         } else {
-            $class_name = $router['class']['name']??'';
+            $class_name = $router['class']['name'] ?? '';
             // 检测注册方法
             /**@var \Weline\Framework\Controller\Core $dispatch */
             $dispatch = ObjectManager::getInstance($class_name);
@@ -323,7 +328,7 @@ class Core
     public function route()
     {
         # 全页缓存
-        $cache_key = 'router_route_fpc_cache_key_'.$this->request->getUri();
+        $cache_key = 'router_route_fpc_cache_key_' . $this->request->getUri();
         if (PROD && $html = $this->cache->get($cache_key)) {
             return $html;
         }

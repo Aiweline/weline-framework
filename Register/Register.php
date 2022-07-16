@@ -86,6 +86,11 @@ class Register implements RegisterDataInterface
         return ucfirst($vendor);
     }
 
+    public static function moduleNameToNamespacePath(string $module_name): string
+    {
+        return str_replace('_', '\\', $module_name);
+    }
+
     public static function parserModuleName(string $module_name): string
     {
         $module_rename = '';
@@ -103,10 +108,11 @@ class Register implements RegisterDataInterface
     public static function convertToComposerName(string $name): string
     {
         # 转化为composer名称
-        $name = lcfirst($name);
+        $name            = lcfirst($name);
         $vendor_name_arr = w_split_by_capital($name);
         return strtolower(implode('-', $vendor_name_arr));
     }
+
     public static function composerNameConvertToNamespace(string $name): string
     {
         # composer名称转化为命名空间
@@ -114,7 +120,7 @@ class Register implements RegisterDataInterface
         foreach ($name as &$item) {
             $item = ucfirst($item);
         }
-        $name = implode('\\', $name);
+        $name     = implode('\\', $name);
         $name_arr = explode(DS, $name);
         foreach ($name_arr as &$item_name) {
             $item_name = ucfirst($item_name);

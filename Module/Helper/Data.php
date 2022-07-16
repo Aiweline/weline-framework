@@ -33,16 +33,17 @@ class Data extends AbstractHelper
     public function getClassNamespace(\Weline\Framework\System\File\Data\File $controllerFile)
     {
         $namespace_arr = explode('\\', $controllerFile->getNamespace());
-        foreach ($namespace_arr as &$item) {
-            if (is_int(strpos($item, '-'))) {
-                $item = explode('-', $item);
-                foreach ($item as &$i) {
-                    $i = ucfirst($i);
-                }
-                $item = implode('', $item);
-            }
-            $item = ucfirst($item);
-        }
+        $namespace_arr = array_slice($namespace_arr, 2);
+//        foreach ($namespace_arr as &$item) {
+//            if (is_int(strpos($item, '-'))) {
+//                $item = explode('-', $item);
+//                foreach ($item as &$i) {
+//                    $i = ucfirst($i);
+//                }
+//                $item = implode('', $item);
+//            }
+//            $item = ucfirst($item);
+//        }
         return implode('\\', $namespace_arr);
     }
 
@@ -147,7 +148,7 @@ class Data extends AbstractHelper
 
                         $baseRouter = trim($router . $baseRouter, '/');
 
-                        $controllerClassName = $this->getClassNamespace($controllerFile) . '\\' . $controllerFile->getFilename();
+                        $controllerClassName = Register::moduleNameToNamespacePath($name) . '\\' . $this->getClassNamespace($controllerFile) . '\\' . $controllerFile->getFilename();
                         $controllerClassName = str_replace("\\\\", "\\", $controllerClassName);
                         // 删除父类方法：注册控制器方法
                         $this->parent_class_arr = [];// 清空父类信息
