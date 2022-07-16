@@ -1,7 +1,6 @@
 {
   "name": "weline/framework",
-  "description": "微蓝WelineFramework框架核心！",
-  "homepage": "https://gitee.com/aiweline/weline-framework",
+  "description": "微蓝WelineFramework框架！",
   "keywords": [
     "weline",
     "WelineFramework",

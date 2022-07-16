@@ -41,7 +41,8 @@ abstract class CommandAbstract implements CommandInterface
         foreach ($command_array as &$command) {
             $command = ucfirst($command);
         }
-        $module_path = Register::composerNameConvertToNamespace($module_path);
+
+        $module_path = Register::pathToClassNamePath($module_path);
 
         return $module_path . '\\' . self::dir . '\\' . implode('\\', $command_array);
     }
