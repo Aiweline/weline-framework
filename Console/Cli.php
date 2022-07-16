@@ -133,7 +133,6 @@ class Cli extends CliAbstract
             // 获取类的真实路径和命名空间位置
             $command_class_path = $command_path . $this->getCommandPath($arg0);
             $command_real_path  = APP_CODE_PATH . str_replace('\\', DS, $command_class_path) . '.php';
-            // TODO 等待编辑处理composer环境下的命令无效问题
             if (file_exists($command_real_path)) {
                 return ['class' => $command_class_path, 'command' => $arg0];
             }
@@ -151,15 +150,16 @@ class Cli extends CliAbstract
             $group_keys         = array_keys($recommendCommands);
             $group              = array_shift($group_keys);
             $group_arr          = explode('#', $group);
-            $command_path       = Register::composerNameConvertToNamespace(array_pop($group_arr));
-            $command_class_path = $command_path . $this->getCommandPath($command);
+            $command_path       = array_pop($group_arr);
+            $command_class       = $this->getCommandPath($command);
+            $command_class_path = Register::pathToClassNamePath($command_path).$command_class ;
 
-            $command_real_path = APP_CODE_PATH . str_replace('\\', DS, $command_class_path) . '.php';
+            $command_real_path = APP_CODE_PATH . str_replace('\\', DS, $command_path.$command_class) . '.php';
             if (file_exists($command_real_path)) {
                 return ['class' => $command_class_path, 'command' => $command];
             }
 
-            $command_real_path = VENDOR_PATH . str_replace('\\', DS, $command_class_path) . '.php';
+            $command_real_path = VENDOR_PATH . str_replace('\\', DS, $command_path.$command_class) . '.php';
             if (file_exists($command_real_path)) {
                 return ['class' => $command_class_path, 'command' => $command];
             }

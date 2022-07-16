@@ -128,7 +128,8 @@ class Register implements RegisterDataInterface
         $name = implode('\\', $name_arr);
         return str_replace(DS, '\\', $name);
     }
-    public static function pathToClassNamePath(){
+
+    public static function pathToClassNamePath(string $name){
         # composer名称转化为命名空间
         $name = explode('-', $name);
         foreach ($name as &$item) {
