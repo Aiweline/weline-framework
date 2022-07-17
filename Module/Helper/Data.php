@@ -79,9 +79,10 @@ class Data extends AbstractHelper
                 if (is_int(strpos($dir, Handle::api_DIR))) {
                     foreach ($Files as $apiFile) {
                         $apiDirArray = explode(Handle::api_DIR, $dir . DS . $apiFile->getFilename());
-
-                        $baseRouter = str_replace('\\', '/', strtolower(array_pop($apiDirArray)));
-                        $baseRouter = trim($router . $baseRouter, '/');
+                        array_shift($apiDirArray);
+                        $baseRouter = str_replace('\\', '/', strtolower(implode('', $apiDirArray)));
+//                        $baseRouter = trim($router . $baseRouter, '/');
+                        $baseRouter = trim( $baseRouter, '/');
 
                         $apiClassName = Register::moduleNameToNamespacePath($name) . '\\' . $this->getClassNamespace($apiFile) . '\\' . $apiFile->getFilename();
                         $apiClassName = str_replace("\\\\", "\\", $apiClassName);
