@@ -81,8 +81,8 @@ class Data extends AbstractHelper
                         $apiDirArray = explode(Handle::api_DIR, $dir . DS . $apiFile->getFilename());
                         array_shift($apiDirArray);
                         $baseRouter = str_replace('\\', '/', strtolower(implode('', $apiDirArray)));
-//                        $baseRouter = trim($router . $baseRouter, '/');
-                        $baseRouter = trim( $baseRouter, '/');
+                        $baseRouter = trim($router . $baseRouter, '/');
+//                        $baseRouter = trim( $baseRouter, '/');
 
                         $apiClassName = Register::moduleNameToNamespacePath($name) . '\\' . $this->getClassNamespace($apiFile) . '\\' . $apiFile->getFilename();
                         $apiClassName = str_replace("\\\\", "\\", $apiClassName);
