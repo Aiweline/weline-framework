@@ -76,14 +76,14 @@ class Data extends AbstractHelper
 
             foreach ($moduleDir as $dir => $Files) {
                 // Api路由
-                if (!is_bool(strpos($dir, Handle::api_DIR))) {
+                if (is_int(strpos($dir, Handle::api_DIR))) {
                     foreach ($Files as $apiFile) {
                         $apiDirArray = explode(Handle::api_DIR, $dir . DS . $apiFile->getFilename());
 
                         $baseRouter = str_replace('\\', '/', strtolower(array_pop($apiDirArray)));
                         $baseRouter = trim($router . $baseRouter, '/');
 
-                        $apiClassName = $this->getClassNamespace($apiFile) . '\\' . $apiFile->getFilename();
+                        $apiClassName = Register::moduleNameToNamespacePath($name) . '\\' . $this->getClassNamespace($apiFile) . '\\' . $apiFile->getFilename();
                         $apiClassName = str_replace("\\\\", "\\", $apiClassName);
                         // 删除父类方法：注册控制器方法
                         $this->parent_class_arr = [];// 清空父类信息
@@ -140,7 +140,7 @@ class Data extends AbstractHelper
                         }
                     }
                 } // PC路由
-                elseif (!is_bool(strpos($dir, Handle::pc_DIR))) {
+                elseif (is_int(strpos($dir, Handle::pc_DIR))) {
                     foreach ($Files as $controllerFile) {
                         $controllerDirArray = explode($modules[$name]['path'] . Handle::pc_DIR, $dir . DS . $controllerFile->getFilename());
 
