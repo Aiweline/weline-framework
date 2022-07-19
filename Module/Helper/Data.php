@@ -83,7 +83,7 @@ class Data extends AbstractHelper
                         $baseRouter = str_replace('\\', '/', strtolower(array_pop($apiDirArray)));
                         $baseRouter = trim($router . $baseRouter, '/');
 
-                        $apiClassName = $this->getClassNamespace($apiFile) . '\\' . $apiFile->getFilename();
+                        $apiClassName = Register::moduleNameToNamespacePath($name).'\\'.$this->getClassNamespace($apiFile) . '\\' . $apiFile->getFilename();
                         $apiClassName = str_replace("\\\\", "\\", $apiClassName);
                         // 删除父类方法：注册控制器方法
                         $this->parent_class_arr = [];// 清空父类信息
