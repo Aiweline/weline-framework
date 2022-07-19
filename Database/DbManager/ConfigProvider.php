@@ -48,8 +48,8 @@ class ConfigProvider extends DataObject implements ConfigProviderInterface
             $db_conf = $this->getConfig();
         }
         # 检测是否设置了slave从库
-        if (isset($db_conf['slaves'])) {
-            $this->addSlavesConfig($db_conf['slaves']);
+        if (isset($db_conf['slaves']) && $slaves = $db_conf['slaves']) {
+            $this->addSlavesConfig($slaves);
         }
         # 主数据库
         $master = $db_conf['master']??$db_conf;
