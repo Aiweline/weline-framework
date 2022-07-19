@@ -9,7 +9,13 @@
 
 namespace Weline\Framework\Setup\Data;
 
+use Weline\Framework\Database\ConnectionFactory;
+use Weline\Framework\Database\DbManager\ConfigProvider;
+use Weline\Framework\Database\DbManagerFactory;
+use Weline\Framework\Database\Exception\DbException;
+use Weline\Framework\Manager\ObjectManager;
 use Weline\Framework\Output\Cli\Printing;
+use Weline\Framework\Setup\Data\Context as SetupContext;
 use Weline\Framework\Setup\Db\Setup as DbSetup;
 
 class Setup
@@ -21,17 +27,51 @@ class Setup
      */
     private Printing $printing;
 
+    private ?ConnectionFactory $master_connection=null;
+    private ?ConnectionFactory $connection=null;
+
     /**
      * Setup 初始函数...
      * @param DbSetup $setup_db
      * @param Printing $printing
      */
     public function __construct(
-        DbSetup $setup_db,
+        DbSetup  $setup_db,
         Printing $printing
-    ) {
+    )
+    {
         $this->setup_db = $setup_db;
         $this->printing = $printing;
+    }
+
+    /**
+     * 设置模组上下文
+     * @return void
+     */
+    function setModuleContext(SetupContext $context)
+    {
+        # 解析模组数据库配置文件
+        $db_file = $context->getModulePath() . DS . 'etc' . DS . 'db.php';
+        if (is_file($db_file)) {
+            $db_config = include $db_file;
+            # 确认是否有主库配置
+            if (!isset($db_config['master'])) {
+                throw new DbException(__('请配置主数据库配置信息,或者主数据库配置信息设置错误') . (DEV ? '(' . $db_file . ')' : ''));
+            }
+            $this->connection = $this->dbManager->create(
+                $context->getModuleName(),
+                new ConfigProvider($db_config)
+            );
+            $this->setup_db->setConnection($this->connection);
+        } else {
+            if ($this->master_connection) {
+                $this->connection = $this->master_connection;
+                return $this->master_connection;
+            }
+            $this->master_connection = ObjectManager::getInstance(DbManagerFactory::class);
+            $this->connection = $this->master_connection;
+            $this->setup_db->setConnection($this->connection);
+        }
     }
 
     /**
@@ -41,8 +81,8 @@ class Setup
      * @EMAIL aiweline@qq.com
      * @DateTime: 2021/8/31 20:47
      * 参数区：
-     * @deprecated
      * @return DbSetup
+     * @deprecated
      */
     public function getDb(): DbSetup
     {

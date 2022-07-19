@@ -11,15 +11,20 @@ namespace Weline\Framework\Setup\Db;
 
 use PDOException;
 use Weline\Framework\App\Exception;
+use Weline\Framework\Cache\Driver\Memcached\Connection;
 use Weline\Framework\Database\Api\Db\Ddl\TableInterface;
+use Weline\Framework\Database\ConnectionFactory;
 use Weline\Framework\Database\Db\Ddl\Table;
 use Weline\Framework\Database\Db\DdlFactory;
 use Weline\Framework\Database\DbManager;
 use Weline\Framework\Database\DbManager\ConfigProvider;
+use Weline\Framework\Database\DbManagerFactory;
+use Weline\Framework\Manager\ObjectManager;
 
-class Setup extends DbManager
+class Setup
 {
     private Table $ddl_table;
+    private ?ConnectionFactory $connection=null;
 
     /**
      * Setup constructor.
@@ -29,11 +34,23 @@ class Setup extends DbManager
      * @throws \ReflectionException
      */
     public function __construct(
-        ConfigProvider $configProvider,
-        DdlFactory $ddl_table
-    ) {
-        parent::__construct($configProvider);
-        $this->ddl_table = $ddl_table->create();
+        DdlFactory     $ddl_table,
+        $connection = null
+    )
+    {
+        $this->connection = $connection;
+        $this->ddl_table = $ddl_table->create($connection);
+    }
+
+    function setConnection(ConnectionFactory $connection)
+    {
+        $this->connection = $connection;
+        return $this;
+    }
+
+    function getConnection()
+    {
+        return $this->connection;
     }
 
     /**
@@ -48,7 +65,7 @@ class Setup extends DbManager
     public function createTable(string $table_name, string $comment = ''): Table\Create
     {
         $table_name = $this->getTable($table_name);
-        return $this->ddl_table->createTable()->createTable($table_name, $comment);
+        return $this->ddl_table->setConnection($this->getConnection())->createTable()->createTable($table_name, $comment);
     }
 
     /**
@@ -62,10 +79,10 @@ class Setup extends DbManager
      * @param string $new_table_name
      * @return Table\Alter
      */
-    public function alterTable(string $table_name, string $primary_key, string $comment = '', string $new_table_name=''): Table\Alter
+    public function alterTable(string $table_name, string $primary_key, string $comment = '', string $new_table_name = ''): Table\Alter
     {
         $table_name = $this->getTable($table_name);
-        return $this->ddl_table->alterTable()->forTable($table_name, $primary_key, $comment, $new_table_name);
+        return $this->ddl_table->setConnection($this->getConnection())->alterTable()->forTable($table_name, $primary_key, $comment, $new_table_name);
     }
 
     /**
@@ -79,7 +96,7 @@ class Setup extends DbManager
      */
     public function getTablePrefix(): string
     {
-        $prefix = $this->getConfig()->getPrefix();
+        $prefix = $this->getConnection()->getConfigProvider()->getPrefix();
         return $prefix ?? '';
     }
 
@@ -96,7 +113,6 @@ class Setup extends DbManager
     public function tableExist(string $table): bool
     {
         $table = $this->getTable($table);
-
         try {
             $this->query("DESC {$table}");
             return true;

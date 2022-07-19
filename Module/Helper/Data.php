@@ -76,15 +76,14 @@ class Data extends AbstractHelper
 
             foreach ($moduleDir as $dir => $Files) {
                 // Api路由
-                if (is_int(strpos($dir, Handle::api_DIR))) {
+                if (!is_bool(strpos($dir, Handle::api_DIR))) {
                     foreach ($Files as $apiFile) {
                         $apiDirArray = explode(Handle::api_DIR, $dir . DS . $apiFile->getFilename());
-                        array_shift($apiDirArray);
-                        $baseRouter = str_replace('\\', '/', strtolower(implode('', $apiDirArray)));
-                        $baseRouter = trim($router . $baseRouter, '/');
-//                        $baseRouter = trim( $baseRouter, '/');
 
-                        $apiClassName = Register::moduleNameToNamespacePath($name) . '\\' . $this->getClassNamespace($apiFile) . '\\' . $apiFile->getFilename();
+                        $baseRouter = str_replace('\\', '/', strtolower(array_pop($apiDirArray)));
+                        $baseRouter = trim($router . $baseRouter, '/');
+
+                        $apiClassName = $this->getClassNamespace($apiFile) . '\\' . $apiFile->getFilename();
                         $apiClassName = str_replace("\\\\", "\\", $apiClassName);
                         // 删除父类方法：注册控制器方法
                         $this->parent_class_arr = [];// 清空父类信息
@@ -141,7 +140,7 @@ class Data extends AbstractHelper
                         }
                     }
                 } // PC路由
-                elseif (is_int(strpos($dir, Handle::pc_DIR))) {
+                elseif (!is_bool(strpos($dir, Handle::pc_DIR))) {
                     foreach ($Files as $controllerFile) {
                         $controllerDirArray = explode($modules[$name]['path'] . Handle::pc_DIR, $dir . DS . $controllerFile->getFilename());
 
@@ -150,16 +149,10 @@ class Data extends AbstractHelper
                         $baseRouter = trim($router . $baseRouter, '/');
 
                         $controllerClassName = Register::moduleNameToNamespacePath($name) . '\\' . $this->getClassNamespace($controllerFile) . '\\' . $controllerFile->getFilename();
-
                         $controllerClassName = str_replace("\\\\", "\\", $controllerClassName);
                         // 删除父类方法：注册控制器方法
                         $this->parent_class_arr = [];// 清空父类信息
                         $ctl_data               = $this->parserController($controllerClassName);
-                        // 更新路由
-//                        if($name ==='Weline_CacheManger'){
-//                            p($controllerClassName);
-//                            p($ctl_data);
-//                        }
                         if (empty($ctl_data)) {
                             continue;
                         }
@@ -273,13 +266,9 @@ class Data extends AbstractHelper
     {
         // 默认前端控制器
 //        $ctl_area = \Weline\Framework\Controller\Data\DataInterface::type_pc_FRONTEND;
-//        if($class ==='Weline\CacheManger\Controller\System\Cache'){
-//            p( class_exists($class) );
-//        }
         if (class_exists($class)) {
             $reflect            = new \ReflectionClass($class);
             $controller_methods = [];
-
             foreach ($reflect->getMethods() as $method) {
                 if (is_int(strpos($method->getName(), '__'))) {
                     continue;

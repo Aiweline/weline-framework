@@ -13,11 +13,13 @@ namespace Weline\Framework\Setup\Db;
 
 use Weline\Framework\App\Exception;
 use Weline\Framework\Database\AbstractModel;
+use Weline\Framework\Database\ConnectionFactory;
 use Weline\Framework\Database\Db\Ddl\Table;
 use Weline\Framework\Database\Db\Ddl\Table\Alter;
 use Weline\Framework\Database\Db\DdlFactory;
 use Weline\Framework\Database\DbManager;
 use Weline\Framework\Database\DbManager\ConfigProvider;
+use Weline\Framework\Manager\ObjectManager;
 use Weline\Framework\Output\Cli\Printing;
 
 /**

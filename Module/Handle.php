@@ -113,7 +113,7 @@ class Handle implements HandleInterface, RegisterInterface
 
             $version       = $this->modules[$module]['version'] ?? '1.0.0';
             $setup_context = new \Weline\Framework\Setup\Data\Context($module, $version);
-
+            $this->setup_data->setModuleContext($setup_context);
             $this->printer->note($remove_object->setup($this->setup_data, $setup_context));
         } else {
             $this->printer->warning('模块卸载脚本不存在，已跳过卸载脚本！', '卸载');
@@ -243,6 +243,7 @@ class Handle implements HandleInterface, RegisterInterface
                         $setup_file = $setup_dir . DS . $upgrade_FILE . '.php';
                         if (file_exists($setup_file)) {
                             $setup  = ObjectManager::getInstance($setup_namespace . $upgrade_FILE);
+                            $this->setup_data->setModuleContext($this->setup_context);
                             $result = $setup->setup($this->setup_data, $this->setup_context);
                             $this->printer->note("{$result}");
                         }
@@ -282,6 +283,7 @@ class Handle implements HandleInterface, RegisterInterface
                 $setup_file = $setup_dir . DS . $install_FILE . '.php';
                 if (file_exists($setup_file)) {
                     $setup = ObjectManager::getInstance($setup_namespace . $install_FILE);
+                    $this->setup_data->setModuleContext($this->setup_context);
                     $setup->setup($this->setup_data, $this->setup_context);
                 }
             }
@@ -291,6 +293,7 @@ class Handle implements HandleInterface, RegisterInterface
                 $modelManager->update($module->getName(), $this->setup_context, 'setup');
             }
             $this->modules[$module->getName()] = $module->getData();
+            // 更新路由
             $this->helper->registerModuleRouter($this->modules, $module->getBasePath(), $module->getName(), $router);
             $this->printer->success(str_pad($module->getName(), 45) . __('已安装！'));
         }

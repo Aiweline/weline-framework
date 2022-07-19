@@ -45,8 +45,8 @@ abstract class Model extends AbstractModel implements ModelInterface
      */
     public function getTree(string $main_field='',string $parent_id_field='parent_id',string $order_field='position',string $order_sort='ASC'): array
     {
-        $main_field = $main_field?:$this::getIdField();
-        $top_menus = $this->clearData()->where($parent_id_field, 0)->order($order_field, $order_sort)->select()->fetch()->getItems();
+        $main_field = $main_field??$this::fields_PID;
+        $top_menus = $this->clearData()->where($main_field, 0)->order($order_field, $order_sort)->select()->fetch()->getItems();
         foreach ($top_menus as &$top_menu) {
             $top_menu = $this->getSubs($top_menu,$main_field,$parent_id_field,$order_field,$order_sort);
         }

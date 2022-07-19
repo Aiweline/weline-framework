@@ -421,22 +421,6 @@ class Template extends DataObject
         }
         return $path;
     }
-    public function getApi(string $path, array $params = [], bool $merge_query = true): string
-    {
-        return $this->_request->getUrl($path, $params, $merge_query);
-    }
-    public function getBackendApi(string $path, array|bool $params = []): string
-    {
-        $pre = $this->_request->getBaseHost() . '/' . Env::getInstance()->getConfig('api_admin') . '/';
-        $path = rtrim($pre . $path, '/');
-        if (empty($params)) {
-            return $path;
-        }
-        if (is_array($params)) {
-            return $path . '?' . http_build_query($params);
-        }
-        return $path;
-    }
 
     /**
      * @throws \ReflectionException

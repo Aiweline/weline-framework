@@ -46,11 +46,10 @@ class Session implements SessionInterface
             }
             if (session_status() !== PHP_SESSION_ACTIVE) {
                 # 保持浏览器session唯一，除非清空浏览器cookie
-                $sess_id = $_COOKIE['PHPSESSID']??null;
-                if($sess_id){
+                if($sess_id = $_COOKIE['PHPSESSID']??null){
                     session_id($sess_id);
                 }
-                session_set_cookie_params(36, $identity_path);
+                session_set_cookie_params(3600, $identity_path);
             }
             $this->session = SessionManager::getInstance()->create();
             $this->setType($type)->setData('path', $identity_path);

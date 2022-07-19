@@ -32,16 +32,21 @@ class Context
      */
     public function __construct(string $module_name, string $module_version, string $module_description = '')
     {
-        $this->module_name        = $module_name;
-        $this->module_version     = $module_version;
+        $this->module_name = $module_name;
+        $this->module_version = $module_version;
         $this->module_description = $module_description;
-        $this->modules            = Env::getInstance()->getModuleList();
-        $this->printer            = new Printing();
+        $this->modules = Env::getInstance()->getModuleList();
+        $this->printer = new Printing();
+    }
+
+    public function getModuleName()
+    {
+        return $this->module_name;
     }
 
     public function getModulePath(): string
     {
-        return isset($this->modules[$this->module_name]) ? APP_CODE_PATH . $this->modules[$this->module_name]['path'] : APP_CODE_PATH . str_replace('_', DS, $this->module_name);
+        return isset($this->modules[$this->module_name]) ? $this->modules[$this->module_name]['base_path'] : APP_CODE_PATH . str_replace('_', DS, $this->module_name);
     }
 
     /**

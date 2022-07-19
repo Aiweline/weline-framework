@@ -521,62 +521,6 @@ class Taglib
                         }
                     }
             ],
-            'api' => [
-                'tag'       => 1,
-                'tag-start' => 1,
-                'tag-end'   => 1,
-                'callback'  =>
-                    function ($tag_key, $config, $tag_data, $attributes) use ($template) {
-                        switch ($tag_key) {
-                            case 'tag':
-                                $data = $this->varParser(str_replace(' ', '', $tag_data[2]));
-                                if (str_starts_with($data, '"') || str_starts_with($data, "'")) {
-                                    return "<?=\$this->getApi({$data})?>";
-                                } else {
-                                    return "<?=\$this->getApi({$this->varParser($data)})?>";
-                                }
-                            case 'tag-start':
-                                return "<?=\$this->getApi(";
-                            case 'tag-end':
-                                return ")?>";
-                            default:
-                                $data = str_replace(' ', '', $tag_data[1]);
-                                if (str_starts_with($data, '"') || str_starts_with($data, "'")) {
-                                    return "<?=\$this->getApi({$data})?>";
-                                } else {
-                                    return "<?=\$this->getApi({$this->varParser($data)})?>";
-                                }
-                        }
-                    }
-            ],
-            'backend-api' => [
-                'tag'       => 1,
-                'tag-start' => 1,
-                'tag-end'   => 1,
-                'callback'  =>
-                    function ($tag_key, $config, $tag_data, $attributes) use ($template) {
-                        switch ($tag_key) {
-                            case 'tag':
-                                $data = $this->varParser(str_replace(' ', '', $tag_data[2]));
-                                if (str_starts_with($data, '"') || str_starts_with($data, "'")) {
-                                    return "<?=\$this->getBackendApi({$data})?>";
-                                } else {
-                                    return "<?=\$this->getBackendApi({$this->varParser($data)})?>";
-                                }
-                            case 'tag-start':
-                                return "<?=\$this->getBackendApi(";
-                            case 'tag-end':
-                                return ")?>";
-                            default:
-                                $data = str_replace(' ', '', $tag_data[1]);
-                                if (str_starts_with($data, '"') || str_starts_with($data, "'")) {
-                                    return "<?=\$this->getBackendApi({$data})?>";
-                                } else {
-                                    return "<?=\$this->getBackendApi({$this->varParser($data)})?>";
-                                }
-                        }
-                    }
-            ],
             'hook'      => [
                 'tag'      => 1,
                 'callback' =>

@@ -150,16 +150,15 @@ class Cli extends CliAbstract
             $group_keys         = array_keys($recommendCommands);
             $group              = array_shift($group_keys);
             $group_arr          = explode('#', $group);
-            $command_path       = array_pop($group_arr);
-            $command_class       = $this->getCommandPath($command);
-            $command_class_path = Register::pathToClassNamePath($command_path).$command_class ;
+            $command_path       = Register::composerNameConvertToNamespace(array_pop($group_arr));
+            $command_class_path = $command_path . $this->getCommandPath($command);
 
-            $command_real_path = APP_CODE_PATH . str_replace('\\', DS, $command_path.$command_class) . '.php';
+            $command_real_path = APP_CODE_PATH . str_replace('\\', DS, $command_class_path) . '.php';
             if (file_exists($command_real_path)) {
                 return ['class' => $command_class_path, 'command' => $command];
             }
 
-            $command_real_path = VENDOR_PATH . str_replace('\\', DS, $command_path.$command_class) . '.php';
+            $command_real_path = VENDOR_PATH . str_replace('\\', DS, $command_class_path) . '.php';
             if (file_exists($command_real_path)) {
                 return ['class' => $command_class_path, 'command' => $command];
             }
