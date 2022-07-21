@@ -168,7 +168,7 @@ class Request extends Request\RequestAbstract implements RequestInterface
         if ($module_name = parent::getModuleName()) {
             return $module_name;
         } else {
-            return $this->module_name;
+            return $this->getRouter()['module']??'';
         }
     }
 

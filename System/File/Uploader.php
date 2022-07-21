@@ -14,6 +14,8 @@ namespace Weline\Framework\System\File;
 use JetBrains\PhpStorm\Pure;
 use Weline\Framework\App\Env;
 use Weline\Framework\App\Exception;
+use Weline\Framework\Http\Request;
+use Weline\Framework\Manager\ObjectManager;
 
 class Uploader
 {
@@ -116,6 +118,9 @@ class Uploader
      */
     public function saveFiles(string $module_name = '', string $module_dir = '', string $base_dir = ''): array
     {
+        if (!$module_name) {
+            $module_name = ObjectManager::getInstance(Request::class)->getModuleName();
+        }
         if ($module_dir) {
             $this->setModuleDir($module_dir);
         }
@@ -178,7 +183,7 @@ class Uploader
      */
     #[Pure] public function getBaseUploaderDir(): string
     {
-        return $this->media_dir . rtrim($this->uploader_dir, DS) . DS . $this->getModuleName() . DS . $this->getModuleDir() . DS;
+        return $this->media_dir . rtrim($this->uploader_dir, DS) . DS .($this->getModuleName() ? $this->getModuleName() . DS : '') . ($this->getModuleDir() ? $this->getModuleDir() . DS : '');
     }
 
     /**
