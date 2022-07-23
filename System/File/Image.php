@@ -24,7 +24,7 @@ class Image
      *
      * @return string
      */
-    function base64(string $file)
+    static function base64(string $file)
     {
         $base64_file = '';
         if (file_exists($file)) {
