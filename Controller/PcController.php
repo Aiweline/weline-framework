@@ -179,8 +179,23 @@ class PcController extends Core
      *
      * @return string
      */
-    protected function fetchJson(array $data): string
+    protected function fetchJson(array|bool $data): string
     {
+        if (is_bool($data)) {
+            if ($data) {
+                $data = [
+                    'data' => $data,
+                    'msg'    => 'sucess',
+                    'code'   => 200
+                ];
+            } else {
+                $data = [
+                    'data' => $data,
+                    'msg'    => 'error',
+                    'code'   => 400
+                ];
+            }
+        }
         return $this->_request->getResponse()->renderJson($data);
     }
 
