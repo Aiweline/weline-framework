@@ -255,7 +255,7 @@ class Request extends Request\RequestAbstract implements RequestInterface
                 $url .= '?' . http_build_query($params);
             }
         } else {
-            $url .= $this->getGet() ? '?' . http_build_query($this->getGet()) : '';
+            $url .= ($this->getGet()&&$merge_params) ? '?' . http_build_query($this->getGet()) : '';
         }
         return $url;
     }
