@@ -49,7 +49,7 @@ class Request extends Request\RequestAbstract implements RequestInterface
         return $this->getServer('HTTP_' . strtoupper($key));
     }
 
-    public function getParam(string $key, mixed $default = null,string $filter = null)
+    public function getParam(string $key, mixed $default = null, string $filter = null)
     {
         if ($result = $this->getData($key)) {
             return $result;
@@ -58,11 +58,11 @@ class Request extends Request\RequestAbstract implements RequestInterface
         array_shift($params);
         $params = array_merge($params, $_POST);
         $params = array_merge($params, $_GET);
-        $data = $params[$key] ?? $default;
+        $data   = $params[$key] ?? $default;
         # 如果设置了过滤器，则进行过滤，否则直接使用默认值的类型进行过滤
         if ($filter) {
             $data = RequestFilter::filter($filter, $data);
-        }else{
+        } else {
             $data = RequestFilter::filter(gettype($default), $data);
         }
         return $data;
@@ -96,7 +96,15 @@ class Request extends Request\RequestAbstract implements RequestInterface
         if (is_int(strpos($this->getContentType(), self::CONTENT_TYPE['json']))) {
             $params = json_decode($params, true);
         }
-        $this->setData('body_params', $params);
+        if (is_string($params)) {
+            $params_ = [];
+            foreach (explode('&', $params) as $key => $value) {
+                $value = explode('=', $value);
+                if (isset($value[0])) $params_[$value[0]] = $value[1] ?? '';
+            }
+            $params = $params_;
+        }
+        $this->setData('body_params',$params);
         return $params;
     }
 
@@ -168,7 +176,7 @@ class Request extends Request\RequestAbstract implements RequestInterface
         if ($module_name = parent::getModuleName()) {
             return $module_name;
         } else {
-            return $this->getRouter()['module']??'';
+            return $this->getRouter()['module'] ?? '';
         }
     }
 
@@ -194,7 +202,7 @@ class Request extends Request\RequestAbstract implements RequestInterface
         return $realip;
     }
 
-    public function getUrl(string $path = '', array $params = [], bool $merge_params = true): string
+    public function getUrl(string $path = '', array $params = [], bool $merge_params = false): string
     {
         if ($path) {
             $url = $this->getBaseHost() . '/' . ltrim($path, '/');
@@ -265,7 +273,7 @@ class Request extends Request\RequestAbstract implements RequestInterface
      *
      * @return $this
      */
-    public function setRule(string|array $key, mixed $value=null): static
+    public function setRule(string|array $key, mixed $value = null): static
     {
         if (is_array($key)) {
             $this->setData('rule', $key);
@@ -289,10 +297,10 @@ class Request extends Request\RequestAbstract implements RequestInterface
      *
      * @return array|null|string
      */
-    public function getRule(string $key=''): array|null|string
+    public function getRule(string $key = ''): array|null|string
     {
         if ($key) {
-            return $this->getData('rule')[$key]??null;
+            return $this->getData('rule')[$key] ?? null;
         } else {
             return $this->getData('rule');
         }
