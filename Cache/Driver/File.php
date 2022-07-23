@@ -23,17 +23,6 @@ class File extends CacheDriverAbstract
      */
     private string $cachePath;
 
-    private function __clone()
-    {
-    }
-
-    public function setIdentity(string $identity): static
-    {
-        $this->identity = $identity;
-        $this->__init();
-        return $this;
-    }
-
     /**
      * @DESC         |框架初始化函数保证缓存文件目录存在
      *
@@ -45,73 +34,6 @@ class File extends CacheDriverAbstract
         if (!is_dir($this->cachePath)) {
             mkdir($this->cachePath, 0775, true);
         }
-    }
-
-    public function __wakeup()
-    {
-        $this->__init();
-    }
-
-    /**
-     * @DESC         |设置状态
-     * 0 : 关闭
-     * 1 : 开启
-     * 参数区：
-     *
-     * @param bool $status
-     *
-     * @return CacheInterface
-     */
-    public function setStatus(bool $status): CacheInterface
-    {
-        $this->status = $status;
-        return $this;
-    }
-
-    /**
-     * @DESC         |从给定键生成规范化缓存键
-     *
-     * 参数区：
-     *
-     * @param $key
-     *
-     * @return string
-     */
-    public function buildKey($key): string
-    {
-        if (!is_string($key)) {
-            // 不是字符串，json_encode转成字符串
-            $key = json_encode($key);
-        }
-
-        return md5($key);
-    }
-
-    /**
-     * @DESC         | 生成请求级别的缓存key
-     *
-     * 参数区：
-     *
-     * @param $key
-     *
-     * @return string
-     */
-    public function buildWithRequestKey($key, array $attach_variables = []): string
-    {
-        if (!is_string($key)) {
-            // 不是字符串，json_encode转成字符串
-            $key = json_encode($key);
-        }
-        $key .= $this->getRequest()->getUri() . $this->getRequest()->getMethod() . json_encode($this->getRequest()->getGet());
-        if ($attach_variables) {
-            $key .= implode('', $attach_variables);
-        }
-        return md5($key);
-    }
-
-    private function getRequest(): Request
-    {
-        return ObjectManager::getInstance(Request::class);
     }
 
     /**
@@ -158,25 +80,6 @@ class File extends CacheDriverAbstract
     }
 
     /**
-     * @DESC         |使用指定的键从缓存中检索多个值。
-     *
-     * 参数区：
-     *
-     * @param $keys
-     *
-     * @return array
-     */
-    public function getMulti($keys): array
-    {
-        $results = [];
-        foreach ($keys as $key) {
-            $results[$key] = $this->get($key);
-        }
-
-        return $results;
-    }
-
-    /**
      * @DESC         |将键标识的值存储到缓存中。
      *
      * 参数区：
@@ -215,31 +118,6 @@ class File extends CacheDriverAbstract
     }
 
     /**
-     * @DESC         |缓存中存储多个项目。每个项包含一个由键标识的值。
-     *
-     * 参数区：
-     *
-     * @param     $items
-     * @param int $duration
-     *
-     * @return array
-     */
-    public function setMulti($items, int $duration = 1800): array
-    {
-        if (!$this->status) {
-            return [];
-        }
-        $failedKeys = [];
-        foreach ($items as $key => $value) {
-            if ($this->set($key, $value, $duration) === false) {
-                $failedKeys[] = $key;
-            }
-        }
-
-        return $failedKeys;
-    }
-
-    /**
      * @DESC         |如果缓存不包含该键，则将由键标识的值存储到缓存中。
      *                如果缓存已包含密钥，则不会执行任何操作。
      *
@@ -262,32 +140,6 @@ class File extends CacheDriverAbstract
         }
 
         return false;
-    }
-
-    /**
-     * @DESC         |在缓存中存储多个项目。每个项包含一个由键标识的值。
-     *                如果缓存已经包含这样一个键，则现有值和过期时间将被保留。
-     *
-     * 参数区：
-     *
-     * @param     $items
-     * @param int $duration
-     *
-     * @return array
-     */
-    public function addMulti($items, int $duration = 1800): array
-    {
-        if (!$this->status) {
-            return [];
-        }
-        $failedKeys = [];
-        foreach ($items as $key => $value) {
-            if ($this->add($key, $value, $duration) === false) {
-                $failedKeys[] = $key;
-            }
-        }
-
-        return $failedKeys;
     }
 
     /**

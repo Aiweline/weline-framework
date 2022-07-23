@@ -48,14 +48,6 @@ class Memcached extends CacheDriverAbstract
     }
 
     /**
-     * @return string
-     */
-    public function getIdentity(): string
-    {
-        return $this->identity;
-    }
-
-    /**
      * @return mixed|Connection|ObjectManager
      */
     public function getConnection(): mixed
@@ -63,27 +55,6 @@ class Memcached extends CacheDriverAbstract
         return $this->connection;
     }
 
-
-    public function setIdentity(string $identity)
-    {
-        $this->identity = $identity;
-    }
-
-    public function getStatus(): bool
-    {
-        return $this->status;
-    }
-
-    public function setStatus(bool $status): CacheInterface
-    {
-        $this->status = $status;
-        return $this;
-    }
-
-    public function buildKey($key): mixed
-    {
-        return md5("{$this->identity}_$key");
-    }
 
     public function get($key): mixed
     {
@@ -98,26 +69,12 @@ class Memcached extends CacheDriverAbstract
         return false;
     }
 
-    public function getMulti($keys): mixed
-    {
-        return $this->connection->getMemcached()->getMulti($keys);
-    }
-
     public function set($key, $value, int $duration = 1800): mixed
     {
         if (!$this->status) {
             return false;
         }
         $this->connection->getMemcached()->set($key, $value, $duration);
-        return $this;
-    }
-
-    public function setMulti($items, int $duration = 1800, $udf_flag = ''): mixed
-    {
-        if (!$this->status) {
-            return false;
-        }
-        $this->connection->getMemcached()->setMulti($items, $duration, $udf_flag);
         return $this;
     }
 
@@ -130,14 +87,6 @@ class Memcached extends CacheDriverAbstract
         return $this;
     }
 
-    public function addMulti($items, int $duration = 1800): mixed
-    {
-        if (!$this->status) {
-            return false;
-        }
-        $this->connection->getMemcached()->setMulti($items, $duration);
-        return $this;
-    }
 
     public function delete($key): mixed
     {
