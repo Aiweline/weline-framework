@@ -12,6 +12,8 @@ namespace Weline\Framework\Cache\Driver;
 use Weline\Framework\App\Env;
 use Weline\Framework\Cache\CacheDriverInterface;
 use Weline\Framework\Cache\CacheInterface;
+use Weline\Framework\Manager\ObjectManager;
+use Weline\Framework\Http\Request;
 
 class File extends CacheDriverAbstract
 {
@@ -83,6 +85,33 @@ class File extends CacheDriverAbstract
         }
 
         return md5($key);
+    }
+
+    /**
+     * @DESC         | 生成请求级别的缓存key
+     *
+     * 参数区：
+     *
+     * @param $key
+     *
+     * @return string
+     */
+    public function buildWithRequestKey($key, array $attach_variables = []): string
+    {
+        if (!is_string($key)) {
+            // 不是字符串，json_encode转成字符串
+            $key = json_encode($key);
+        }
+        $key .= $this->getRequest()->getUri() . $this->getRequest()->getMethod() . json_encode($this->getRequest()->getGet());
+        if ($attach_variables) {
+            $key .= implode('', $attach_variables);
+        }
+        return md5($key);
+    }
+
+    private function getRequest(): Request
+    {
+        return ObjectManager::getInstance(Request::class);
     }
 
     /**

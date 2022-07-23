@@ -67,6 +67,17 @@ interface CacheInterface
     public function buildKey($key): mixed;
 
     /**
+     * @DESC         |生成关于请求的缓存
+     *
+     * 参数区：
+     *
+     * @param $key
+     *
+     * @return mixed
+     */
+    public function buildWithRequestKey($key): mixed;
+
+    /**
      * @DESC         |使用指定键从缓存中检索值。
      *
      * 参数区：
