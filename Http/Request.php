@@ -87,7 +87,7 @@ class Request extends Request\RequestAbstract implements RequestInterface
         return $params[$key] ?? $default;
     }
 
-    public function getBodyParams()
+    public function getBodyParams(bool $array = false)
     {
         if ($params = $this->getData('body_params')) {
             return $params;
@@ -96,15 +96,15 @@ class Request extends Request\RequestAbstract implements RequestInterface
         if (is_int(strpos($this->getContentType(), self::CONTENT_TYPE['json']))) {
             $params = json_decode($params, true);
         }
-        if (is_string($params)) {
+        if ($array && is_string($params)) {
             $params_ = [];
             foreach (explode('&', $params) as $key => $value) {
                 $value = explode('=', $value);
-                if (isset($value[0])) $params_[$value[0]] = $value[1] ?? '';
+                if (count($value) === 2) $params_[$value[0]] = $value[1] ?? '';
             }
             $params = $params_;
         }
-        $this->setData('body_params',$params);
+        $this->setData('body_params', $params);
         return $params;
     }
 
@@ -255,7 +255,7 @@ class Request extends Request\RequestAbstract implements RequestInterface
                 $url .= '?' . http_build_query($params);
             }
         } else {
-            $url .= ($this->getGet()&&$merge_params) ? '?' . http_build_query($this->getGet()) : '';
+            $url .= ($this->getGet() && $merge_params) ? '?' . http_build_query($this->getGet()) : '';
         }
         return $url;
     }
