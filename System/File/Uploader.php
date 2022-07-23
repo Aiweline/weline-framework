@@ -86,7 +86,7 @@ class Uploader
      *
      * @param string $filename
      */
-    public function checkFilename(string $filename)
+    private function checkFilename(string $filename)
     {
         // 简单的过滤一下文件名是否合格
         if (preg_match('/([^\w\s\d\-_~,;:\[\]\(\).])|([\.]{2,})/u', $filename)) {
@@ -119,7 +119,7 @@ class Uploader
     public function saveFiles(string $module_name = '', string $module_dir = '', string $base_dir = ''): array
     {
         if (!$module_name) {
-            $module_name = ObjectManager::getInstance(Request::class)->getModuleName();
+            $module_name = $this->getRequest()->getModuleName();
         }
         if ($module_dir) {
             $this->setModuleDir($module_dir);
@@ -143,6 +143,15 @@ class Uploader
         return $result;
     }
 
+    function getUploadFilename(string $filename)
+    {
+        $this->checkFilename($filename);
+        if (!str_starts_with($filename, BP)) {
+            $filename = $this->getBaseUploaderDir() . $filename;
+        }
+        return $filename;
+    }
+
     /**
      * @DESC          # 保存文件
      *
@@ -159,13 +168,8 @@ class Uploader
      */
     public function saveFile(string $tmp_file, string $filename): string
     {
-        if (str_starts_with($filename, BP)) {
-            $this->checkFilename($filename);
-        } else {
-            $this->checkFilename($filename);
-            $filename = $this->getBaseUploaderDir() . $filename;
-        }
-        $dir = dirname($filename);
+        $filename = $this->getUploadFilename($filename);
+        $dir      = dirname($filename);
         if (!is_dir($dir)) {
             mkdir($dir, 0777, true);
             chmod($dir, 0777);
@@ -183,7 +187,7 @@ class Uploader
      */
     #[Pure] public function getBaseUploaderDir(): string
     {
-        return $this->media_dir . rtrim($this->uploader_dir, DS) . DS .($this->getModuleName() ? $this->getModuleName() . DS : '') . ($this->getModuleDir() ? $this->getModuleDir() . DS : '');
+        return $this->media_dir . rtrim($this->uploader_dir, DS) . DS . ($this->getModuleName() ? $this->getModuleName() . DS : '') . ($this->getModuleDir() ? $this->getModuleDir() . DS : '');
     }
 
     /**
@@ -202,7 +206,12 @@ class Uploader
      */
     public function getModuleName(): string
     {
-        return $this->module_name;
+        return $this->module_name ?: str_replace('_', DS, $this->getRequest()->getModuleName());
+    }
+
+    private function getRequest(): Request
+    {
+        return ObjectManager::getInstance(Request::class);
     }
 
     /**
@@ -228,5 +237,14 @@ class Uploader
     public function setModuleDir(string $module_dir): void
     {
         $this->module_dir = $module_dir;
+    }
+
+    public function delete(string $filepath)
+    {
+        $filename = $this->getUploadFilename($filepath);
+        if (is_file($filename)) {
+            unlink($filename);
+        }
+        return true;
     }
 }
