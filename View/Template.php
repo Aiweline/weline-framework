@@ -397,7 +397,7 @@ class Template extends DataObject
         return $this->getTaglib()->tagReplace($this, $content, $fileName);
     }
 
-    public function getUrl(string $path, array $params = [], bool $merge_query = true): string
+    public function getUrl(string $path, array $params = [], bool $merge_query = false): string
     {
         return $this->_request->getUrl($path, $params, $merge_query);
     }
