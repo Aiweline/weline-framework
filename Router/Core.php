@@ -88,7 +88,7 @@ class Core
         # 获取URL
         $url = $this->processUrl();
 //        $url                     = str_replace('-', '', $origin_url);
-        $this->_router_cache_key = 'router_start_cache_key_' . $this->request->getUri();
+        $this->_router_cache_key = 'router_start_cache_key_' . $this->request->getUri().$this->request->getMethod();
         if ($router = $this->cache->get($this->_router_cache_key)) {
             $this->router = $router;
             return $this->route();
@@ -119,8 +119,8 @@ class Core
     public function processUrl()
     {
         // 读取url
-        $url_cache_key  = 'url_cache_key_' . $this->request->getUri();
-        $rule_cache_key = 'rule_data_cache_key_' . $this->request->getUri();
+        $url_cache_key  = 'url_cache_key_' . $this->request->getUri().$this->request->getMethod();
+        $rule_cache_key = 'rule_data_cache_key_' . $this->request->getUri().$this->request->getMethod();
         $cached_url     = $this->cache->get($url_cache_key);
         $rule           = $this->cache->get($rule_cache_key);
 
