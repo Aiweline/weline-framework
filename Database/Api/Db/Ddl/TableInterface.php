@@ -66,28 +66,34 @@ interface TableInterface
 
     public const index_type_KEY = 'KEY';//--用KEY创建普通索引
 
-    public const table_TABLE = 'table';
-    public const table_COMMENT = 'comment';
-    public const table_FIELDS = 'fields';
-    public const table_ALERT_FIELDS = 'alter_fields';
+    /*索引方式*/
+    public const index_method_BTREE = 'BTREE';//--用BTREE 方式索引
+    public const index_method_HASH  = 'HASH'; //--用HASH 方式索引
+
+
+    public const table_TABLE         = 'table';
+    public const table_COMMENT       = 'comment';
+    public const table_FIELDS        = 'fields';
+    public const table_ALERT_FIELDS  = 'alter_fields';
     public const table_DELETE_FIELDS = 'delete_fields';
-    public const table_INDEXS = 'indexes';
-    public const table_FOREIGN_KEYS = 'foreign_keys';
-    public const table_TYPE = 'type';
-    public const table_CONSTRAINTS = 'constraints';
-    public const table_ADDITIONAL = 'additional';
+    public const table_INDEXS        = 'indexes';
+    public const table_FOREIGN_KEYS  = 'foreign_keys';
+    public const table_TYPE          = 'type';
+    public const table_CONSTRAINTS   = 'constraints';
+    public const table_ADDITIONAL    = 'additional';
 
     public const init_vars = [
-        self::table_TABLE => '',
-        self::table_COMMENT => '',
-        self::table_FIELDS => [],
-        self::table_ALERT_FIELDS => [],
+        self::table_TABLE         => '',
+        self::table_COMMENT       => '',
+        self::table_FIELDS        => [],
+        self::table_ALERT_FIELDS  => [],
         self::table_DELETE_FIELDS => [],
-        self::table_INDEXS => [],
-        self::table_FOREIGN_KEYS => [],
-        self::table_CONSTRAINTS => '',
-        self::table_ADDITIONAL => 'ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;',
+        self::table_INDEXS        => [],
+        self::table_FOREIGN_KEYS  => [],
+        self::table_CONSTRAINTS   => '',
+        self::table_ADDITIONAL    => 'ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;',
     ];
+
     /**
      * @DESC          # 设置链接
      *
@@ -100,12 +106,12 @@ interface TableInterface
      *
      * @return static
      */
-    function setConnection(ConnectionFactory $connection):static;
+    function setConnection(ConnectionFactory $connection): static;
 
     /**
      * @DESC          # 数据库类型
      *
-     * @AUTH  秋枫雁飞
+     * @AUTH    秋枫雁飞
      * @EMAIL aiweline@qq.com
      * @DateTime: 2021/8/31 20:36
      * 参数区：
@@ -116,7 +122,7 @@ interface TableInterface
     /**
      * @DESC          # 读取表前缀
      *
-     * @AUTH  秋枫雁飞
+     * @AUTH    秋枫雁飞
      * @EMAIL aiweline@qq.com
      * @DateTime: 2021/9/5 22:04
      * 参数区：
@@ -127,7 +133,7 @@ interface TableInterface
     /**
      * @DESC          # 获取表
      *
-     * @AUTH  秋枫雁飞
+     * @AUTH    秋枫雁飞
      * @EMAIL aiweline@qq.com
      * @DateTime: 2021/9/5 22:05
      * 参数区：
@@ -138,7 +144,7 @@ interface TableInterface
     /**
      * @DESC          # 数据库链接
      *
-     * @AUTH  秋枫雁飞
+     * @AUTH    秋枫雁飞
      * @EMAIL aiweline@qq.com
      * @DateTime: 2021/9/5 17:23
      * 参数区：
@@ -149,11 +155,13 @@ interface TableInterface
     /**
      * @DESC          # 查询
      *
-     * @AUTH  秋枫雁飞
+     * @AUTH    秋枫雁飞
      * @EMAIL aiweline@qq.com
      * @DateTime: 2021/9/5 17:33
      * 参数区：
+     *
      * @param string $sql
+     *
      * @return QueryInterface
      */
     public function query(string $sql): QueryInterface;

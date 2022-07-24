@@ -89,7 +89,7 @@ interface AlterInterface extends TableInterface
      * @param array|string $column
      * @return AlterInterface
      */
-    public function addIndex(string $type, string $name, array|string $column): AlterInterface;
+    public function addIndex(string $type, string $name, array|string $column, string $comment='', string $index_method = 'BTREE'): AlterInterface;
 
     /**
      * @DESC          # 建表附加
