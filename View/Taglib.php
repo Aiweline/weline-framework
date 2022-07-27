@@ -64,7 +64,14 @@ class Taglib
         if (str_starts_with($name, '$')) {
             return $name;
         }
-        return '$' . $name;
+        # 有字母的，且不是字符串，不存在特殊字符内的，可以加$
+        $special = ['null'];
+        if (preg_match('/^[a-zA-Z]/', $name)) {
+            if (!in_array($name, $special) and !str_starts_with($name, '"') and !str_starts_with($name, "'")) {
+                $name = $name ? '$' . $name : $name;
+            }
+        }
+        return $name;
     }
 
     public function varParser(string $name): string
@@ -88,7 +95,7 @@ class Taglib
 //            $names = array_merge($names,explode($symbol, $name));
 //        }
         foreach ($names as $var) {
-            $pieces    = explode('.', $var);
+            $pieces    = explode('.', $this->checkVar($var));
             $has_piece = false;
             foreach ($pieces as $key => $piece) {
                 if (0 !== $key) {
