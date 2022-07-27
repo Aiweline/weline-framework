@@ -25,14 +25,14 @@ class Taglib
         # 比较
         '>',
         '<',
-        '==',
         '===',
+        '!==',
+        '==',
         '!=',
         '<>',
-        '!==',
         '>=',
-        '<=',
         '<=>',
+        '<=',
         # 逻辑
         '&&',
         '||',
@@ -80,7 +80,7 @@ class Taglib
         # 处理过滤器
         list($name, $default) = $this->checkFilter($name);
         # 去除空白以及空格
-        $name  = $this->checkVar($name);
+        $name = $this->checkVar($name);
         $names = explode(' ', $name);
         # 就近原则操作符
 //        $near = [];
@@ -94,8 +94,11 @@ class Taglib
 //        foreach ($near as $symbol){
 //            $names = array_merge($names,explode($symbol, $name));
 //        }
-        foreach ($names as $var) {
-            $pieces    = explode('.', $this->checkVar($var));
+        foreach ($names as $name_key=>$var) {
+            if(!str_contains($var, '"')&&!str_contains($var, '\'')){
+                $var = $this->checkVar($var);
+            }
+            $pieces    = explode('.', $var);
             $has_piece = false;
             foreach ($pieces as $key => $piece) {
                 if (0 !== $key) {
