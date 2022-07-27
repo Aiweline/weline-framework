@@ -422,6 +422,8 @@ abstract class AbstractModel extends DataObject
         $this->getEvenManager()->dispatch($this->getOriginTableName() . '_model_load_after', ['model' => $this]);
         // 加载之后
         $this->load_after();
+        # 触发fetch_after
+        $this->fetch_after();
         $this->clearQuery();
         return $this;
     }
