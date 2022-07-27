@@ -116,6 +116,10 @@ abstract class AbstractModel extends DataObject
      */
     public function __init()
     {
+        # 如果初始化有数据
+        if($this->getData()){
+            $this->fetch_after();
+        }
         # 重置查询
         if (!isset($this->_cache)) {
             $this->_cache = ObjectManager::getInstance(DbModelCache::class . 'Factory');
