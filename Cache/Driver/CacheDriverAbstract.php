@@ -168,12 +168,14 @@ abstract class CacheDriverAbstract implements \Weline\Framework\Cache\CacheDrive
         }
         return md5("{$this->identity}_$key");
     }
+
     /**
      * @DESC         | 生成请求级别的缓存key
      *
      * 参数区：
      *
-     * @param $key
+     * @param $key              [基础键]
+     * @param $attach_variables [变量键：协助变化缓存，默认使用（page,pageSize）] 【示例：['page','pageSize']】
      *
      * @return string
      */
@@ -183,7 +185,11 @@ abstract class CacheDriverAbstract implements \Weline\Framework\Cache\CacheDrive
             // 不是字符串，json_encode转成字符串
             $key = json_encode($key);
         }
-        $key .= $this->getRequest()->getUri() . $this->getRequest()->getMethod() . json_encode($this->getRequest()->getGet());
+        if(empty($attach_variables)){
+            $attach_variables['page'] = $this->getRequest()->getGet('page');
+            $attach_variables['pageSize'] = $this->getRequest()->getGet('pageSize');
+        }
+        $key .= $this->getRequest()->getUri() . $this->getRequest()->getMethod() . json_encode($attach_variables);
         if ($attach_variables) {
             $key .= implode('', $attach_variables);
         }
