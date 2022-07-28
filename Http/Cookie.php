@@ -35,8 +35,10 @@ class Cookie
         // 默认网站语言
         if (empty($lang)) {
             $lang = $_COOKIE['WELINE-WEBSITE-LANG'] ?? 'zh_Hans_CN';
-            setcookie('WELINE-WEBSITE-LANG',$lang);
-            setcookie('WELINE-USER-LANG',$lang);
+            if(!CLI){
+                setcookie('WELINE-WEBSITE-LANG',$lang);
+                setcookie('WELINE-USER-LANG',$lang);
+            }
         }
         return $lang;
     }
