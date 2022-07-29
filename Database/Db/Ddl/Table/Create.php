@@ -52,26 +52,26 @@ class Create extends TableAbstract implements CreateInterface
 
     public function addIndex(string $type, string $name, array|string $column, string $comment='', string $index_method = 'BTREE'): CreateInterface
     {
-        $comment = $comment?"comment '{$comment}'": '';
+        $comment = $comment?"COMMENT '{$comment}'": '';
         switch ($type) {
             case self::index_type_DEFAULT:
-                $this->indexes[] = "INDEX {$name}(`{$column}`) USING {$index_method} {$comment}," . PHP_EOL;
+                $this->indexes[] = "INDEX `{$name}`(`{$column}`) USING {$index_method} {$comment}," . PHP_EOL;
 
                 break;
             case self::index_type_FULLTEXT:
-                $this->indexes[] = "FULLTEXT INDEX {$name}(`{$column}`) USING {$index_method} {$comment}," . PHP_EOL;
+                $this->indexes[] = "FULLTEXT INDEX `{$name}`(`{$column}`) USING {$index_method} {$comment}," . PHP_EOL;
 
                 break;
             case self::index_type_UNIQUE:
-                $this->indexes[] = "UNIQUE INDEX {$name}(`{$column}`) USING {$index_method} {$comment}," . PHP_EOL;
+                $this->indexes[] = "UNIQUE INDEX `{$name}`(`{$column}`) USING {$index_method} {$comment}," . PHP_EOL;
 
                 break;
             case self::index_type_SPATIAL:
-                $this->indexes[] = "SPATIAL INDEX {$name}(`{$column}`) USING {$index_method} {$comment}," . PHP_EOL;
+                $this->indexes[] = "SPATIAL INDEX `{$name}`(`{$column}`) USING {$index_method} {$comment}," . PHP_EOL;
 
                 break;
             case self::index_type_KEY:
-                $this->indexes[] = "KEY IDX {$name}(`{$column}`) USING {$index_method} {$comment}," . PHP_EOL;
+                $this->indexes[] = "KEY IDX `{$name}`(`{$column}`) USING {$index_method} {$comment}," . PHP_EOL;
 
                 break;
             case self::index_type_MULTI:
@@ -80,7 +80,7 @@ class Create extends TableAbstract implements CreateInterface
                     new Exception(self::index_type_MULTI . __('：此索引的column需要array类型,当前类型') . "{$type_of_column}" . ' 例如：[ID,NAME(19),AGE]');
                 }
                 $column          = implode(',', $column);
-                $this->indexes[] = "INDEX {$name}(`$column`) USING {$index_method} {$comment}," . PHP_EOL;
+                $this->indexes[] = "INDEX `{$name}`(`$column`) USING {$index_method} {$comment}," . PHP_EOL;
 
                 break;
             default:
