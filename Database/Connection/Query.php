@@ -27,12 +27,13 @@ abstract class Query implements QueryInterface
     public string $table = '';
     public string $table_alias = 'main_table';
     public array $insert = [];
+    public string $exist_update_sql = '';
     public array $joins = [];
     public string $fields = '*';
     public array $single_updates = [];
     public array $updates = [];
     public array $wheres = [];
-    public $bound_values = [];
+    public array $bound_values = [];
     public string $limit = '';
     public array $order = [];
 
@@ -57,8 +58,15 @@ abstract class Query implements QueryInterface
         return $this;
     }
 
-    public function insert(array $data): QueryInterface
+    public function insert(array $data, array $exist_update_fields = []): QueryInterface
     {
+        if ($exist_update_fields) {
+            $this->exist_update_sql = 'ON DUPLICATE KEY UPDATE ';
+            foreach ($exist_update_fields as $field) {
+                $this->exist_update_sql .= "`$field`=VALUES(`$field`),";
+            }
+            $this->exist_update_sql = trim($this->exist_update_sql, ',');
+        }
         if (is_string(array_key_first($data))) {
             $this->insert[] = $data;
         } else {
@@ -171,7 +179,8 @@ abstract class Query implements QueryInterface
     {
         $offset = 0;
         if (1 < $page) {
-            $offset = $pageSize * ($page - 1) /*+ 1*/;
+            $offset = $pageSize * ($page - 1) /*+ 1*/
+            ;
         }
         $this->limit              = " LIMIT $offset,$pageSize";
         $this->pagination['page'] = $page;
@@ -186,7 +195,7 @@ abstract class Query implements QueryInterface
             $this->pagination = array_merge($this->pagination, $params);
         }
         $this->page(intval($this->pagination['page']), $pageSize);
-        $query = clone $this;
+        $query                         = clone $this;
         $total                         = $this->total();
         $this->pagination['totalSize'] = $total;
         $lastPage                      = intval($total / $pageSize);
@@ -194,7 +203,7 @@ abstract class Query implements QueryInterface
             $lastPage += 1;
         }
         $this->pagination['lastPage'] = $lastPage;
-        $query->pagination = $this->pagination;
+        $query->pagination            = $this->pagination;
         return $query;
     }
 

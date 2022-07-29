@@ -209,7 +209,7 @@ trait QueryTrait
                     $values .= '),';
                 }
                 $values = rtrim($values, ',');
-                $sql = "INSERT INTO {$this->table} {$this->fields} VALUES {$values}";
+                $sql = "INSERT INTO {$this->table} {$this->fields} VALUES {$values} {$this->exist_update_sql}";
                 break;
             case 'delete':
                 $sql = "DELETE FROM {$this->table} {$wheres} {$this->additional_sql}";

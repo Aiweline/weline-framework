@@ -21,46 +21,49 @@ use Weline\Framework\Database\Connection\Query;
 
 interface QueryInterface
 {
-    public const attr_IDENTITY_FIELD = 'identity_field';
-    public const attr_TABLE          = 'table';
-    public const attr_TABLE_ALIA     = 'table_alias';
-    public const attr_INSERT         = 'insert';
-    public const attr_JOIN           = 'joins';
-    public const attr_FIELD          = 'fields';
-    public const attr_UPDATE         = 'updates';
-    public const attr_WHERE          = 'wheres';
-    public const attr_BOUND_VALUE    = 'bound_values';
-    public const attr_LIMIT          = 'limit';
-    public const attr_ORDER          = 'order';
-    public const attr_SQL            = 'sql';
-    public const attr_ADDITIONAL_SQL = 'additional_sql';
+    public const attr_IDENTITY_FIELD   = 'identity_field';
+    public const attr_TABLE            = 'table';
+    public const attr_TABLE_ALIA       = 'table_alias';
+    public const attr_INSERT           = 'insert';
+    public const attr_JOIN             = 'joins';
+    public const attr_FIELD            = 'fields';
+    public const attr_UPDATE           = 'updates';
+    public const attr_WHERE            = 'wheres';
+    public const attr_BOUND_VALUE      = 'bound_values';
+    public const attr_LIMIT            = 'limit';
+    public const attr_ORDER            = 'order';
+    public const attr_SQL              = 'sql';
+    public const attr_ADDITIONAL_SQL   = 'additional_sql';
+    public const attr_EXIST_UPDATE_SQL = 'exist_update_sql';
 
     public const init_vars  = [
-        self::attr_IDENTITY_FIELD => 'id',
-        self::attr_TABLE          => '',
-        self::attr_TABLE_ALIA     => 'main_table',
-        self::attr_INSERT         => [],
-        self::attr_JOIN           => [],
-        self::attr_FIELD          => '*',
-        self::attr_UPDATE         => [],
-        self::attr_WHERE          => [],
-        self::attr_BOUND_VALUE    => [],
-        self::attr_LIMIT          => '',
-        self::attr_ORDER          => [],
-        self::attr_SQL            => '',
-        self::attr_ADDITIONAL_SQL => '',
+        self::attr_IDENTITY_FIELD   => 'id',
+        self::attr_TABLE            => '',
+        self::attr_TABLE_ALIA       => 'main_table',
+        self::attr_INSERT           => [],
+        self::attr_JOIN             => [],
+        self::attr_FIELD            => '*',
+        self::attr_UPDATE           => [],
+        self::attr_WHERE            => [],
+        self::attr_BOUND_VALUE      => [],
+        self::attr_LIMIT            => '',
+        self::attr_ORDER            => [],
+        self::attr_SQL              => '',
+        self::attr_ADDITIONAL_SQL   => '',
+        self::attr_EXIST_UPDATE_SQL => '',
     ];
     public const query_vars = [
-        self::attr_INSERT         => [],
-        self::attr_JOIN           => [],
-        self::attr_FIELD          => '*',
-        self::attr_UPDATE         => [],
-        self::attr_WHERE          => [],
-        self::attr_BOUND_VALUE    => [],
-        self::attr_LIMIT          => '',
-        self::attr_ORDER          => [],
-        self::attr_SQL            => '',
-        self::attr_ADDITIONAL_SQL => '',
+        self::attr_INSERT           => [],
+        self::attr_JOIN             => [],
+        self::attr_FIELD            => '*',
+        self::attr_UPDATE           => [],
+        self::attr_WHERE            => [],
+        self::attr_BOUND_VALUE      => [],
+        self::attr_LIMIT            => '',
+        self::attr_ORDER            => [],
+        self::attr_SQL              => '',
+        self::attr_ADDITIONAL_SQL   => '',
+        self::attr_EXIST_UPDATE_SQL => '',
     ];
 
     /**
@@ -244,6 +247,7 @@ interface QueryInterface
      * @return QueryInterface
      */
     public function find(): QueryInterface;
+
     /**
      * @DESC          # 统计
      *
@@ -269,11 +273,12 @@ interface QueryInterface
      *
      * 参数区：
      *
-     * @param array $data
+     * @param array $data                [数据]
+     * @param bool  $exist_update_fields [存在则更新字段]
      *
      * @return QueryInterface
      */
-    public function insert(array $data): QueryInterface;
+    public function insert(array $data, array $exist_update_fields = []): QueryInterface;
 
     /**
      * @DESC         |删除

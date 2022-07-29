@@ -29,7 +29,8 @@ use Weline\Framework\Manager\ObjectManager;
  * @method AbstractModel|QueryInterface update(array $data, string $condition_field = 'id')
  * @method AbstractModel|QueryInterface fields(string $fields)
  * @method AbstractModel|QueryInterface join(string $table, string $condition, string $type = 'left')
- * @method AbstractModel|QueryInterface where(array|string $field, mixed $value = null, string $con = '=', string $logic = 'AND')
+ * @method AbstractModel|QueryInterface where(array|string $field, mixed $value = null, string $con = '=', string
+ *         $logic = 'AND')
  * @method AbstractModel|QueryInterface limit(int $size, int $offset = 0)
  * @method AbstractModel|QueryInterface page(int $page = 1, int $pageSize = 20)
  * @method AbstractModel|QueryInterface order(string $fields, string $sort = 'ASC')
@@ -117,7 +118,7 @@ abstract class AbstractModel extends DataObject
     public function __init()
     {
         # 如果初始化有数据
-        if($this->getData()){
+        if ($this->getData()) {
             $this->fetch_after();
         }
         # 重置查询
@@ -485,25 +486,13 @@ abstract class AbstractModel extends DataObject
         $this->getQuery()->beginTransaction();
         try {
             if ($this->getId()) {
+                # 暂时解决主键已经存在且是字符串，无法新增的问题，强制检测主键是否存在
+                if (is_string($this->getId())) {
+                    $this->force_check_flag = true;
+                }
                 # 是否强制检查
                 if ($this->force_check_flag) {
-                    if ($data = $this->getQuery()->where($this->_primary_key, $this->getId())->find()->fetch()) {
-                        # 数据库中数据存在则更新
-                        if (isset($data[$this->_primary_key])) {
-                            $update_data = $this->getModelData();
-                            unset($update_data[$this->_primary_key]);
-                            $save_result = $this->getQuery()->where($this->_primary_key, $this->getId())->update($update_data)->fetch();
-                        } else {
-                            $save_result = $this->getQuery()->insert($this->getModelData())->fetch();
-//                            $save_result = array_shift($save_result)['LAST_INSERT_ID()'];
-                            $this->setData($this->_primary_key, $save_result);
-                        }
-                    } else {
-                        $save_result = $this->getQuery()->insert($this->getModelData())->fetch();
-                        if (!$this->getId()) {
-                            $this->setData($this->_primary_key, $save_result);
-                        }
-                    }
+                    $save_result = $this->getQuery()->insert($this->getModelData(), $this->getModelFields(true))->fetch();
                 } else {
                     $save_result = $this->getQuery()->where($this->_primary_key, $this->getId())->update($this->getModelData())->fetch();
                 }
@@ -938,7 +927,7 @@ abstract class AbstractModel extends DataObject
         return $this->setData(self::fields_CREATE_TIME, $update_time);
     }
 
-    public function getModelFields()
+    public function getModelFields(bool $remove_primary_key = false): array
     {
         if ($_model_fields = $this->_model_fields) {
             return $_model_fields;
@@ -956,7 +945,8 @@ abstract class AbstractModel extends DataObject
                 $_fields[] = $val;
             }
         }
-        $_fields[]           = $this->_primary_key;
+        if (!$remove_primary_key) $_fields[] = $this->_primary_key;
+        $_fields             = array_unique($_fields);
         $this->_model_fields = $_fields;
         if (PROD) {
             $this->_cache->set($module__fields_cache_key, $_fields);
@@ -992,7 +982,7 @@ abstract class AbstractModel extends DataObject
         if (empty($this->_model_fields_data) && $data = $this->getData()) {
             foreach ($this->getModelFields() as $key => $val) {
                 $field_data = $data[$val] ?? null;
-                if (($val === self::fields_CREATE_TIME || $val === self::fields_UPDATE_TIME) && empty($field_data)) {
+                if (($val === $this::fields_CREATE_TIME || $val === $this::fields_UPDATE_TIME) && empty($field_data)) {
                     $field_data = date('Y-m-d H:i:s');
                 }
                 $this->_model_fields_data[$val] = $field_data;
@@ -1051,7 +1041,7 @@ abstract class AbstractModel extends DataObject
      */
     public function pagination(int $page = 1, int $pageSize = 20, array $params = []): AbstractModel|static
     {
-        if(empty($params)){
+        if (empty($params)) {
             $params = ObjectManager::getInstance(Request::class)->getGet();
         }
         $this->setQuery($this->getQuery()->pagination($page, $pageSize, $params));
