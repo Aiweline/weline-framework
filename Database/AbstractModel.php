@@ -29,8 +29,7 @@ use Weline\Framework\Manager\ObjectManager;
  * @method AbstractModel|QueryInterface update(array $data, string $condition_field = 'id')
  * @method AbstractModel|QueryInterface fields(string $fields)
  * @method AbstractModel|QueryInterface join(string $table, string $condition, string $type = 'left')
- * @method AbstractModel|QueryInterface where(array|string $field, mixed $value = null, string $con = '=', string
- *         $logic = 'AND')
+ * @method AbstractModel|QueryInterface where(array|string $field, mixed $value = null, string $con = '=', string $logic = 'AND')
  * @method AbstractModel|QueryInterface limit(int $size, int $offset = 0)
  * @method AbstractModel|QueryInterface page(int $page = 1, int $pageSize = 20)
  * @method AbstractModel|QueryInterface order(string $fields, string $sort = 'ASC')
