@@ -96,6 +96,9 @@ abstract class AbstractModel extends DataObject
     private mixed $_query_data = null;
     private array $pagination = ['page' => 1, 'pageSize' => 20, 'totalSize' => 0, 'lastPage' => 0];
 
+    # Flag
+    private bool $is_multi = false;
+
 //    public function __sleep()
 //    {
 //        return array('table', 'origin_table_name', 'items');
@@ -498,7 +501,11 @@ abstract class AbstractModel extends DataObject
             } else {
                 $insert_data = $this->getModelData();
                 unset($insert_data[$this->_primary_key]);
-                $save_result = $this->getQuery()->insert($insert_data)->fetch();
+                if ($this->force_check_flag) {
+                    $save_result = $this->getQuery()->insert($this->getModelData(), $this->getModelFields(true))->fetch();
+                } else {
+                    $save_result = $this->getQuery()->insert($insert_data)->fetch();
+                }
                 if (!$this->getId()) {
                     $this->setData($this->_primary_key, $save_result);
                 }
@@ -979,12 +986,23 @@ abstract class AbstractModel extends DataObject
     public function getModelData(string $field = ''): array|string
     {
         if (empty($this->_model_fields_data) && $data = $this->getData()) {
+            $need_fill_fields = [];
             foreach ($this->getModelFields() as $key => $val) {
                 $field_data = $data[$val] ?? null;
+                # 设置沿用主模型的数据
+//                if ($val !== $this->_primary_key && $field_data && $datas = $this->getId()) {
+//                    if (!isset($datas[0][$val])) {
+//                        foreach ($datas as &$data_val) {
+//                            $data_val[$val] = $field_data;
+//                        }
+//                        $this->setData($this->_primary_key, $datas);
+//                    }
+//                }
                 if (($val === $this::fields_CREATE_TIME || $val === $this::fields_UPDATE_TIME) && empty($field_data)) {
                     $field_data = date('Y-m-d H:i:s');
                 }
                 $this->_model_fields_data[$val] = $field_data;
+
             }
         }
         if ($field && isset($this->_model_fields_data[$field]) && $field_data = $this->_model_fields_data[$field]) {
@@ -1012,8 +1030,21 @@ abstract class AbstractModel extends DataObject
     public function setModelData(array|string $key, mixed $value = ''): static
     {
         if (is_array($key)) {
-            $this->_model_fields_data = $key;
+            # 如果Key是批量数据 将主数据对应的 键值对 添加到批量数据中
+            if (isset($key[0])) {
+                $this->is_multi = true;
+                foreach ($key as &$fv) {
+                    $common_datas = $this->getData();
+                    foreach ($common_datas as $common_key => $common_data) {
+                        if (!isset($common_data[$common_key])) {
+                            $fv[$common_key] = $common_data;
+                        }
+                    }
+                }
+            }
+//            $this->clearDataObject();# 清空数据
             $this->setData($key);
+            $this->_model_fields_data = $this->getModelData();
         } else {
             $this->_model_fields_data[$key] = $value;
             $this->setData($key, $value);
@@ -1165,5 +1196,27 @@ PAGINATION;
         }
         $this->_joins[] = [$model_table . ($alias ? ' `' . $alias . '`' : ''), $condition, $type];
         return $this->bindQuery($query);
+    }
+
+
+    /**缓存控制*/
+
+    function useCache(bool $cache = true)
+    {
+        $this->_useCache = true;
+        return $this;
+    }
+
+    function getCache(string $key)
+    {
+        if ($this->_useCache) {
+            return $this->_cache->get($key);
+        }
+        return null;
+    }
+
+    function setCache(string $key,mixed $value,$duration=1800)
+    {
+        return $this->_cache->set($key,$value, $duration);
     }
 }
