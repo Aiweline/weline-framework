@@ -49,7 +49,7 @@ class Taglib
         '+',
     ];
 
-    public function checkFilter(string $name, string $filter = '|', $default = ''): array
+    public function checkFilter(string $name, string $filter = '|', $default = '\'\''): array
     {
         if (str_contains($name, $filter)) {
             $name_arr = explode('|', $name);
@@ -95,11 +95,16 @@ class Taglib
 //            $names = array_merge($names,explode($symbol, $name));
 //        }
         foreach ($names as $name_key=>$var) {
+            # 排除字符串
             if(!str_contains($var, '"')&&!str_contains($var, '\'')){
                 $var = $this->checkVar($var);
             }
             $pieces    = explode('.', $var);
             $has_piece = false;
+            if(count($pieces) > 1) {
+                $name_str .= '(';
+                $has_piece = true;
+            }
             foreach ($pieces as $key => $piece) {
                 if (0 !== $key) {
                     if (str_contains($piece, '$')) {
@@ -109,17 +114,15 @@ class Taglib
                     } else {
                         $piece = '[\'' . $piece . '\']';
                     }
-                    $has_piece = true;
                 }
                 $name_str .= $piece;
                 unset($pieces[$key]);
             }
-            # 开发环境真实获取数据不设置默认空且不抑制错误
-//            if(DEV){
-//                $has_piece = false;
+//            if($has_piece) {
+//                $name_str .= ")??{$default}";
 //            }
-            $name_str = $default ? "({$name_str}?? {$default}) " : ($has_piece ? "({$name_str}??'') " : $name_str . ' ');
-//            $name_str = $default ? "{$name_str}?? {$default} " : ($has_piece ? "{$name_str}??'' " : $name_str.' ');
+            $name_str = $has_piece ? "{$name_str}??{$default}) " : $name_str . ' ';
+//            $name_str = $default ? "({$name_str}?? {$default}) " : ($has_piece ? "({$name_str}??'') " : $name_str . ' ');
         }
 
         return $name_str;
