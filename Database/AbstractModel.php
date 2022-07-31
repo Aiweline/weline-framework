@@ -97,7 +97,7 @@ abstract class AbstractModel extends DataObject
     private array $pagination = ['page' => 1, 'pageSize' => 20, 'totalSize' => 0, 'lastPage' => 0];
 
     # Flag
-    private bool $is_multi = false;
+    private bool $use_cache = false;
 
 //    public function __sleep()
 //    {
@@ -1032,7 +1032,6 @@ abstract class AbstractModel extends DataObject
         if (is_array($key)) {
             # 如果Key是批量数据 将主数据对应的 键值对 添加到批量数据中
             if (isset($key[0])) {
-                $this->is_multi = true;
                 foreach ($key as &$fv) {
                     $common_datas = $this->getData();
                     foreach ($common_datas as $common_key => $common_data) {
@@ -1203,13 +1202,13 @@ PAGINATION;
 
     function useCache(bool $cache = true)
     {
-        $this->_useCache = true;
+        $this->use_cache = $cache;
         return $this;
     }
 
     function getCache(string $key)
     {
-        if ($this->_useCache) {
+        if ($this->use_cache) {
             return $this->_cache->get($key);
         }
         return null;

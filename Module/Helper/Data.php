@@ -10,6 +10,7 @@
 namespace Weline\Framework\Module\Helper;
 
 use Weline\Framework\App\Env;
+use Weline\Framework\Http\Request;
 use Weline\Framework\Manager\ObjectManager;
 use Weline\Framework\Register\RegisterDataInterface;
 use Weline\Framework\System\File\App\Scanner;
@@ -174,6 +175,10 @@ class Data extends AbstractHelper
                                 array_shift($request_method_split_array);
                                 $rule_method = implode('', $request_method_split_array);
                             }
+                            # 如果没有解析到请求方法就使用方法名
+                            if(!$request_method&&in_array(strtoupper($rule_method), Request::METHODS)){
+                                $request_method = strtoupper($rule_method);
+                            }
                             # 删除index后缀
                             $rule_router     = strtolower($baseRouter . '/' . $rule_method);
                             $rule_rule_arr   = explode('/', $rule_router);
@@ -273,7 +278,7 @@ class Data extends AbstractHelper
                 if (is_int(strpos($method->getName(), '__'))) {
                     continue;
                 }
-                $controller_methods[] = $method->getName();
+                if ($method->isPublic()) $controller_methods[] = $method->getName();
             }
             // 存在父类则过滤父类方法
             if ($parent_class = $reflect->getParentClass()) {

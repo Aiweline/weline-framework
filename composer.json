@@ -11,7 +11,7 @@
     "php",
     "php8"
   ],
-  "type": "module",
+  "type": "project",
   "minimum-stability": "stable",
   "license": "proprietary",
   "authors": [
