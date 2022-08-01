@@ -83,13 +83,14 @@ class Request extends Request\RequestAbstract implements RequestInterface
 
     public function getBodyParam($key, mixed $default = null)
     {
-        $params = $this->getBodyParams();
+        $params = $this->getBodyParams(true);
         return $params[$key] ?? $default;
     }
 
     public function getBodyParams(bool $array = false)
     {
-        if ($params = $this->getData('body_params')) {
+        $body_params_key = $array ? 'array_body_params' : 'body_params';
+        if ($params = $this->getData($body_params_key)) {
             return $params;
         }
         $params = file_get_contents('php://input');
@@ -104,7 +105,7 @@ class Request extends Request\RequestAbstract implements RequestInterface
             }
             $params = $params_;
         }
-        $this->setData('body_params', $params);
+        $this->setData($body_params_key, $params);
         return $params;
     }
 
