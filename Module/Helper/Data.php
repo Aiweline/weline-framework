@@ -111,6 +111,11 @@ class Data extends AbstractHelper
                                 array_shift($request_method_split_array);
                                 $rule_method = implode('', $request_method_split_array);
                             }
+                            # 如果没有解析到请求方法就使用方法名
+                            if(!$request_method&&in_array(strtoupper($rule_method), Request::METHODS)){
+                                $request_method = strtoupper($rule_method);
+                                $rule_method = '';
+                            }
                             # 删除index后缀
                             $rule_router     = strtolower($baseRouter . '/' . $rule_method);
                             $rule_rule_arr   = explode('/', $rule_router);
@@ -178,6 +183,7 @@ class Data extends AbstractHelper
                             # 如果没有解析到请求方法就使用方法名
                             if(!$request_method&&in_array(strtoupper($rule_method), Request::METHODS)){
                                 $request_method = strtoupper($rule_method);
+                                $rule_method = '';
                             }
                             # 删除index后缀
                             $rule_router     = strtolower($baseRouter . '/' . $rule_method);
