@@ -1075,6 +1075,7 @@ abstract class AbstractModel extends DataObject
         }
         $this->setQuery($this->getQuery()->pagination($page, $pageSize, $params));
         $this->pagination = $this->getQuery()->pagination;
+        $this->setData('pagination', $this->getPagination());
         return $this;
     }
 
@@ -1214,8 +1215,8 @@ PAGINATION;
         return null;
     }
 
-    function setCache(string $key,mixed $value,$duration=1800)
+    function setCache(string $key, mixed $value, $duration = 1800)
     {
-        return $this->_cache->set($key,$value, $duration);
+        return $this->_cache->set($key, $value, $duration);
     }
 }
