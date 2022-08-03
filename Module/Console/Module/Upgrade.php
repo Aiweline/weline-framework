@@ -85,10 +85,11 @@ class Upgrade extends CommandAbstract
         $modules        = Env::getInstance()->getActiveModules();
         $function_files_content = '';
         foreach ($modules as $module) {
-            $common_file = $module['base_path'] .'Global'.DS.'functions.php';
-            if (file_exists($common_file)) {
+            $global_file_pattern = $module['base_path'] .'Global'.DS.'*.php';
+            $global_files = glob($global_file_pattern);
+            foreach ($global_files as $global_file) {
                 # 读取文件内容 去除注释以及每个文件末尾的 '\?\>'结束符
-                $function_files_content .= str_replace('?>', '', file_get_contents($common_file)) . '\n';
+                $function_files_content .= str_replace('?>', '', file_get_contents($global_file)) . PHP_EOL;
             }
         }
         # 写入文件
