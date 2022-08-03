@@ -92,6 +92,9 @@ abstract class CacheDriverAbstract implements \Weline\Framework\Cache\CacheDrive
      */
     public function getMulti($keys): array
     {
+        if (!$this->status) {
+            return [];
+        }
         $results = [];
         foreach ($keys as $key) {
             $results[$key] = $this->get($key);

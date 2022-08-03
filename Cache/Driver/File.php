@@ -72,6 +72,9 @@ class File extends CacheDriverAbstract
      */
     public function exists($key): bool
     {
+        if (!$this->status) {
+            return false;
+        }
         $key       = $this->buildKey($key);
         $cacheFile = $this->cachePath . $key;
         $this->processCacheFile($cacheFile);
