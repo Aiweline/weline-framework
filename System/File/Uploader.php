@@ -26,9 +26,7 @@ class Uploader
     private array $accepted_origins = ['http://localhost', 'http://192.168.1.1', 'http://127.0.0.1'];
     private array $ext = ['gif', 'jpg', 'png'];
 
-
-    public function __construct()
-    {
+    function checkDomain(){
         if (isset($_SERVER['HTTP_ORIGIN'])) {
             // 验证来源是否在白名单内
             if (in_array($_SERVER['HTTP_ORIGIN'], $this->accepted_origins)) {
@@ -54,7 +52,7 @@ class Uploader
      */
     public function addAcceptOriginDomain(array $origin_domains): static
     {
-        $this->ext = array_merge($this->ext, $origin_domains);
+        $this->accepted_origins = array_merge($this->accepted_origins, $origin_domains);
         return $this;
     }
 
@@ -168,6 +166,7 @@ class Uploader
      */
     public function saveFile(string $tmp_file, string $filename): string
     {
+        $this->checkDomain();
         $filename = $this->getUploadFilename($filename);
         $dir      = dirname($filename);
         if (!is_dir($dir)) {
