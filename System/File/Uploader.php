@@ -33,7 +33,7 @@ class Uploader
                 header('Access-Control-Allow-Origin: ' . $_SERVER['HTTP_ORIGIN']);
             } else {
                 header('HTTP/1.1 403 Origin Denied');
-                exit;
+                throw new Exception('Origin Denied');
             }
         }
     }
@@ -89,13 +89,13 @@ class Uploader
         // 简单的过滤一下文件名是否合格
         if (preg_match('/([^\w\s\d\-_~,;:\[\]\(\).])|([\.]{2,})/u', $filename)) {
             header('HTTP/1.1 400 Invalid file name.');
-            exit;
+            throw new Exception(__('无效文件名。'));
         }
 
         // 验证扩展名
         if (!in_array(strtolower(pathinfo($filename, PATHINFO_EXTENSION)), $this->ext)) {
             header('HTTP/1.1 400 Invalid extension.');
-            exit;
+            throw new Exception(__('无效拓展名。'));
         }
     }
 
