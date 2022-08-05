@@ -24,7 +24,7 @@ class Uploader
     private string $module_dir = '';
     private string $module_name = '';
     private array $accepted_origins = ['http://localhost', 'http://192.168.1.1', 'http://127.0.0.1'];
-    private array $ext = ['gif', 'jpg', 'png'];
+    private array $ext = ['gif', 'jpg', 'png','jpeg'];
 
     function checkDomain(){
         if (isset($_SERVER['HTTP_ORIGIN'])) {
@@ -134,7 +134,7 @@ class Uploader
             $result[] = $this->saveFile($_FILES['file']['tmp_name'], $filename);
         } else {
             foreach ($_FILES as $FILE) {
-                $filename = $FILE['tmp_name'];
+                $filename = $FILE['name'];
                 $result[] = $this->saveFile($FILE['tmp_name'], $filename);
             }
         }
