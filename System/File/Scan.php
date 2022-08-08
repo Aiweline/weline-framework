@@ -146,4 +146,28 @@ class Scan
         # done
         return $contents;
     }
+
+    function globFile($pattern_dir, &$files=[], string $ext = '.php', string $remove_path = '',string $replace_path='', bool $remove_ext = false, bool $class_path = false)
+    {
+        foreach (glob($pattern_dir) as $file) {
+            if (is_dir($file)) {
+                $dir = explode(DS, $file);
+                $this->globFile($file . DS . '*', $files,$ext, $remove_path,$replace_path, $remove_ext, $class_path);
+            }
+            if (str_ends_with($file, $ext)) {
+                if ($remove_path) {
+                    $file = str_replace($remove_path, $replace_path, $file);
+                }
+                if ($remove_ext) {
+                    $file = rtrim($file, $ext);
+                    $file = rtrim($file, strtoupper($ext));
+                }
+                if ($class_path) {
+                    $file = str_replace(DS, '\\', $file);
+                }
+                $files[] = $file;
+            }
+        }
+        return $files;
+    }
 }

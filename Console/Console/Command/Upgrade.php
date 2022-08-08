@@ -7,7 +7,7 @@
  * 论坛：https://bbs.aiweline.com
  */
 
-namespace Weline\Framework\Console\Command;
+namespace Weline\Framework\Console\Console\Command;
 
 use Weline\Framework\App\System;
 use Weline\Framework\App\Env;
@@ -43,8 +43,8 @@ class Upgrade extends CommandAbstract
     )
     {
         $this->printer = $printer;
-        $this->system = $system;
-        $this->scan = $scan;
+        $this->system  = $system;
+        $this->scan    = $scan;
         $this->command = $command;
     }
 
@@ -94,7 +94,7 @@ class Upgrade extends CommandAbstract
         /**@var $file \Weline\Framework\System\File\Io\File */
         $file = ObjectManager::getInstance(\Weline\Framework\System\File\Io\File::class);
         $file->open(Env::path_COMMANDS_FILE, $file::mode_w_add);
-        $text = '<?php return ' . var_export($commands, true) . ';';
+        $text = '<?php return ' . w_var_export($commands, true) . ';';
         $file->write($text);
         $file->close();
         $this->printer->printList($commands);
@@ -137,17 +137,11 @@ class Upgrade extends CommandAbstract
 
         # 模组命令
         $active_modules = Env::getInstance()->getActiveModules();
-        $command_files = [];
+        $command_files  = [];
         foreach ($active_modules as $module_name => $module) {
             $pattern = $module['base_path'] . 'Console' . DS . '*';
-            $files = [];
+            $files   = [];
             $this->scan->globFile($pattern, $files, '.php', $module['base_path'], '', true, true);
-            $command_files[$module_name] = [
-                'base_path' => $module['base_path'],
-                'classs' => $files,
-                'namespace' => $module['namespace_path'],
-                'tip' => 'module#' . $module_name,
-            ];
             foreach ($files as $file) {
                 $class = $module['namespace_path'] . '\\' . $file;
                 // 排除非框架系统命令类
@@ -157,9 +151,15 @@ class Upgrade extends CommandAbstract
                         if ($command_class instanceof CommandInterface) {
                             $file_array = explode('\\', $file);
                             array_shift($file_array);
-                            $file = implode(':', $file_array);
+                            $file    = implode(':', $file_array);
                             $command = str_replace('\\', ':', strtolower($file));
-                            $commands['module#' . $module_name][$command] = $command_class->getTip();
+                            array_pop($file_array);
+                            $comamnd_prefix                                           = strtolower(implode(':', $file_array));
+                            $commands[$comamnd_prefix . '#' . $module_name][$command] = [
+                                'tip'   => $command_class->getTip(),
+                                'class' => $class,
+                                'type'  => 'module'
+                            ];
                         } else {
                             if (DEV && CLI) {
                                 $this->printer->warning(__('命令类：%1 必须继承：%2', [$class, CommandInterface::class]));
@@ -174,7 +174,7 @@ class Upgrade extends CommandAbstract
         # 框架命令
         $framework_files = [];
         $this->scan->globFile(
-            Env::framework_path . '*'.DS.'Console'.DS.'*',
+            Env::framework_path . '*' . DS . 'Console' . DS . '*',
             $framework_files,
             '.php',
             Env::framework_path,
@@ -193,9 +193,15 @@ class Upgrade extends CommandAbstract
                         array_shift($class_array);
                         $framework_module = array_shift($class_array);
                         array_shift($class_array);
-                        $class = implode(':', $class_array);
-                        $command = str_replace('\\', ':', strtolower($class));
-                        $commands['system#Weline_Framework_'.$framework_module][$command] = $command_class->getTip();
+                        $command = implode(':', $class_array);
+                        $command = str_replace('\\', ':', strtolower($command));
+                        array_pop($class_array);
+                        $comamnd_prefix                                                                 = strtolower(implode(':', $class_array));
+                        $commands[$comamnd_prefix . '#Weline_Framework_' . $framework_module][$command] = [
+                            'tip'   => $command_class->getTip(),
+                            'class' => $class,
+                            'type'  => 'framework'
+                        ];
                     } else {
                         if (DEV && CLI) {
                             $this->printer->warning(__('命令类：%1 必须继承：%2', [$class, CommandInterface::class]));

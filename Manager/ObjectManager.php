@@ -132,7 +132,7 @@ class ObjectManager implements ManagerInterface
 //            p($arguments);
 //        }
         $refClass                  = self::$reflections[$class] ?? self::$reflections[$class] = new ReflectionClass($new_class);
-
+        if($refClass->isAbstract())throw new Exception(__('抽象类无法被实例化：%1',$class));
         self::$reflections[$class] = $refClass;
 //        p($refClass->getAttributes());
         $new_object           = $refClass->newInstanceArgs($arguments);

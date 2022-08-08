@@ -205,11 +205,17 @@ COMMAND_LIST;
             }
             if (is_array($datum)) {
                 foreach ($datum as $datum_key => $datum_value) {
-                    if (is_object($datum_value)) {
-                        $datum_value = json_encode($datum_value);
-                    }
-                    if (is_array($datum_value)) {
-                        $datum_value = json_encode($datum_value);
+                    if(!is_string($datum_value)){
+                        if(isset($datum_value['tip'])){
+                            $datum_value = $datum_value['tip'];
+                        }else{
+                            if (is_object($datum_value)) {
+                                $datum_value = json_encode($datum_value);
+                            }
+                            if (is_array($datum_value)) {
+                                $datum_value = json_encode($datum_value);
+                            }
+                        }
                     }
                     $doc_tmp .= '-' . str_pad($this->colorize($datum_key, self::SUCCESS), $pad_length) . $this->colorize($flag . ' ' . $datum_value, self::NOTE) . PHP_EOL;
                 }

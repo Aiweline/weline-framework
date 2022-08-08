@@ -109,7 +109,7 @@ class Cli extends CliAbstract
         $arg0 = strtolower(trim($this->argv[0]));
         if ($arg0 === 'command:upgrade') {
             try {
-                ObjectManager::getInstance(\Weline\Framework\Console\Command\Upgrade::class)->execute();
+                ObjectManager::getInstance(\Weline\Framework\Console\Console\Command\Upgrade::class)->execute();
             } catch (Exception $exception) {
                 $this->printer->error($exception->getMessage());
                 exit();
@@ -121,21 +121,12 @@ class Cli extends CliAbstract
         }
 
         // 检查命令
-        $command_path = '';
+        $command_class = '';
         foreach ($commands as $group => $group_commands) {
-            if (array_key_exists($arg0, $group_commands)) {
+            if (isset($group_commands[$arg0])&& $command_data = $group_commands[$arg0]) {
                 $group_arr    = explode('#', $group);
-                $command_path = array_pop($group_arr);
-            }
-        }
-
-        if ($command_path) {
-            // 获取类的真实路径和命名空间位置
-            $command_class_path = $command_path . $this->getCommandPath($arg0);
-            $command_real_path  = APP_CODE_PATH . str_replace('\\', DS, $command_class_path) . '.php';
-            // TODO 等待编辑处理composer环境下的命令无效问题
-            if (file_exists($command_real_path)) {
-                return ['class' => $command_class_path, 'command' => $arg0];
+                $command_class = $command_data['class'];
+                return ['class' => $command_class, 'command' => $arg0];
             }
         }
 
@@ -144,27 +135,9 @@ class Cli extends CliAbstract
         foreach ($recommendCommands as $recommendCommand) {
             $commands = array_merge($commands, $recommendCommand);
         }
-        if (count($commands) === 1) {
-            $command            = array_shift($commands);
-            $command_keys       = array_keys($command);
-            $command            = array_shift($command_keys);
-            $group_keys         = array_keys($recommendCommands);
-            $group              = array_shift($group_keys);
-            $group_arr          = explode('#', $group);
-            $command_path       = Register::composerNameConvertToNamespace(array_pop($group_arr));
-            $command_class_path = $command_path . $this->getCommandPath($command);
-
-            $command_real_path = APP_CODE_PATH . str_replace('\\', DS, $command_class_path) . '.php';
-            if (file_exists($command_real_path)) {
-                return ['class' => $command_class_path, 'command' => $command];
-            }
-
-            $command_real_path = VENDOR_PATH . str_replace('\\', DS, $command_class_path) . '.php';
-            if (file_exists($command_real_path)) {
-                return ['class' => $command_class_path, 'command' => $command];
-            }
-            if (DEV) {
-                throw new ConsoleException('命令文件缺失：' . $command_real_path);
+        if (count($commands) === 1&&$command = $commands[0]){
+            foreach ($command as $c=>$data){
+                return ['class' => $data['class'], 'command' => $c];
             }
         }
         foreach ($recommendCommands as $key => &$command) {
