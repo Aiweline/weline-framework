@@ -30,6 +30,11 @@ class File extends CacheDriverAbstract
      */
     public function __init()
     {
+        if(IS_WIN){
+            $this->config['path'] = str_replace('/', DS, $this->config['path']);
+        }else {
+            $this->config['path'] = str_replace('\\', DS, $this->config['path']);
+        }
         $this->cachePath = $this->config['path'] ? BP . rtrim($this->config['path'], DS) . DS . $this->identity . DS : BP . 'var' . DS . 'cache' . DS . $this->identity . DS;
         if (!is_dir($this->cachePath)) {
             mkdir($this->cachePath, 0775, true);
@@ -76,8 +81,7 @@ class File extends CacheDriverAbstract
             return false;
         }
         $key       = $this->buildKey($key);
-        $cacheFile = $this->cachePath . $key;
-        $this->processCacheFile($cacheFile);
+        $cacheFile = $this->processCacheFile($this->cachePath . $key);
         // 用修改时间标记过期时间，存入时会做相应的处理
         return @filemtime($cacheFile) > time();
     }
@@ -106,7 +110,7 @@ class File extends CacheDriverAbstract
         # 错误阻止并发送报告
 
         // file_put_contents用来将序列化之后的内容写入文件，LOCK_EX表示写入时会对文件加锁
-        $this->processCacheFile($cacheFile);
+        $cacheFile = $this->processCacheFile($cacheFile);
         if (@file_put_contents($cacheFile, $value, LOCK_EX) !== false) {
             if ($duration <= 0) {
                 // 不设置过期时间，设置为一年，这是因为用文件的修改时间来做过期时间造成的
@@ -157,8 +161,7 @@ class File extends CacheDriverAbstract
     public function delete($key): bool
     {
         $key       = $this->buildKey($key);
-        $cacheFile = $this->cachePath . $key;
-        $this->processCacheFile($cacheFile);
+        $cacheFile = $this->processCacheFile($this->cachePath . $key);
         // unlink用来删除文件
         return unlink($cacheFile);
     }
@@ -201,7 +204,7 @@ class File extends CacheDriverAbstract
     public function clear(): bool
     {
         // 打开cache文件所在目录
-        $this->processCacheFile($this->cachePath . DS . 'tmp');
+        $this->processCacheFile($this->cachePath);
         if ($dir = @dir($this->cachePath)) {
             // 列出目录中的所有文件
             while (($file = $dir->read()) !== false) {
@@ -228,6 +231,9 @@ class File extends CacheDriverAbstract
     public function processCacheFile(string $cacheFile): string
     {
         if (!file_exists($cacheFile)) {
+            if (!is_dir($this->cachePath)) {
+                mkdir($this->cachePath, 0775, true);
+            }
             touch($cacheFile);
             chmod($cacheFile, 0755);
         }
