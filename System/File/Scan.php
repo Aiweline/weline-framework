@@ -151,7 +151,6 @@ class Scan
     {
         foreach (glob($pattern_dir) as $file) {
             if (is_dir($file)) {
-                $dir = explode(DS, $file);
                 $this->globFile($file . DS . '*', $files,$ext, $remove_path,$replace_path, $remove_ext, $class_path);
             }
             if (str_ends_with($file, $ext)) {
@@ -159,8 +158,8 @@ class Scan
                     $file = str_replace($remove_path, $replace_path, $file);
                 }
                 if ($remove_ext) {
-                    $file = rtrim($file, $ext);
-                    $file = rtrim($file, strtoupper($ext));
+                    $file = str_replace($ext,'',$file );
+                    $file = str_replace(strtoupper($ext),'',$file );
                 }
                 if ($class_path) {
                     $file = str_replace(DS, '\\', $file);
