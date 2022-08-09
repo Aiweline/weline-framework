@@ -9,7 +9,7 @@ declare(strict_types=1);
  * 论坛：https://bbs.aiweline.com
  */
 
-namespace Weline\Framework\Console\Dev\Tool;
+namespace Weline\Framework\Console\Console\Dev\Tool;
 
 use Weline\Framework\Output\Cli\Printing;
 

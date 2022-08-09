@@ -7,7 +7,7 @@
  * 论坛：https://bbs.aiweline.com
  */
 
-namespace Weline\Framework\Console\Dev;
+namespace Weline\Framework\Console\Console\Dev;
 
 use Weline\Framework\Manager\ObjectManager;
 

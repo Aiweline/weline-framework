@@ -6,7 +6,7 @@
  * 论坛：https://bbs.aiweline.com
  */
 
-namespace Weline\Framework\Console\Dev\Tool\PhpCsFixer;
+namespace Weline\Framework\Console\Console\Dev\Tool\PhpCsFixer;
 
 use Weline\Framework\App\Env;
 use Weline\Framework\Output\Cli\Printing;
