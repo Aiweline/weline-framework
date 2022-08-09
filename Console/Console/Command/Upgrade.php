@@ -137,7 +137,6 @@ class Upgrade extends CommandAbstract
 
         # 模组命令
         $active_modules = Env::getInstance()->getActiveModules();
-        $command_files  = [];
         foreach ($active_modules as $module_name => $module) {
             $pattern = $module['base_path'] . 'Console' . DS . '*';
             $files   = [];
@@ -154,8 +153,8 @@ class Upgrade extends CommandAbstract
                             $file    = implode(':', $file_array);
                             $command = str_replace('\\', ':', strtolower($file));
                             array_pop($file_array);
-                            $comamnd_prefix                                           = strtolower(implode(':', $file_array));
-                            $commands[$comamnd_prefix . '#' . $module_name][$command] = [
+                            $command_prefix                                           = strtolower(implode(':', $file_array));
+                            $commands[$command_prefix . '#' . $module_name][$command] = [
                                 'tip'   => $command_class->getTip(),
                                 'class' => $class,
                                 'type'  => 'module'
@@ -196,8 +195,8 @@ class Upgrade extends CommandAbstract
                         $command = implode(':', $class_array);
                         $command = str_replace('\\', ':', strtolower($command));
                         array_pop($class_array);
-                        $comamnd_prefix                                                                 = strtolower(implode(':', $class_array));
-                        $commands[$comamnd_prefix . '#Weline_Framework_' . $framework_module][$command] = [
+                        $command_prefix                                                                 = strtolower(implode(':', $class_array));
+                        $commands[$command_prefix . '#Weline_Framework_' . $framework_module][$command] = [
                             'tip'   => $command_class->getTip(),
                             'class' => $class,
                             'type'  => 'framework'
