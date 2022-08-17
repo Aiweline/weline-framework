@@ -32,10 +32,10 @@ class MessageManager
         $this->session = $session;
     }
 
-    public function addError(string $msg = '', $title = '')
+    public function addError(string $msg = '',string $class = 'danger',string $title = '')
     {
         $title = $title ?: __('错误！');
-        $this->session->addData('system-message', $this->processMessage($msg, $title, 'error'));
+        $this->session->addData('system-message', $this->processMessage($msg, $title, $class));
         $this->session->setData('has-error', '1');
         return $this;
     }
@@ -45,10 +45,10 @@ class MessageManager
         return (bool)$this->session->getData('has-error');
     }
 
-    public function addException(\Exception $exception)
+    public function addException(\Exception $exception,string $class = 'warning')
     {
         $msg = $exception->getMessage();
-        $this->session->addData('system-message', $this->processMessage($msg, __('异常警告！'), 'error'));
+        $this->session->addData('system-message', $this->processMessage($msg, __('异常警告！'), $class));
         $this->session->setData('has-exception', '1');
         return $this;
     }
@@ -58,10 +58,10 @@ class MessageManager
         return (bool)$this->session->getData('has-exception');
     }
 
-    public function addSuccess(string $msg = '', $title = '')
+    public function addSuccess(string $msg = '',string $class = 'success',string  $title = '')
     {
         $title = $title ?: __('操作成功！');
-        $this->session->addData('system-message', $this->processMessage($msg, $title, 'success'));
+        $this->session->addData('system-message', $this->processMessage($msg, $title, $class));
         $this->session->setData('has-success', '1');
         return $this;
     }
@@ -71,10 +71,10 @@ class MessageManager
         return (bool)$this->session->getData('has-success');
     }
 
-    public function addWarning(string $msg = '', $title = '')
+    public function addWarning(string $msg = '',string $class = 'warning',string $title = '')
     {
         $title = $title ?: __('警告！');
-        $this->session->addData('system-message', $this->processMessage($msg, $title, 'warning'));
+        $this->session->addData('system-message', $this->processMessage($msg, $title, $class));
         $this->session->setData('has-warning', '1');
         return $this;
     }
@@ -84,10 +84,10 @@ class MessageManager
         return (bool)$this->session->getData('has-warning');
     }
 
-    public function addNotes(string $msg = '', $title = '')
+    public function addNotes(string $msg = '',string $class = 'notes',string $title = '')
     {
         $title = $title ?: __('提示！');
-        $this->session->addData('system-message', $this->processMessage($msg, $title, 'notes'));
+        $this->session->addData('system-message', $this->processMessage($msg, $title, $class));
         $this->session->setData('has-notes', '1');
         return $this;
     }

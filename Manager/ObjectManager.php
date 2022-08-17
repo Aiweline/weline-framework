@@ -105,9 +105,9 @@ class ObjectManager implements ManagerInterface
 //            }
             return $obj;
         }
-
         // 缓存对象读取
         if ($cache && !CLI && $shared && $cache_class_object = self::getCache()->get($class)) {
+
             self::$instances[$class] = self::initClassInstance($class, $cache_class_object);
             return self::$instances[$class];
         }

@@ -169,6 +169,7 @@ if (!function_exists('framework_view_process_block')) {
                 throw new \Weline\Framework\App\Exception(__('framework.view.block.class_not_found %1',$data['class']));
             }
         }
+
         $block_class = str_replace(' ', '', trim($data['class']));
         # 处理参数
         array_shift($data);
@@ -196,7 +197,7 @@ if (!function_exists('framework_view_process_block')) {
 //                p(ObjectManager::make($block_class, ['data' => $params])->render());
 //                return $result;
 //            }
-            if (!$result) {
+            if (empty($result)) {
                 $result = ObjectManager::make($block_class, ['data' => $params])->render();
                 $cache->set($cache_key, $result, $cache_time);
             }
