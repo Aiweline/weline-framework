@@ -14,9 +14,14 @@ use Weline\I18n\Model\I18n;
 
 class Cookie
 {
-    public function setCookie(string $key, string $value)
+    static function set(string $key, string $value, $options = [])
     {
-        setcookie($key, $value);
+        setcookie($key, $value, $options);
+    }
+
+    static function get(string $key, $default = null)
+    {
+        return $_COOKIE[$key] ?? $default;
     }
 
     /**
@@ -34,10 +39,10 @@ class Cookie
         $lang = $_COOKIE['WELINE-USER-LANG'] ?? null;
         // 默认网站语言
         if (empty($lang)) {
-            $lang = $_COOKIE['WELINE-WEBSITE-LANG'] ?? 'zh_Hans_CN';
-            if(!CLI){
-                setcookie('WELINE-WEBSITE-LANG',$lang);
-                setcookie('WELINE-USER-LANG',$lang);
+            $lang = self::get('WELINE-WEBSITE-LANG', 'zh_Hans_CN');
+            if (!CLI) {
+                self::set('WELINE-WEBSITE-LANG', $lang);
+                self::set('WELINE-USER-LANG', $lang);
             }
         }
         return $lang;
