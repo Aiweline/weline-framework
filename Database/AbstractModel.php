@@ -828,6 +828,7 @@ abstract class AbstractModel extends DataObject
 
     function setItems(array $items): self
     {
+        $this->items = [];
         foreach ($items as $item) {
             if ($item instanceof AbstractModel) {
                 $this->addItem($item);
