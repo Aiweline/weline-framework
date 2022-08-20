@@ -84,8 +84,10 @@ class Uploader
      * 参数区：
      *
      * @param string $filename
+     *
+     * @throws Exception
      */
-    public function checkFilename(string $filename)
+    public function checkFilename(string $filename): void
     {
         // 简单的过滤一下文件名是否合格
         if (preg_match('/[\x{4e00}-\x{9fa5}:：,，。…、~`＠＃￥％＆×＋｜｛｝＝－＊＾＄～｀!@#$%^&*()\+=（）！￥{}【】\[\]\|\"\'’‘“”；;《》<>\?\？\·]/u', $filename, $matches)) {
