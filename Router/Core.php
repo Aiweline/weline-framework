@@ -328,7 +328,7 @@ class Core
     public function route()
     {
         # 全页缓存
-        $cache_key = 'router_route_fpc_cache_key_' . $this->request->getUri();
+        $cache_key =  $this->cache->buildWithRequestKey('router_route_fpc_cache_key_');
         if (PROD && $html = $this->cache->get($cache_key)) {
             return $html;
         }
