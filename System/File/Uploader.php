@@ -85,17 +85,17 @@ class Uploader
      *
      * @param string $filename
      */
-    private function checkFilename(string $filename)
+    public function checkFilename(string $filename)
     {
         // 简单的过滤一下文件名是否合格
-        if (preg_match('/([^\w\s\d\-_~,;:\[\]\(\).])|([\.]{2,})/u', $filename)) {
-            header('HTTP/1.1 400 Invalid file name.');
+        if (preg_match('/[\x{4e00}-\x{9fa5}:：,，。…、~`＠＃￥％＆×＋｜｛｝＝－＊＾＄～｀!@#$%^&*()\+=（）！￥{}【】\[\]\|\"\'’‘“”；;《》<>\?\？\·]/u', $filename,$matches)) {
+            if(!CLI)header('HTTP/1.1 400 Invalid file name.');
             throw new Exception(__('无效文件名。'));
         }
 
         // 验证扩展名
         if (!in_array(strtolower(pathinfo($filename, PATHINFO_EXTENSION)), $this->ext)) {
-            header('HTTP/1.1 400 Invalid extension.');
+            if(!CLI)header('HTTP/1.1 400 Invalid extension.');
             throw new Exception(__('无效拓展名。'));
         }
     }
@@ -178,7 +178,7 @@ class Uploader
         }
         if (move_uploaded_file($tmp_file, $filename)) {
             $filename = str_replace(BP, '', $filename);
-            return str_replace('\\', '/', $filename);
+            return '/'.str_replace('\\', '/', $filename);
         } else {
             throw new Exception(__('文件上传失败:%1 ', $filename));
         }
