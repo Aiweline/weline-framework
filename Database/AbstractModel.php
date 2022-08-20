@@ -99,10 +99,10 @@ abstract class AbstractModel extends DataObject
     # Flag
     private bool $use_cache = false;
 
-//    public function __sleep()
-//    {
-//        return array('table', 'origin_table_name', 'items');
-//    }
+    public function __sleep()
+    {
+        return array('table','module_name','_suffix','_primary_key', 'origin_table_name');
+    }
 
     public function __wakeup()
     {
@@ -664,6 +664,9 @@ abstract class AbstractModel extends DataObject
             }
 
             $query_data = $query->$method(... $args);
+            if ($query_data instanceof QueryInterface) {
+                $this->setQuery($query_data);
+            }
             $this->setQueryData($query_data);
             if ('fetchOrigin' === $method) {
                 return $query_data;
@@ -693,9 +696,6 @@ abstract class AbstractModel extends DataObject
             ];
             if (in_array($method, $query_methods)) {
                 return $query_data;
-            }
-            if ($query_data instanceof QueryInterface) {
-                $this->setQuery($query_data);
             }
             return $this;
         }
