@@ -120,9 +120,10 @@ class Uploader
         if (!$module_name) {
             $module_name = $this->getRequest()->getModuleName();
         }
-        if ($module_dir) {
-            $this->setModuleDir($module_dir);
+        if (!$module_dir) {
+            $module_dir = str_replace('/', DS, $this->getRequest()->getRouterData('class/controller_name'));
         }
+        $this->setModuleDir($module_dir);
         if ($base_dir) {
             $this->setBaseUploaderDir($base_dir);
         }
