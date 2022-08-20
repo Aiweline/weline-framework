@@ -25,7 +25,9 @@ class BackendController extends PcController
     public function __init()
     {
         $this->cache = $this->getControllerCache();
-        $this->getSession(BackendSession::class);
+        if(!isset($this->session)){
+            $this->session = ObjectManager::getInstance(BackendSession::class);
+        }
         parent::__init();
     }
 
@@ -33,7 +35,7 @@ class BackendController extends PcController
     {
         parent::isAllowed();
         # 验证除了登录页面以外的所有地址需要登录 FIXME 处理无限跳转问题
-        if (!CLI and !$this->_session->isLogin()) {
+        if (!CLI and !$this->session->isLogin()) {
             $whitelist_url_cache_key = 'whitelist_url_cache_key';
             $whitelist_url           = $this->cache->get($whitelist_url_cache_key);
             if (!$whitelist_url) {

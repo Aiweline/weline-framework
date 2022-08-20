@@ -34,7 +34,7 @@ class Core
     private string $area_router;
 
     private bool $is_admin;
-    private bool $is_match;
+    private bool $is_match=false;
 
     private CacheInterface $cache;
 
