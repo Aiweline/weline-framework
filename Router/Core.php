@@ -34,6 +34,7 @@ class Core
     private string $area_router;
 
     private bool $is_admin;
+    private bool $is_match;
 
     private CacheInterface $cache;
 
@@ -94,11 +95,11 @@ class Core
             return $this->route();
         }
 
-        if ($pc_result = $this->Pc($url)) {
+        if (($pc_result = $this->Pc($url))||$this->is_match) {
             return $pc_result;
         }
         // API
-        if ($api_result = $this->Api($url)) {
+        if (($api_result = $this->Api($url))||$this->is_match) {
             return $api_result;
         }
         // 非开发模式（匹配不到任何路由将报错）
@@ -221,6 +222,7 @@ class Core
      */
     public function Pc(string $url)
     {
+        $in = false;
         $url         = strtolower($url);
         $is_pc_admin = $this->request_area === \Weline\Framework\Controller\Data\DataInterface::type_pc_BACKEND;
         // 检测api路由区域
@@ -347,7 +349,7 @@ class Core
         /** Get output buffer. */
         # FIXME 是否显示模板路径
         $this->cache->set($cache_key, $result, 5);
-
+        $this->is_match = true;
         return $result;
     }
 }
