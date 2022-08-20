@@ -88,14 +88,14 @@ class Uploader
     public function checkFilename(string $filename)
     {
         // 简单的过滤一下文件名是否合格
-        if (preg_match('/[\x{4e00}-\x{9fa5}:：,，。…、~`＠＃￥％＆×＋｜｛｝＝－＊＾＄～｀!@#$%^&*()\+=（）！￥{}【】\[\]\|\"\'’‘“”；;《》<>\?\？\·]/u', $filename,$matches)) {
-            if(!CLI)header('HTTP/1.1 400 Invalid file name.');
+        if (preg_match('/[\x{4e00}-\x{9fa5}:：,，。…、~`＠＃￥％＆×＋｜｛｝＝－＊＾＄～｀!@#$%^&*()\+=（）！￥{}【】\[\]\|\"\'’‘“”；;《》<>\?\？\·]/u', $filename, $matches)) {
+            if (!CLI) header('HTTP/1.1 400 Invalid file name.');
             throw new Exception(__('无效文件名。'));
         }
 
         // 验证扩展名
         if (!in_array(strtolower(pathinfo($filename, PATHINFO_EXTENSION)), $this->ext)) {
-            if(!CLI)header('HTTP/1.1 400 Invalid extension.');
+            if (!CLI) header('HTTP/1.1 400 Invalid extension.');
             throw new Exception(__('无效拓展名。'));
         }
     }
@@ -134,11 +134,11 @@ class Uploader
         if (1 === count($_FILES)) {
             $file     = array_pop($_FILES);
             $filename = $file['name'];
-            $result   = $this->saveFile($file['tmp_name'], $filename);
+            if ($filename) $result = $this->saveFile($file['tmp_name'], $filename);
         } else {
             foreach ($_FILES as $FILE) {
                 $filename = $FILE['name'];
-                $result[] = $this->saveFile($FILE['tmp_name'], $filename);
+                if ($filename) $result[] = $this->saveFile($FILE['tmp_name'], $filename);
             }
         }
         return $result;
@@ -178,7 +178,7 @@ class Uploader
         }
         if (move_uploaded_file($tmp_file, $filename)) {
             $filename = str_replace(BP, '', $filename);
-            return '/'.str_replace('\\', '/', $filename);
+            return '/' . str_replace('\\', '/', $filename);
         } else {
             throw new Exception(__('文件上传失败:%1 ', $filename));
         }
