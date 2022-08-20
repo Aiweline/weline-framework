@@ -263,7 +263,7 @@ class Taglib
                             return "<?php if(empty({$name}))echo '" . $template->tmp_replace(trim($content_arr[1] ?? '')) . "'?>";
                         case 'tag':
                             if (!isset($attributes['name'])) {
-                                throw new TemplateException(__('empty标签需要设置name属性！例如：%1', htmlspecialchars('<empty name="catalogs"><li>没有数据</li></empty>')));
+                                throw new TemplateException(__('empty标签需要设置name属性！例如：%1', htmlentities('<empty name="catalogs"><li>没有数据</li></empty>')));
                             }
                             $name = $this->varParser($this->checkVar($attributes['name']));
                             return '<?php if(empty(' . $name . ')): ?>' . $tag_data[2] . '<?php endif;?>';
@@ -287,7 +287,7 @@ class Taglib
                             return "<?php if(isset($name) && !empty({$name}))echo '" . $template->tmp_replace(trim($content_arr[1] ?? '')) . "'?>";
                         case 'tag':
                             if (!isset($attributes['name'])) {
-                                throw new TemplateException(__('empty标签需要设置name属性！例如：%1', htmlspecialchars('<empty name="catalogs"><li>没有数据</li></empty>')));
+                                throw new TemplateException(__('empty标签需要设置name属性！例如：%1', htmlentities('<empty name="catalogs"><li>没有数据</li></empty>')));
                             }
                             $name = $this->varParser($this->checkVar($attributes['name']));
                             return '<?php if(isset($name) && !empty(' . $name . ')): ?>' . $tag_data[2] . '<?php endif;?>';
@@ -622,7 +622,7 @@ class Taglib
                 }
             }
 //            foreach ($tag_config_patterns as &$tag_config_pattern) {
-//                $tag_config_pattern = htmlspecialchars($tag_config_pattern);
+//                $tag_config_pattern = htmlentities($tag_config_pattern);
 //            }
 //            if($tag=='if'){
 //                p( $tag_config_patterns);
