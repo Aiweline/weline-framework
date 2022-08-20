@@ -24,9 +24,10 @@ class Uploader
     private string $module_dir = '';
     private string $module_name = '';
     private array $accepted_origins = ['http://localhost', 'http://192.168.1.1', 'http://127.0.0.1'];
-    private array $ext = ['gif', 'jpg', 'png','jpeg'];
+    private array $ext = ['gif', 'jpg', 'png', 'jpeg'];
 
-    function checkDomain(){
+    function checkDomain()
+    {
         if (isset($_SERVER['HTTP_ORIGIN'])) {
             // 验证来源是否在白名单内
             if (in_array($_SERVER['HTTP_ORIGIN'], $this->accepted_origins)) {
@@ -129,9 +130,10 @@ class Uploader
             $this->setModuleName(str_replace('_', DS, $module_name));
         }
         $result = [];
-        if (isset($_FILES['file']['tmp_name'])) {
-            $filename = $_FILES['file']['name'];
-            $result = $this->saveFile($_FILES['file']['tmp_name'], $filename);
+        if (1 === count($_FILES)) {
+            $file     = array_pop($_FILES);
+            $filename = $file['name'];
+            $result   = $this->saveFile($file['tmp_name'], $filename);
         } else {
             foreach ($_FILES as $FILE) {
                 $filename = $FILE['name'];
