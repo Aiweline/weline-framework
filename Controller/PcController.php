@@ -165,7 +165,11 @@ class PcController extends Core
         }
         $controller_class_name = $this->_request->getRouterData('class/controller_name');
         if ($fileName === null) {
-            $fileName = $controller_class_name . '/' . $this->_request->getRouterData('class/method');
+            if (in_array(strtoupper($this->_request->getRouterData('class/method')), $this->_request::METHODS)) {
+                $fileName = $controller_class_name;
+            } else {
+                $fileName = $controller_class_name . '/' . $this->_request->getRouterData('class/method');
+            }
         } elseif (is_bool(strpos($fileName, '/')) || is_bool(strpos($fileName, '\\'))) {
             $fileName = $controller_class_name . DS . $fileName;
         }
@@ -185,14 +189,14 @@ class PcController extends Core
             if ($data) {
                 $data = [
                     'data' => $data,
-                    'msg'    => 'sucess',
-                    'code'   => 200
+                    'msg'  => 'sucess',
+                    'code' => 200
                 ];
             } else {
                 $data = [
                     'data' => $data,
-                    'msg'    => 'error',
-                    'code'   => 400
+                    'msg'  => 'error',
+                    'code' => 400
                 ];
             }
         }
