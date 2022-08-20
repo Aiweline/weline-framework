@@ -42,7 +42,7 @@ class CacheFactory implements CacheFactoryInterface
         $this->identity = $identity;
         $this->tip      = $tip;
         $this->keep     = $permanently;
-        $this->status   = $permanently;
+        $this->status   = $this->config['status'][$identity]??$permanently;
     }
 
     public function isKeep(): bool
