@@ -590,11 +590,10 @@ class Taglib
 
     public function tagReplace(Template &$template, string &$content, string &$fileName = '')
     {
-        # FIXME 可以将所有标签相对应的正则一次性存到属性，节省循环调用多次处理的时间
         # 替换{{key}}标签
         preg_match_all("/\{\{([\s\S]*?)\}\}/", $content, $matches, PREG_SET_ORDER);
         foreach ($matches as $key => $value) {
-            $content = str_replace($value[0], "<?={$this->varParser(trim($value[1]))};?>", $content);
+            $content = str_replace($value[0], "<?={$this->varParser(trim($value[1]))}??'';?>", $content);
         }
         # 系统自带的标签
         $tags = $this->getTags($template, $fileName, $content);

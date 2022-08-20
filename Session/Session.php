@@ -31,7 +31,6 @@ class Session implements SessionInterface
         }
     }
 
-
     public function __init()
     {
         if (isset($_SERVER['REQUEST_URI']) && !isset($this->session)) {

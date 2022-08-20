@@ -18,6 +18,8 @@ use Weline\Framework\Event\EventsManager;
 use Weline\Framework\Http\Request;
 use Weline\Framework\Manager\MessageManager;
 use Weline\Framework\Manager\ObjectManager;
+use Weline\Framework\Session\Session;
+use Weline\Framework\Session\SessionManager;
 use Weline\Framework\View\Data\DataInterface;
 use Weline\Framework\View\Template;
 use ReflectionObject;
@@ -60,8 +62,9 @@ class PcController extends Core
 
     public function isAllowed(): void
     {
-        # FIXME 存储需要验证的URL才合理 放入SESSION不合理
-        if (!empty($form_key_paths_str = $this->getSession()->getData('form_key_paths')) && !empty($form_key = $this->getSession()->getData('form_key'))) {
+        /**@var Session $session */
+        $session = ObjectManager::getInstance(Session::class);
+        if (!empty($form_key_paths_str = $session->getData('form_key_paths')) && !empty($form_key = $session->getData('form_key'))) {
             $form_key_paths = explode(',', $form_key_paths_str);
             if (in_array($this->getRequest()->getUrl(), $form_key_paths) && ($form_key !== $this->getRequest()->getParam('form_key'))) {
                 $this->noRouter();
@@ -157,8 +160,11 @@ class PcController extends Core
      *
      * @return mixed
      */
-    protected function fetch(string $fileName = null): mixed
+    protected function fetch(string $fileName = null,array $data = []): mixed
     {
+        if($data){
+            $this->assign($data);
+        }
         # 如果指定了模板就直接读取
         if ($fileName && is_int(strpos($fileName, '::'))) {
             return $this->getTemplate()->fetch($fileName);

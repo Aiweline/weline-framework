@@ -21,7 +21,6 @@ class Core implements Data\DataInterface
     protected ObjectManager $_objectManager;
 
     protected Request $_request;
-    protected SessionInterface $_session;
 
     protected Printing $_debug;
     protected ?Url $_url = null;
@@ -43,13 +42,6 @@ class Core implements Data\DataInterface
         $this->getRequest();
     }
 
-    public function getSession(string $session_class_name = null): SessionInterface
-    {
-        if (!isset($this->_session)) {
-            $this->_session = $this->getObjectManager()->getInstance($session_class_name ?? Session::class);
-        }
-        return $this->_session;
-    }
 
     /**
      * @DESC          # 设置模块名
