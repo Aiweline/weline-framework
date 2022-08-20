@@ -114,7 +114,7 @@ class Uploader
      * @return array
      * @throws Exception
      */
-    public function saveFiles(string $module_name = '', string $module_dir = '', string $base_dir = ''): array
+    public function saveFiles(string $module_name = '', string $module_dir = '', string $base_dir = ''): array|string
     {
         if (!$module_name) {
             $module_name = $this->getRequest()->getModuleName();
@@ -131,7 +131,7 @@ class Uploader
         $result = [];
         if (isset($_FILES['file']['tmp_name'])) {
             $filename = $_FILES['file']['name'];
-            $result[] = $this->saveFile($_FILES['file']['tmp_name'], $filename);
+            $result = $this->saveFile($_FILES['file']['tmp_name'], $filename);
         } else {
             foreach ($_FILES as $FILE) {
                 $filename = $FILE['name'];
