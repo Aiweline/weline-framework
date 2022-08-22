@@ -132,11 +132,11 @@ class Template extends DataObject
         if (empty($this->view_dir)) {
             $this->view_dir = $this->_request->getRouterData('module_path') . DataInterface::dir . DS;
         }
-        $this->getData('title') ?? $this->setData('title', $this->_request->getModuleName());
+            $this->getData('title') ?? $this->setData('title', $this->_request->getModuleName());
 
-        $this->theme ?? $this->theme = Env::getInstance()->getConfig('theme', Env::default_theme_DATA);
-        $this->eventsManager ?? $this->eventsManager = ObjectManager::getInstance(EventsManager::class);
-        $this->viewCache ?? $this->viewCache = ObjectManager::getInstance(ViewCache::class)->create();
+            $this->theme ?? $this->theme = Env::getInstance()->getConfig('theme', Env::default_theme_DATA);
+            $this->eventsManager ?? $this->eventsManager = ObjectManager::getInstance(EventsManager::class);
+            $this->viewCache ?? $this->viewCache = ObjectManager::getInstance(ViewCache::class)->create();
 
         if (empty($this->statics_dir)) {
             $this->statics_dir = $this->getViewDir(DataInterface::view_STATICS_DIR);
@@ -434,7 +434,12 @@ class Template extends DataObject
         $hookers        = $hooker->getHook($name);
         $hooker_content = '';
         foreach ($hookers as $module => $hooker_file) {
-            $hooker_content .= "<!-- 来自模组 $module 的钩子实现代码 起-->" . $this->fetchTagHtml('hooks', $hooker_file) . "<!-- 来自模组 $module 的钩子实现代码 止-->";
+            if (DEV) {
+                $content = "<!-- 来自模组 $module 的钩子实现{$name}代码 起-->" . $this->fetchTagHtml('hooks', $hooker_file) . "<!-- 来自模组 $module 的钩子实现{$name}代码 止-->";;
+            } else {
+                $content = $this->fetchTagHtml('hooks', $hooker_file);
+            }
+            $hooker_content .= $content;
         }
         return $hooker_content;
     }
