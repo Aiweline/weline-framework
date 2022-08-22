@@ -192,7 +192,7 @@ if (!function_exists('framework_view_process_block')) {
             $request   = ObjectManager::getInstance(Request::class);
             $cache_key = $block_class. '_' . json_encode(array_merge($request->getParams(), $params));
             $result    = $cache->get($cache_key)?:'';
-//            if($block_class == 'Weline\Admin\Block\Page\Topnav'){
+//            if($block_class == 'Weline\Admin\Block\Backend\Page\Topnav'){
 //                p($result,1);
 //                p(ObjectManager::make($block_class, ['data' => $params])->render());
 //                return $result;
