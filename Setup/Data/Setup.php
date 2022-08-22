@@ -58,7 +58,7 @@ class Setup
             if (!isset($db_config['master'])) {
                 throw new DbException(__('请配置主数据库配置信息,或者主数据库配置信息设置错误') . (DEV ? '(' . $db_file . ')' : ''));
             }
-            $this->connection = $this->dbManager->create(
+            $this->connection = ObjectManager::getInstance(DbManagerFactory::class)->create(
                 $context->getModuleName(),
                 new ConfigProvider($db_config)
             );
@@ -66,7 +66,7 @@ class Setup
         } else {
             if ($this->master_connection) {
                 $this->connection = $this->master_connection;
-                return $this->master_connection;
+                return;
             }
             $this->master_connection = ObjectManager::getInstance(DbManagerFactory::class);
             $this->connection = $this->master_connection;
@@ -98,7 +98,7 @@ class Setup
      * 参数区：
      * @return Printing
      */
-    public function getPrinter(): Printing
+    public function getPrinter(): Printingg
     {
         return $this->printing;
     }
