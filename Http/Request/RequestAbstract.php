@@ -85,7 +85,7 @@ abstract class RequestAbstract extends DataObject
      */
     public function getRouter(): array
     {
-        return $this->getData('router');
+        return $this->getData('router')??[];
     }
 
     /**
