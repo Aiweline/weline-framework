@@ -77,7 +77,7 @@ interface CreateInterface extends TableInterface
      *
      * @return CreateInterface
      */
-    public function addIndex(string $type, string $name, array|string $column, string $comment = '', string $index_method = 'BTREE'): CreateInterface;
+    public function addIndex(string $type, string $name, array|string $column, string $comment = '', string $index_method = ''): CreateInterface;
 
     /**
      * @DESC          # 建表附加
