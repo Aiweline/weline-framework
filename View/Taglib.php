@@ -623,6 +623,14 @@ class Taglib
         foreach ($matches as $key => $value) {
             $content = str_replace($value[0], "<?={$this->varParser(trim($value[1]))}??'';?>", $content);
         }
+        # 非开发环境清除所有注释
+        if(PROD){
+            preg_match_all('/\<!--([\s\S]*?)-->/', $content, $matches, PREG_SET_ORDER);
+            foreach ($matches as $key => $value) {
+                $content = str_replace($value[0], '', $content);
+            }
+        }
+
         # 系统自带的标签
         $tags = $this->getTags($template, $fileName, $content);
         foreach ($tags as $tag => $tag_configs) {
