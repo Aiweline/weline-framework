@@ -35,7 +35,7 @@ class PcController extends Core
     {
         parent::__init();
         $this->isAllowed();
-        $this->assign($this->_request->getParams());
+        $this->assign($this->request->getParams());
         if (empty($this->controllerCache)) {
             $this->controllerCache = $this->getControllerCache();
         }
@@ -169,12 +169,12 @@ class PcController extends Core
         if ($fileName && is_int(strpos($fileName, '::'))) {
             return $this->getTemplate()->fetch($fileName);
         }
-        $controller_class_name = $this->_request->getRouterData('class/controller_name');
+        $controller_class_name = $this->request->getRouterData('class/controller_name');
         if ($fileName === null) {
-            if (in_array(strtoupper($this->_request->getRouterData('class/method')), $this->_request::METHODS)) {
+            if (in_array(strtoupper($this->request->getRouterData('class/method')), $this->request::METHODS)) {
                 $fileName = $controller_class_name;
             } else {
-                $fileName = $controller_class_name . '/' . $this->_request->getRouterData('class/method');
+                $fileName = $controller_class_name . '/' . $this->request->getRouterData('class/method');
             }
         } elseif (is_bool(strpos($fileName, '/')) || is_bool(strpos($fileName, '\\'))) {
             $fileName = $controller_class_name . DS . $fileName;
@@ -206,7 +206,7 @@ class PcController extends Core
                 ];
             }
         }
-        return $this->_request->getResponse()->renderJson($data);
+        return $this->request->getResponse()->renderJson($data);
     }
 
     /**

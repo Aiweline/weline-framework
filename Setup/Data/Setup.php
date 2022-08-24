@@ -66,7 +66,7 @@ class Setup
         } else {
             if ($this->master_connection) {
                 $this->connection = $this->master_connection;
-                return;
+                return $this->master_connection;
             }
             $this->master_connection = ObjectManager::getInstance(DbManagerFactory::class);
             $this->connection = $this->master_connection;

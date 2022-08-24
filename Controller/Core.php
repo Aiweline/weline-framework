@@ -103,10 +103,10 @@ class Core implements Data\DataInterface
      */
     public function getRequest(): Request
     {
-        if (!isset($this->_request)) {
-            $this->_request = ObjectManager::getInstance(Request::class);
+        if (!isset($this->request)) {
+            $this->request = ObjectManager::getInstance(Request::class);
         }
-        return $this->_request;
+        return $this->request;
     }
 
     /**

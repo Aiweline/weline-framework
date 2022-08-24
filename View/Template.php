@@ -128,11 +128,11 @@ class Template extends DataObject
 
     public function init()
     {
-        $this->_request = ObjectManager::getInstance(Request::class);
+        $this->request = ObjectManager::getInstance(Request::class);
         if (empty($this->view_dir)) {
-            $this->view_dir = $this->_request->getRouterData('module_path') . DataInterface::dir . DS;
+            $this->view_dir = $this->request->getRouterData('module_path') . DataInterface::dir . DS;
         }
-            $this->getData('title') ?? $this->setData('title', $this->_request->getModuleName());
+            $this->getData('title') ?? $this->setData('title', $this->request->getModuleName());
 
             $this->theme ?? $this->theme = Env::getInstance()->getConfig('theme', Env::default_theme_DATA);
             $this->eventsManager ?? $this->eventsManager = ObjectManager::getInstance(EventsManager::class);
@@ -399,17 +399,17 @@ class Template extends DataObject
 
     public function getUrl(string $path, array $params = [], bool $merge_query = false): string
     {
-        return $this->_request->getUrl($path, $params, $merge_query);
+        return $this->request->getUrl($path, $params, $merge_query);
     }
 
     public function getAdminUrl(string $path, array|bool $params = []): string
     {
         if (empty($path)) {
-            return $this->_request->getUrl($path);
+            return $this->request->getUrl($path);
         }
-        $pre = $this->_request->getBaseHost() . '/' . Env::getInstance()->getConfig('admin') . '/';
-//        $pre = $this->_request->getBaseHost() . '/';
-//        if ($this->_request->isBackend()) {
+        $pre = $this->request->getBaseHost() . '/' . Env::getInstance()->getConfig('admin') . '/';
+//        $pre = $this->request->getBaseHost() . '/';
+//        if ($this->request->isBackend()) {
 //            $pre .= Env::getInstance()->getConfig('admin') . '/';
 //        }
         $path = rtrim($pre . $path, '/');

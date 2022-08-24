@@ -14,9 +14,12 @@ use Weline\I18n\Model\I18n;
 
 class Cookie
 {
-    static function set(string $key, string $value, $options = [])
+    static function set(string $key, string $value, int $expire = 3600 * 24 * 7, array $options = [])
     {
-        setcookie($key, $value, $options);
+        $_options['path'] = '/';
+        $_options['domain'] = getenv('HTTP_HOST');
+        if($options)$_options = array_merge($_options, $options);
+        setcookie($key, $value, time() + $expire, ...$_options);
     }
 
     static function get(string $key, $default = null)

@@ -53,7 +53,7 @@ trait TraitTemplate
 
     private function fetchClassObject(string $position):HtmlInterface|string
     {
-        $is_backend = $this->_request->isBackend();
+        $is_backend = $this->request->isBackend();
         $cache_key  = ($is_backend ? 'backend' : 'frontend') . "_{$position}_object";
         if (PROD && $object = $this->viewCache->get($cache_key)) {
             return $object;
