@@ -105,8 +105,8 @@ class Data extends AbstractHelper
                             array_shift($request_method_split_array);
                             $rule_method = implode('', $request_method_split_array);
                         }
-                        # 如果没有解析到请求方法就使用方法名
-                        if (!$request_method && in_array(strtoupper($rule_method), Request::METHODS)) {
+                        # 检测请求方法和方法名是否重合，重合就使用方法名作为请求方法
+                        if (in_array(strtoupper($rule_method), Request::METHODS)) {
                             $request_method = strtoupper($rule_method);
                             $rule_method = '';
                         }
@@ -130,7 +130,7 @@ class Data extends AbstractHelper
                                 'area' => $ctl_area,
                                 'module' => $name,
                                 'base_router' => $router_,
-                                'router' => $rule_router . '::' . $request_method,
+                                'router' => $rule_router . ($request_method ? '::' . $request_method : ''),
                                 'class' => $api_class,
                                 'module_path' => $path,
                                 'method' => $method,
