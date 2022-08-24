@@ -14,7 +14,6 @@ namespace Weline\Framework\View;
 use Weline\Framework\App\Exception;
 use Weline\Framework\Cache\CacheInterface;
 use Weline\Framework\Database\AbstractModel;
-use Weline\Framework\DataObject\DataObject;
 use Weline\Framework\Manager\ObjectManager;
 use Weline\Framework\View\Cache\ViewCache;
 
@@ -95,7 +94,7 @@ class Block extends Template implements BlockInterface
      */
     public function fetchHtml(string $fileName, array $dictionary = [])
     {
-        $comFileName = $this->fetchTagSource('templates', $fileName);
+        $comFileName = $this->fetchTagSource('blocks', $fileName);
         ob_start();
         try {
             if ($dictionary) {
