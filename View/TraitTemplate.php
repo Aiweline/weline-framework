@@ -51,7 +51,7 @@ trait TraitTemplate
         return $this->fetchClassObject('footer');
     }
 
-    private function fetchClassObject(string $position):HtmlInterface|string
+    private function fetchClassObject(string $position): HtmlInterface|string
     {
         $is_backend = $this->request->isBackend();
         $cache_key  = ($is_backend ? 'backend' : 'frontend') . "_{$position}_object";
@@ -84,26 +84,26 @@ trait TraitTemplate
             $fileName = str_replace($pre_module_name . '::', '', $fileName);
             # 替换掉当前模块的视图目录
             $module_base_path = $module_lists[$pre_module_name]['base_path'];
-            $view_dir     = $module_base_path . Data\DataInterface::dir . DS;
-            $template_dir = $module_base_path . Data\DataInterface::dir . DS . Data\DataInterface::dir_type_TEMPLATE . DS;
+            $view_dir         = $module_base_path . Data\DataInterface::dir . DS;
+            $template_dir     = $module_base_path . Data\DataInterface::dir . DS . Data\DataInterface::dir_type_TEMPLATE . DS;
             if (PROD) {
-                $compile_dir = Env::path_framework_generated_complicate.DS.$module_lists[$pre_module_name]['path']. Data\DataInterface::dir . DS;
+                $compile_dir = Env::path_framework_generated_complicate . DS . $module_lists[$pre_module_name]['path'] . Data\DataInterface::dir . DS;
             } else {
                 $compile_dir = $module_base_path . Data\DataInterface::dir . DS . Data\DataInterface::dir_type_TEMPLATE_COMPILE . DS;
             }
             # 文件目录
             $file_dir = str_replace($pre_module_name . '::', '', $file_dir);
         } else {
-            $view_dir     = $this->getRequest()->getModulePath().'view'.DS;
-            $template_dir = $view_dir.Data\DataInterface::view_TEMPLATE_DIR.DS;
+            $view_dir     = $this->getRequest()->getModulePath() . 'view' . DS;
+            $template_dir = $view_dir . Data\DataInterface::view_TEMPLATE_DIR . DS;
             if (PROD) {
                 $module_path_arr = explode(DS, trim($this->getRequest()->getModulePath(), DS));
-                $module = array_pop($module_path_arr);
-                $vendor = array_pop($module_path_arr);
-                $module_path = $vendor.DS.$module.DS;
-                $compile_dir = Env::path_framework_generated_complicate.$module_path. Data\DataInterface::dir . DS;
+                $module          = array_pop($module_path_arr);
+                $vendor          = array_pop($module_path_arr);
+                $module_path     = $vendor . DS . $module . DS;
+                $compile_dir     = Env::path_framework_generated_complicate . $module_path . Data\DataInterface::dir . DS;
             } else {
-                $compile_dir  = $view_dir.Data\DataInterface::view_TEMPLATE_COMPILE_DIR.DS;
+                $compile_dir = $view_dir . Data\DataInterface::view_TEMPLATE_COMPILE_DIR . DS;
             }
         }
         return [$fileName, $file_dir, $view_dir, $template_dir, $compile_dir];
