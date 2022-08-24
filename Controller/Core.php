@@ -20,7 +20,7 @@ class Core implements Data\DataInterface
 {
     protected ObjectManager $_objectManager;
 
-    protected Request $_request;
+    protected Request $request;
 
     protected Printing $_debug;
     protected ?Url $_url = null;

@@ -36,7 +36,7 @@ class Template extends DataObject
 
     private string $file_ext = '.phtml';
 
-    protected Request $_request;
+    protected Request $request;
     private Session $session;
     private ?Taglib $taglib = null;
 
