@@ -29,8 +29,7 @@ use Weline\Framework\Manager\ObjectManager;
  * @method AbstractModel|QueryInterface update(array $data, string $condition_field = 'id')
  * @method AbstractModel|QueryInterface fields(string $fields)
  * @method AbstractModel|QueryInterface join(string $table, string $condition, string $type = 'left')
- * @method AbstractModel|QueryInterface where(array|string $field, mixed $value = null, string $con = '=', string
- *         $logic = 'AND')
+ * @method AbstractModel|QueryInterface where(array|string $field, mixed $value = null, string $con = '=', string $logic = 'AND')
  * @method AbstractModel|QueryInterface limit(int $size, int $offset = 0)
  * @method AbstractModel|QueryInterface page(int $page = 1, int $pageSize = 20)
  * @method AbstractModel|QueryInterface order(string $fields, string $sort = 'ASC')
@@ -1073,10 +1072,10 @@ abstract class AbstractModel extends DataObject
     public function pagination(int $page = 0, int $pageSize = 0, array $params = []): AbstractModel|static
     {
         if (empty($page)) {
-            $page = ObjectManager::getInstance(Request::class)->getGet('page',1);
+            $page = ObjectManager::getInstance(Request::class)->getGet('page', 1);
         }
         if (empty($pageSize)) {
-            $pageSize = ObjectManager::getInstance(Request::class)->getGet('pageSize',20);
+            $pageSize = ObjectManager::getInstance(Request::class)->getGet('pageSize', 20);
         }
         if (empty($params)) {
             $params = ObjectManager::getInstance(Request::class)->getGet();
