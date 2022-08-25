@@ -262,7 +262,7 @@ abstract class AbstractModel extends DataObject
     public function getData(string $key = '', $index = null): mixed
     {
         if (empty($key)) {
-            if ($data = parent::getData($key, $index)) {
+            if ($data = parent::getData()) {
                 return $data;
             }
             return $this->getFetchData();
