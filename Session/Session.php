@@ -45,11 +45,11 @@ class Session implements SessionInterface
             }
             if (session_status() !== PHP_SESSION_ACTIVE) {
                 # 保持浏览器session唯一，除非清空浏览器cookie
-                if($sess_id = $_COOKIE['PHPSESSID']??null){
+                if ($sess_id = $_COOKIE['PHPSESSID'] ?? null) {
                     session_id($sess_id);
                 }
                 session_set_cookie_params(3600, $identity_path);
-                session_set_cookie_params(['samesite' => 'Strict','Secure'=>true]);
+                session_set_cookie_params(['samesite' => 'Strict', 'Secure' => true]);
             }
             $this->session = SessionManager::getInstance()->create();
             $this->setType($type)->setData('path', $identity_path);
@@ -58,11 +58,17 @@ class Session implements SessionInterface
 
     public function start(string $session_id = null)
     {
-        if ($session_id) {
-            session_id($session_id);
-        }
         if (session_status() !== PHP_SESSION_ACTIVE) {
+            if ($session_id) {
+                session_id($session_id);
+            }
             session_start();
+        } else {
+            if ($session_id) {
+                session_destroy();
+                session_id($session_id);
+                session_start();
+            }
         }
     }
 
