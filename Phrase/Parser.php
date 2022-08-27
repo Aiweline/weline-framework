@@ -65,6 +65,8 @@ class Parser
         // 如果有就替换
         if (isset(self::$words[$words])) {
             $words = self::$words[$words];
+        }else{
+            self::$words[$words] = $words;
         }
 
         return $words;

@@ -90,7 +90,6 @@ class Upgrade extends CommandAbstract
         }
 
         $commands = $this->scan();
-//        p($commands);
         /**@var $file \Weline\Framework\System\File\Io\File */
         $file = ObjectManager::getInstance(\Weline\Framework\System\File\Io\File::class);
         $file->open(Env::path_COMMANDS_FILE, $file::mode_w_add);
@@ -154,8 +153,8 @@ class Upgrade extends CommandAbstract
                             $file    = implode(':', $file_array);
                             $command = str_replace('\\', ':', strtolower($file));
                             array_pop($file_array);
-                            $comamnd_prefix                                           = strtolower(implode(':', $file_array));
-                            $commands[$comamnd_prefix . '#' . $module_name][$command] = [
+                            $command_prefix                                           = strtolower(implode(':', $file_array));
+                            $commands[$command_prefix . '#' . $module_name][$command] = [
                                 'tip'   => $command_class->getTip(),
                                 'class' => $class,
                                 'type'  => 'module'
@@ -182,6 +181,15 @@ class Upgrade extends CommandAbstract
             true,
             true
         );
+        $this->scan->globFile(
+            Env::framework_code_path . '*' . DS. 'Console' . DS . '*',
+            $framework_files,
+            '.php',
+            Env::framework_code_path,
+            'Weline\\Framework\\',
+            true,
+            true
+        );
         foreach ($framework_files as $class) {
             // 排除非框架系统命令类
             if (class_exists($class)) {
@@ -196,8 +204,8 @@ class Upgrade extends CommandAbstract
                         $command = implode(':', $class_array);
                         $command = str_replace('\\', ':', strtolower($command));
                         array_pop($class_array);
-                        $comamnd_prefix                                                                 = strtolower(implode(':', $class_array));
-                        $commands[$comamnd_prefix . '#Weline_Framework_' . $framework_module][$command] = [
+                        $command_prefix                                                                 = strtolower(implode(':', $class_array));
+                        $commands[$command_prefix . '#Weline_Framework_' . $framework_module][$command] = [
                             'tip'   => $command_class->getTip(),
                             'class' => $class,
                             'type'  => 'framework'
@@ -212,6 +220,8 @@ class Upgrade extends CommandAbstract
                 }
             }
         }
+//        p($commands);
+
         return $commands;
     }
 }

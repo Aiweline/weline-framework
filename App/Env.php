@@ -19,6 +19,7 @@ class Env extends DataObject
 
     public const framework_name = 'Weline';
     public const framework_path = self::vendor_path . 'weline'.DS.'framework'.DS;
+    public const framework_code_path = APP_CODE_PATH . 'Weline'.DS.'Framework'.DS;
 
     public const path_framework_generated = BP . 'generated' . DS;
 

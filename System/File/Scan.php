@@ -147,7 +147,8 @@ class Scan
         return $contents;
     }
 
-    function globFile($pattern_dir, &$files=[], string $ext = '.php', string $remove_path = '',string $replace_path='', bool $remove_ext = false, bool $class_path = false)
+    function globFile($pattern_dir, &$files=[], string $ext = '.php', string $remove_path = '',string $replace_path='', bool $remove_ext = false,
+                      bool $class_path = false)
     {
         foreach (glob($pattern_dir) as $file) {
             if (is_dir($file)) {
