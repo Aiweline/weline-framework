@@ -98,7 +98,7 @@ class Setup
      * 参数区：
      * @return Printing
      */
-    public function getPrinter(): Printingg
+    public function getPrinter(): Printing
     {
         return $this->printing;
     }
