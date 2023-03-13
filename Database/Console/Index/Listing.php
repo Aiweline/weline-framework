@@ -20,31 +20,32 @@ class Listing implements \Weline\Framework\Console\CommandInterface
     private Printing $printing;
 
     public function __construct(
-        Indexer $indexer,
+        Indexer  $indexer,
         Printing $printing
-    ) {
-        $this->indexer = $indexer;
+    )
+    {
+        $this->indexer  = $indexer;
         $this->printing = $printing;
     }
 
     /**
      * @inheritDoc
      */
-    public function execute(array $args = [])
+    public function execute(array $args = [], array $data = [])
     {
         $indexer_list = $this->indexer->select()->fetch();
-        /**@var Indexer $indexer*/
+        /**@var Indexer $indexer */
         foreach ($indexer_list as $indexer) {
             $msg = str_pad($this->printing->colorize($indexer->getName(), $this->printing::SUCCESS), 35, ' ', STR_PAD_RIGHT);
             $msg .= $this->printing->colorize($indexer->getTable(), $this->printing::NOTE);
-            $this->printing->printing($msg) ;
+            $this->printing->printing($msg);
         }
     }
 
     /**
      * @inheritDoc
      */
-    public function getTip(): string
+    public function tip(): string
     {
         return __('索引器列表');
     }

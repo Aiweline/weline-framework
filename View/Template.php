@@ -11,7 +11,6 @@ namespace Weline\Framework\View;
 
 use Weline\Framework\App\Env;
 use Weline\Framework\App\Exception;
-use Weline\Framework\App\System;
 use Weline\Framework\Cache\CacheInterface;
 use Weline\Framework\Controller\PcController;
 use Weline\Framework\DataObject\DataObject;
@@ -20,16 +19,12 @@ use Weline\Framework\Exception\Core;
 use Weline\Framework\Hook\Hooker;
 use Weline\Framework\Http\Cookie;
 use Weline\Framework\Http\Request;
+use Weline\Framework\Http\Url;
 use Weline\Framework\Manager\ObjectManager;
-use Weline\Framework\Module\ModuleInterface;
-use Weline\Framework\Output\Debug\Printing;
 use Weline\Framework\Session\Session;
 use Weline\Framework\Ui\FormKey;
 use Weline\Framework\View\Cache\ViewCache;
 use Weline\Framework\View\Data\DataInterface;
-use Weline\Framework\View\Data\HtmlInterface;
-use Weline\Framework\View\Exception\TemplateException;
-use Weline\SystemConfig\Model\SystemConfig;
 
 class Template extends DataObject
 {
@@ -129,11 +124,15 @@ class Template extends DataObject
 
     public function init()
     {
-        $this->request = ObjectManager::getInstance(Request::class);
-        if (empty($this->view_dir)) {
-            $this->view_dir = $this->request->getRouterData('module_path') . DataInterface::dir . DS;
+        if (!CLI) {
+            $this->request = ObjectManager::getInstance(Request::class);
+            if (empty($this->view_dir)) {
+                $this->view_dir = $this->request->getRouterData('module_path') . DataInterface::dir . DS;
+            }
+                $this->getData('title') ?? $this->setData('title', $this->request->getModuleName());
+            $this->setData('req', $this->request->getParams());
+            $this->setData('env', Env::getInstance()->getConfig());
         }
-            $this->getData('title') ?? $this->setData('title', $this->request->getModuleName());
 
             $this->theme ?? $this->theme = Env::getInstance()->getConfig('theme', Env::default_theme_DATA);
             $this->eventsManager ?? $this->eventsManager = ObjectManager::getInstance(EventsManager::class);
@@ -215,8 +214,8 @@ class Template extends DataObject
      */
     public function convertFetchFileName(string $fileName): array
     {
-        $comFileName_cache_key = $this->view_dir . $fileName . '_comFileName';
-        $tplFile_cache_key     = $this->view_dir . $fileName . '_tplFile';
+        $comFileName_cache_key = $this->view_dir . $fileName . '_comFileName' . Cookie::getLangLocal();
+        $tplFile_cache_key     = $this->view_dir . $fileName . '_tplFile' . Cookie::getLangLocal();
         $comFileName           = '';
         $tplFile               = '';
         # 让非生产环境实时读取文件
@@ -227,7 +226,7 @@ class Template extends DataObject
         # 测试
 //        file_put_contents(__DIR__ . '/test.txt', $comFileName . PHP_EOL, FILE_APPEND);
         // 编译文件不存在的时候 重新对文件进行处理 防止每次都处理
-        if (empty($comFileName) || empty($tplFile)) {
+        if (!is_file($comFileName) || !is_file($tplFile)) {
             // 解析模板路由
             if ('/' !== DS) {
                 $fileName = str_replace('/', DS, $fileName);
@@ -304,6 +303,19 @@ class Template extends DataObject
             //如果缓存文件不存在则 编译 或者文件修改了也编译
             $content    = file_get_contents($tplFile);
             $repContent = $this->tmp_replace($content, $comFileName);                   //得到模板文件 并替换占位符 并得到替换后的文件
+            if (DEV) {
+                $tpl_pad_file_name = __('模板文件：%1 START', $tplFile);
+                $tpl_str_len       = strlen($tpl_pad_file_name);
+                $tpl_str_pad_all   = str_pad('', $tpl_str_len, '=', STR_PAD_BOTH);
+                $tpl_str_pad_file  = str_pad($tpl_pad_file_name, $tpl_str_len, '=', STR_PAD_BOTH);
+                $com_pad_file_name = __('模板文件：%1 END', $comFileName);
+                $com_str_len       = strlen($com_pad_file_name);
+                $com_str_pad_all   = str_pad('', $com_str_len, '=', STR_PAD_BOTH);
+                $com_str_pad_file  = str_pad($com_pad_file_name, $com_str_len, '=', STR_PAD_BOTH);
+                $repContent        = "<!--" . PHP_EOL . "$tpl_str_pad_all " . PHP_EOL . $tpl_str_pad_file . PHP_EOL . $tpl_str_pad_all . PHP_EOL . ' -->'
+                    . PHP_EOL . $repContent . PHP_EOL
+                    . '<!--' . PHP_EOL . $com_str_pad_all . PHP_EOL . $com_str_pad_file . PHP_EOL . $com_str_pad_all . PHP_EOL . '-->';
+            }
             file_put_contents($comFileName, $repContent);                               //将替换后的文件写入定义的缓存文件中
         }
         return $comFileName;
@@ -320,10 +332,10 @@ class Template extends DataObject
      * @return bool|void
      * @throws \Exception
      */
-    public function fetch(string $fileName)
+    public function fetch(string $fileName,array $data=[])
     {
         /** Get output buffer. */
-        return $this->fetchHtml($fileName);
+        return $this->fetchHtml($fileName,$data);
     }
 
     /**
@@ -377,7 +389,6 @@ class Template extends DataObject
             throw $exception;
         }
         /** Get output buffer. */
-        # FIXME 是否显示模板路径
         return ob_get_clean();
     }
 
@@ -398,31 +409,32 @@ class Template extends DataObject
         return $this->getTaglib()->tagReplace($this, $content, $fileName);
     }
 
+    /*_______________URL____________*/
+    private function getUrlObject(): Url
+    {
+        return ObjectManager::getInstance(Url::class);
+    }
+
     public function getUrl(string $path, array $params = [], bool $merge_query = false): string
     {
-        return $this->request->getUrl($path, $params, $merge_query);
+        return $this->getUrlObject()->getUrl($path, $params, $merge_query);
     }
 
-    public function getAdminUrl(string $path, array|bool $params = []): string
+    public function getApi(string $path, array $params = [], bool $merge_query = false): string
     {
-        if (empty($path)) {
-            return $this->request->getUrl($path);
-        }
-        $pre = $this->request->getBaseHost() . '/' . Env::getInstance()->getConfig('admin') . '/';
-//        $pre = $this->request->getBaseHost() . '/';
-//        if ($this->request->isBackend()) {
-//            $pre .= Env::getInstance()->getConfig('admin') . '/';
-//        }
-        $path = rtrim($pre . $path, '/');
-        if (empty($params)) {
-            return $path;
-        }
-        if (is_array($params)) {
-            return $path . '?' . http_build_query($params);
-        }
-        return $path;
+        return $this->getUrlObject()->getUrl($path, $params, $merge_query);
     }
 
+    public function getBackendUrl(string $path, array|bool $params = [], bool $merge_query = false): string
+    {
+        return $this->getUrlObject()->getBackendUrl($path, $params, $merge_query);
+    }
+
+    public function getBackendApi(string $path, array|bool $params = [], bool $merge_query = false): string
+    {
+        return $this->getUrlObject()->getBackendApiUrl($path, $params, $merge_query);
+    }
+    /*_______________URL____________*/
     /**
      * @throws \ReflectionException
      * @throws Exception

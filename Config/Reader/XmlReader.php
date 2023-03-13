@@ -32,8 +32,9 @@ class XmlReader extends ModuleFileReader
     public function __construct(
         Scanner $scanner,
         Parser  $parser,
-        $path = 'module.xml'
-    ) {
+                $path = 'module.xml'
+    )
+    {
         parent::__construct($scanner, 'etc' . DS . $path);
         $this->parser = $parser;
     }
@@ -48,7 +49,7 @@ class XmlReader extends ModuleFileReader
     {
         $data = [];
         foreach ($this->getFileList() as $module => $module_file) {
-            $event_xml_data = $this->parser->load($module_file)->xmlToArray();
+            $event_xml_data                      = $this->parser->load($module_file)->xmlToArray();
             $data[$module . '::' . $module_file] = $event_xml_data;
         }
         return $data;
@@ -61,6 +62,7 @@ class XmlReader extends ModuleFileReader
      *
      * @param $xmlArray
      * @param $pathArr
+     *
      * @return array
      */
     public function getByPath($xmlArray, $pathArr): array
@@ -81,12 +83,12 @@ class XmlReader extends ModuleFileReader
                 }
             } else {
                 // 存在相同节点时其键名是数字
-                $tmp = [];
+                $tmp     = [];
                 $tmp_key = [];
                 foreach ($xmlArray[$levelPath] as $item) {
                     $hasMerged = false;
-                    $xmlArray = $item['_value'];
-                    $res_data = $this->getByPath($xmlArray, $pathArr);
+                    $xmlArray  = $item['_value'];
+                    $res_data  = $this->getByPath($xmlArray, $pathArr);
                     // ID相同合并最后一个
                     $mergeAttributes = ['id', 'name'];
                     foreach ($mergeAttributes as $mergeAttribute) {
@@ -116,14 +118,16 @@ class XmlReader extends ModuleFileReader
     /**
      * @DESC          # 检查属性错误
      *
-     * @AUTH  秋枫雁飞
+     * @AUTH    秋枫雁飞
      * @EMAIL aiweline@qq.com
      * @DateTime: 2021/11/16 14:33
      * 参数区：
+     *
      * @param string $module_and_file
-     * @param array $element
+     * @param array  $element
      * @param string $attribute
      * @param string $error
+     *
      * @throws Core
      */
     public function checkElementAttribute(array $element, string $attribute, string $error)

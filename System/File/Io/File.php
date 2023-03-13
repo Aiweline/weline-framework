@@ -49,8 +49,10 @@ class File
      * @Description  此文件源码由Aiweline（秋枫雁飞）开发，请勿随意修改源码！
      *
      * 参数区：
+     *
      * @param string $filename
      * @param string $mode
+     *
      * @return File
      */
     public function open(string $filename, string $mode = self::mode_a_add)
@@ -59,7 +61,7 @@ class File
         $position = strrpos($filename, DS);
 //        if(!$position) throw new Exception(__('系统文件路径层级表达符号错误：当前系统文件分隔符为%1,当前路径：%2',[DS,$filename]));
         $path = substr($filename, 0, $position);
-        if (! file_exists($path)) {
+        if (!file_exists($path)) {
             mkdir($path, 0770, true);
         }
         $this->_filename = $filename;
@@ -80,12 +82,13 @@ class File
      * 参数区：
      *
      * @param string $content
-     * @throws Exception
+     *
      * @return File
+     * @throws Exception
      */
     public function write(string $content)
     {
-        if (! $this->_file) {
+        if (!$this->_file) {
             if (PHP_SAPI !== 'cli') {
                 throw new Exception("文件:{$this->_filename} 读取异常！");
             }
@@ -119,12 +122,12 @@ class File
      *
      * 参数区：
      *
-     * @throws Exception
      * @return false|resource
+     * @throws Exception
      */
     public function getSource()
     {
-        if (! $this->_file) {
+        if (!$this->_file) {
             throw new Exception("文件:{$this->_filename} 读取异常！");
         }
 
@@ -137,6 +140,7 @@ class File
      * 参数区：
      *
      * @param string $filename
+     *
      * @return bool|string
      */
     public function create(string $filename)

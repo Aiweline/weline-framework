@@ -17,7 +17,7 @@ namespace Weline\Framework\Register\Module\Data;
  *
  * Interface DirectoryInterface
  * 存放Module目录数据接口
- * @package Weline\Framework\Module\Data
+ * @package      Weline\Framework\Module\Data
  */
 interface DirectoryInterface
 {

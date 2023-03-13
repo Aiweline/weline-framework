@@ -10,11 +10,14 @@
 namespace Weline\Framework\Module\Console\Module;
 
 use Weline\Framework\App\Env;
+use Weline\Framework\App\Exception;
 use Weline\Framework\App\System;
 use Weline\Framework\Console\CommandAbstract;
 use Weline\Framework\Event\EventsManager;
 use Weline\Framework\Manager\ObjectManager;
+use Weline\Framework\Module\Handle;
 use Weline\Framework\Module\Helper\Data;
+use Weline\Framework\Module\Model\Module;
 use Weline\Framework\Output\Cli\Printing;
 use Weline\Framework\System\File\App\Scanner as AppScanner;
 
@@ -40,11 +43,12 @@ class Upgrade extends CommandAbstract
         AppScanner $scanner,
         Data       $data,
         System     $system
-    ) {
+    )
+    {
         $this->printer = $printer;
-        $this->system = $system;
+        $this->system  = $system;
         $this->scanner = $scanner;
-        $this->data = $data;
+        $this->data    = $data;
     }
 
     /**
@@ -60,8 +64,10 @@ class Upgrade extends CommandAbstract
      * @param array $args
      *
      * @return mixed|void
+     * @throws \ReflectionException
+     * @throws Exception
      */
-    public function execute(array $args = [])
+    public function execute(array $args = [], array $data = [])
     {
         $i = 1;
         // 删除路由文件
@@ -70,9 +76,9 @@ class Upgrade extends CommandAbstract
         foreach (Env::router_files_PATH as $path) {
             $this->printer->warning($path);
             if (is_file($path)) {
-                list($out, $var) = $this->system->exec('rm -f ' . $path);
-                if ($out) {
-                    $this->printer->printList($out);
+                $data = $this->system->exec('rm -f ' . $path);
+                if ($data) {
+                    $this->printer->printList($data);
                 }
             }
         }
@@ -80,13 +86,58 @@ class Upgrade extends CommandAbstract
         $this->printer->warning($i . '、generated生成目录代码code清理...', '系统');
         $this->system->exec('rm -rf ' . Env::path_framework_generated_code);
         $i += 1;
+        // 扫描代码
+        $this->printer->note($i . '、清理模板缓存', '系统');
+        $modules = Env::getInstance()->getModuleList();
+        foreach ($modules as $module) {
+            $tpl_dir = $module['base_path'] . DS . 'view' . DS . 'tpl';
+            if (is_dir($tpl_dir)) {
+                $this->system->exec("rm -rf {$tpl_dir}");
+            }
+        }
+        $i += 1;
+        $this->printer->note($i . '、module模块更新...');
+        // 注册模块
+        $all_modules = [];
+        // 扫描代码
+        list($vendor, $dependencies) = $this->scanner->scanAppModules();
+        // 注册模组
+        $this->printer->note(__('1)注册模组'));
+        foreach ($dependencies as $module_name => $module_data) {
+            $register = $module_data['register'] ?? '';
+            if (is_file($register)) {
+                require $register;
+            }else{
+                unset($dependencies[$module_name]);
+            }
+        }
+        $modules = Env::getInstance()->getModuleList(true);
+        /**@var Handle $module_handle*/
+        $module_handle = ObjectManager::getInstance(Handle::class);
+        // 安装Setup信息
+        $this->printer->note(__('2)安装Setup信息'));
+        foreach ($modules as $module_name => $module) {
+            $module_handle->setupInstall(new Module($module));
+        }
+        // 注册模型数据库信息
+        $this->printer->note(__('3)注册模型数据库信息'));
+        foreach ($modules as $module_name => $module) {
+            $module_handle->setupModel(new Module($module));
+        }
+        // 注册路由信息
+        $this->printer->note(__('3)注册路由信息'));
+        foreach ($modules as $module_name => $module) {
+            $module_handle->registerRoute(new Module($module));
+        }
+        $this->printer->note('模块更新完毕！');
+        $i += 1;
         $this->printer->note($i . '、收集模块信息', '系统');
         # 加载module中的助手函数
-        $modules        = Env::getInstance()->getActiveModules();
+        $modules                = Env::getInstance()->getActiveModules();
         $function_files_content = '';
         foreach ($modules as $module) {
-            $global_file_pattern = $module['base_path'] .'Global'.DS.'*.php';
-            $global_files = glob($global_file_pattern);
+            $global_file_pattern = $module['base_path'] . 'Global' . DS . '*.php';
+            $global_files        = glob($global_file_pattern);
             foreach ($global_files as $global_file) {
                 # 读取文件内容 去除注释以及每个文件末尾的 '\?\>'结束符
                 $function_files_content .= str_replace('?>', '', file_get_contents($global_file)) . PHP_EOL;
@@ -108,25 +159,13 @@ class Upgrade extends CommandAbstract
         $cacheManagerConsole = ObjectManager::getInstance(\Weline\Framework\Plugin\Console\Plugin\Di\Compile::class);
         $cacheManagerConsole->execute();
         $i += 1;
-        $this->printer->note($i . '、module模块更新...');
-        // 注册模块
-        $all_modules = [];
-        // 扫描代码
-        list($vendor, $dependencies) = $this->scanner->scanAppModules();
-        foreach ($dependencies as $module_name => $module) {
-            $register = $module['register']??"";
-            if (is_file($register)) {
-                require $register;
-            }
-        }
-        $this->printer->note('模块更新完毕！');
-        $i += 1;
 
         // 清理其他
         $this->printer->note($i . '、清理缓存...');
-        /**@var $cacheManagerConsole \Weline\CacheManager\Console\Cache\Clear */
-        $cacheManagerConsole = ObjectManager::getInstance(\Weline\CacheManager\Console\Cache\Clear::class);
+        /**@var $cacheManagerConsole \Weline\CacheManager\Console\Cache\Flush */
+        $cacheManagerConsole = ObjectManager::getInstance(\Weline\CacheManager\Console\Cache\Flush::class);
         $cacheManagerConsole->execute();
+        $this->system->exec('rm -rf ' . BP . 'var' . DS . 'cache');
 
         /**@var EventsManager $eventsManager */
         $eventsManager = ObjectManager::getInstance(EventsManager::class);
@@ -136,7 +175,7 @@ class Upgrade extends CommandAbstract
     /**
      * @inheritDoc
      */
-    public function getTip(): string
+    public function tip(): string
     {
         return '升级模块';
     }

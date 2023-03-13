@@ -7,11 +7,13 @@
  * 论坛：https://bbs.aiweline.com
  */
 
-namespace Weline\Framework\Event\Test;
+namespace Weline\Framework\Event\test;
 
 use Weline\Framework\Event\EventsManager;
 use Weline\Framework\Manager\ObjectManager;
 use Weline\Framework\UnitTest\TestCore;
+
+use function PHPUnit\Framework\assertIsArray;
 
 class EventsManagerTest extends TestCore
 {
@@ -22,11 +24,11 @@ class EventsManagerTest extends TestCore
 
     public function setUp(): void
     {
-        $this->eventsManager =  ObjectManager::getInstance(EventsManager::class);
+        $this->eventsManager = ObjectManager::getInstance(EventsManager::class);
     }
 
     public function testScanEvents()
     {
-        p($this->eventsManager->scanEvents());
+        assertIsArray($this->eventsManager->scanEvents(), 'Framework_Event::扫描事件配置成功！');
     }
 }

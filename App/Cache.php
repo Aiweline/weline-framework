@@ -21,7 +21,8 @@ class Cache
 
     public function __construct(
         CacheFactory $cacheManager
-    ) {
+    )
+    {
         $this->cacheManager = $cacheManager;
     }
 

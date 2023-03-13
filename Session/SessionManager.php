@@ -49,8 +49,10 @@ class SessionManager
      * @DESC         |创建session
      *
      * 参数区：
+     *
      * @param string $driver
      * @param string $area
+     *
      * @return SessionDriverHandlerInterface
      */
     public function create(string $driver = ''): SessionDriverHandlerInterface
@@ -59,8 +61,8 @@ class SessionManager
             if (empty($driver) && isset($this->config['default'])) {
                 $driver = $this->config['default'];
             }
-            $driver_class = self::driver_NAMESPACE . ucfirst($driver);
-            $driver_config = $this->config['drivers'][$driver];
+            $driver_class   = self::driver_NAMESPACE . ucfirst($driver);
+            $driver_config  = $this->config['drivers'][$driver];
             $this->_session = new $driver_class($driver_config);
         }
         return $this->_session;

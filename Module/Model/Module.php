@@ -16,16 +16,6 @@ use Weline\Framework\DataObject\DataObject;
 
 class Module extends DataObject
 {
-    private string $position;
-    private string $name;
-    private bool $status;
-    private string $version;
-    private string|array $router;
-    private string $description;
-    private string $base_path;
-    private string $namespace_path;
-    private string $path;
-
     public const position       = 'position';
     public const name           = 'name';
     public const status         = 'status';
@@ -40,13 +30,12 @@ class Module extends DataObject
     public function setPosition(string $position): self
     {
         $this->setData(self::position, $position);
-        $this->position = $position;
         return $this;
     }
 
-    function getPosition(): string
+    public function getPosition(): string
     {
-        return $this->position;
+        return $this->getData(self::position);
     }
 
     /**
@@ -54,7 +43,7 @@ class Module extends DataObject
      */
     public function isStatus(): bool
     {
-        return $this->status;
+        return $this->getData(self::status);
     }
 
     /**
@@ -63,7 +52,6 @@ class Module extends DataObject
     public function setStatus(bool $status): static
     {
         $this->setData(self::status, $status);
-        $this->status = $status;
         return $this;
     }
 
@@ -72,7 +60,7 @@ class Module extends DataObject
      */
     public function getVersion(): string
     {
-        return $this->version;
+        return $this->getData(self::version);
     }
 
     /**
@@ -81,7 +69,6 @@ class Module extends DataObject
     public function setVersion(string $version): static
     {
         $this->setData(self::version, $version);
-        $this->version = $version;
         return $this;
     }
 
@@ -90,7 +77,7 @@ class Module extends DataObject
      */
     public function getRouter(): string
     {
-        return $this->router;
+        return $this->getData(self::router);
     }
 
     /**
@@ -100,12 +87,11 @@ class Module extends DataObject
      */
     public function setRouter(array|string $router): static
     {
-        if(is_array($router)){
+        if (is_array($router)) {
             $this->setData(self::router, $router);
-        }else{
-            $this->addData([self::router=> $router]);
+        } else {
+            $this->addData([self::router => $router]);
         }
-        $this->router = $router;
         return $this;
     }
 
@@ -114,7 +100,7 @@ class Module extends DataObject
      */
     public function getDescription(): string
     {
-        return $this->description;
+        return $this->getData(self::description);
     }
 
     /**
@@ -125,7 +111,6 @@ class Module extends DataObject
     public function setDescription(string $description): static
     {
         $this->setData(self::description, $description);
-        $this->description = $description;
         return $this;
     }
 
@@ -134,7 +119,7 @@ class Module extends DataObject
      */
     public function getBasePath(): string
     {
-        return $this->base_path;
+        return $this->getData(self::base_path);
     }
 
     /**
@@ -145,7 +130,6 @@ class Module extends DataObject
     public function setBasePath(string $base_path): static
     {
         $this->setData(self::base_path, $base_path);
-        $this->base_path = $base_path;
         return $this;
     }
 
@@ -155,7 +139,7 @@ class Module extends DataObject
      */
     public function getNamespacePath(): string
     {
-        return $this->namespace_path;
+        return $this->getData(self::namespace_path);
     }
 
     /**
@@ -166,7 +150,6 @@ class Module extends DataObject
     public function setNamespacePath(string $namespace_path): static
     {
         $this->setData(self::namespace_path, $namespace_path);
-        $this->namespace_path = $namespace_path;
         return $this;
     }
 
@@ -175,7 +158,7 @@ class Module extends DataObject
      */
     public function getPath(): string
     {
-        return $this->path;
+        return $this->getData(self::path);
     }
 
     /**
@@ -186,7 +169,6 @@ class Module extends DataObject
     public function setPath(string $path): static
     {
         $this->setData(self::path, $path);
-        $this->path = $path;
         return $this;
     }
 
@@ -195,7 +177,7 @@ class Module extends DataObject
      */
     public function getName(): string
     {
-        return $this->name;
+        return $this->getData(self::name);
     }
 
     /**
@@ -206,11 +188,10 @@ class Module extends DataObject
     public function setName(string $name): static
     {
         $this->setData(self::name, $name);
-        $this->name = $name;
         return $this;
     }
 
-    #[Pure] public function getModuleFile(string $filename): string
+    public function getModuleFile(string $filename): string
     {
         return BP . $this->getBasePath() . $filename;
     }

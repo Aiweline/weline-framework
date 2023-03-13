@@ -12,7 +12,7 @@ namespace Weline\Framework\UnitTest;
 use PHPUnit\Framework\TestCase;
 use Weline\Framework\Manager\ObjectManager;
 
-require BP.'index.php';
+require BP . 'index.php';
 
 class TestCore extends TestCase
 {

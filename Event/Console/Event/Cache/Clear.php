@@ -28,8 +28,9 @@ class Clear implements CommandInterface
 
     public function __construct(
         EventCache $eventCache,
-        Printing $printing
-    ) {
+        Printing   $printing
+    )
+    {
         $this->printing   = $printing;
         $this->eventCache = $eventCache->create();
     }
@@ -37,7 +38,7 @@ class Clear implements CommandInterface
     /**
      * @inheritDoc
      */
-    public function execute(array $args = [])
+    public function execute(array $args = [], array $data = [])
     {
         $this->eventCache->clear();
 
@@ -47,7 +48,7 @@ class Clear implements CommandInterface
     /**
      * @inheritDoc
      */
-    public function getTip(): string
+    public function tip(): string
     {
         return __('清除系统事件缓存！');
     }

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /*
@@ -24,7 +25,7 @@ class Image
      *
      * @return string
      */
-    static function base64(string $file)
+    public static function base64(string $file)
     {
         $base64_file = '';
         if (file_exists($file)) {

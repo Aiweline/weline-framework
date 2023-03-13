@@ -18,9 +18,9 @@ interface ManagerInterface
      *
      * @param string $class
      * @param string $method
-     * @param array $params
+     * @param array  $params
      */
-    public static function make(string $class, array $params=[], string $method='__construct');
+    public static function make(string $class, array $params = [], string $method = '__construct');
 
     /**
      * @DESC         |获取实例
@@ -29,5 +29,5 @@ interface ManagerInterface
      *
      * @return mixed
      */
-    public static function getInstance();
+    public static function getInstance(): mixed;
 }

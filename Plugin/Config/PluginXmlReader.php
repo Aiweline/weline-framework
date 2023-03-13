@@ -24,10 +24,11 @@ class PluginXmlReader extends \Weline\Framework\Config\Reader\XmlReader
 
     public function __construct(
         PluginCache $pluginCache,
-        Scanner $scanner,
-        Parser $parser,
-        $path = 'plugin.xml'
-    ) {
+        Scanner     $scanner,
+        Parser      $parser,
+                    $path = 'plugin.xml'
+    )
+    {
         parent::__construct($scanner, $parser, $path);
         $this->pluginCache = $pluginCache->create();
     }
@@ -53,7 +54,7 @@ class PluginXmlReader extends \Weline\Framework\Config\Reader\XmlReader
         foreach ($configs as $module_and_file => $config) {
             $module_plugin_interceptors = [];
             if (
-                ! isset($config['config']['_attribute']['noNamespaceSchemaLocation']) &&
+                !isset($config['config']['_attribute']['noNamespaceSchemaLocation']) &&
                 ('urn:Weline_Framework::Plugin/etc/xsd/plugin.xsd' !== $config['config']['_attribute']['noNamespaceSchemaLocation'])
             ) {
                 throw new Core(__($module_and_file . '拦截器必须设置：noNamespaceSchemaLocation="urn:Weline_Framework::Plugin/etc/xsd/plugin.xsd"'));
@@ -61,10 +62,10 @@ class PluginXmlReader extends \Weline\Framework\Config\Reader\XmlReader
             // 多个值
             if (is_integer(array_key_first($config['config']['_value']['plugin']))) {
                 foreach ($config['config']['_value']['plugin'] as $plugin) {
-                    if (! isset($plugin['_attribute']['name'])) {
+                    if (!isset($plugin['_attribute']['name'])) {
                         throw new Core(__($module_and_file . '拦截器Plugin未指定name属性：<plugin name="pluginName">...</plugin>'));
                     }
-                    if (! isset($plugin['_attribute']['class'])) {
+                    if (!isset($plugin['_attribute']['class'])) {
                         throw new Core(__($module_and_file . '拦截器Plugin未指定class属性：<plugin class="pluginClass">...</plugin>'));
                     }
                     // 多个值
@@ -76,25 +77,25 @@ class PluginXmlReader extends \Weline\Framework\Config\Reader\XmlReader
                         // interceptor有多个值的情况
                         if (is_array($plugin['_value']['interceptor'])) {
                             foreach ($plugin['_value']['interceptor'] as $item) {
-                                if (! isset($item['_attribute'])) {
+                                if (!isset($item['_attribute'])) {
                                     throw new Core(__($module_and_file . '拦截器Interceptor没有设置属性：<interceptor name="interceptorName" instance="instanceClass" disabled="false" sort="0"/>'));
                                 }
-                                if (! isset($item['_attribute']['name'])) {
+                                if (!isset($item['_attribute']['name'])) {
                                     throw new Core(__($module_and_file . '拦截器Interceptor没有设置name属性：<interceptor name="interceptorName" instance="instanceClass" disabled="false" sort="0"/>'));
                                 }
-                                if (! isset($item['_attribute']['instance'])) {
+                                if (!isset($item['_attribute']['instance'])) {
                                     throw new Core(__($module_and_file . '拦截器Interceptor没有设置instance属性：<interceptor name="interceptorName" instance="instanceClass" disabled="false" sort="0"/>'));
                                 }
                                 $module_plugin_interceptors[$plugin['_attribute']['name']][] = ['class' => $plugin['_attribute']['class'], 'plugins' => $item['_attribute']];
                             }
                         } else {
-                            if (! isset($plugin['_value']['interceptor']['_attribute'])) {
+                            if (!isset($plugin['_value']['interceptor']['_attribute'])) {
                                 throw new Core(__($module_and_file . '拦截器Interceptor没有设置属性：<interceptor name="interceptorName" instance="instanceClass" disabled="false" sort="0"/>'));
                             }
-                            if (! isset($plugin['_value']['interceptor']['_attribute']['name'])) {
+                            if (!isset($plugin['_value']['interceptor']['_attribute']['name'])) {
                                 throw new Core(__($module_and_file . '拦截器Interceptor没有设置name属性：<interceptor name="interceptorName" instance="instanceClass" disabled="false" sort="0"/>'));
                             }
-                            if (! isset($plugin['_value']['interceptor']['_attribute']['instance'])) {
+                            if (!isset($plugin['_value']['interceptor']['_attribute']['instance'])) {
                                 throw new Core(__($module_and_file . '拦截器Interceptor没有设置instance属性：<interceptor name="interceptorName" instance="instanceClass" disabled="false" sort="0"/>'));
                             }
                             $module_plugin_interceptors[$plugin['_attribute']['name']][] = ['class' => $plugin['_attribute']['class'], 'plugins' => $plugin['_value']['interceptor']['_attribute']];
@@ -102,32 +103,32 @@ class PluginXmlReader extends \Weline\Framework\Config\Reader\XmlReader
                     }
                 }
             } else {
-                if (! isset($config['config']['_value']['plugin']['_attribute']['name'])) {
+                if (!isset($config['config']['_value']['plugin']['_attribute']['name'])) {
                     throw new Core(__($module_and_file . '拦截器Plugin未指定name属性：<plugin name="pluginName">...</plugin>'));
                 }
                 // interceptor有多个值的情况
                 $interceptors = $config['config']['_value']['plugin']['_value']['interceptor'];
-                if (! isset($interceptors['_attribute']) && is_array($interceptors)) {
+                if (!isset($interceptors['_attribute']) && is_array($interceptors)) {
                     foreach ($interceptors as $item) {
-                        if (! isset($item['_attribute'])) {
+                        if (!isset($item['_attribute'])) {
                             throw new Core(__($module_and_file . '拦截器Interceptor没有设置属性：<interceptor name="interceptorName" instance="instanceClass" disabled="false" sort="0"/>'));
                         }
-                        if (! isset($item['_attribute']['name'])) {
+                        if (!isset($item['_attribute']['name'])) {
                             throw new Core(__($module_and_file . '拦截器Interceptor没有设置name属性：<interceptor name="interceptorName" instance="instanceClass" disabled="false" sort="0"/>'));
                         }
-                        if (! isset($item['_attribute']['instance'])) {
+                        if (!isset($item['_attribute']['instance'])) {
                             throw new Core(__($module_and_file . '拦截器Interceptor没有设置instance属性：<interceptor name="interceptorName" instance="instanceClass" disabled="false" sort="0"/>'));
                         }
                         $module_plugin_interceptors[$config['config']['_value']['plugin']['_attribute']['name']][] = ['class' => $config['config']['_value']['plugin']['_attribute']['class'], 'plugins' => $item['_attribute']];
                     }
                 } else {
-                    if (! isset($interceptors['_attribute'])) {
+                    if (!isset($interceptors['_attribute'])) {
                         throw new Core(__($module_and_file . '拦截器Interceptor没有设置属性：<interceptor name="interceptorName" instance="instanceClass" disabled="false" sort="0"/>'));
                     }
-                    if (! isset($interceptors['_attribute']['name'])) {
+                    if (!isset($interceptors['_attribute']['name'])) {
                         throw new Core(__($module_and_file . '拦截器Interceptor没有设置name属性：<interceptor name="interceptorName" instance="instanceClass" disabled="false" sort="0"/>'));
                     }
-                    if (! isset($interceptors['_attribute']['instance'])) {
+                    if (!isset($interceptors['_attribute']['instance'])) {
                         throw new Core(__($module_and_file . '拦截器Interceptor没有设置instance属性：<interceptor name="interceptorName" instance="instanceClass" disabled="false" sort="0"/>'));
                     }
                     $module_plugin_interceptors[$config['config']['_value']['plugin']['_attribute']['name']][] = ['class' => $config['config']['_value']['plugin']['_attribute']['class'], 'plugins' => $interceptors['_attribute']];

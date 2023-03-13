@@ -14,7 +14,7 @@ use Weline\Framework\Console\CommandAbstract;
 
 class Status extends CommandAbstract
 {
-    public function execute(array $args = [])
+    public function execute(array $args = [], array $data = [])
     {
         array_shift($args);
         $module_list = Env::getInstance()->getModuleList();
@@ -22,7 +22,7 @@ class Status extends CommandAbstract
             $this->printer->error('请先更新模块:bin/m module:upgrade');
             exit();
         }
-        if (! empty($args)) {
+        if (!empty($args)) {
             foreach ($args as $module) {
                 if (isset($module_list[$module])) {
                     $this->printer->printList([$module => $module_list[$module]], '=>');
@@ -35,7 +35,7 @@ class Status extends CommandAbstract
         }
     }
 
-    public function getTip(): string
+    public function tip(): string
     {
         return '获取模块列表';
     }

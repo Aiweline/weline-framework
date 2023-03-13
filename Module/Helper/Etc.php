@@ -41,15 +41,17 @@ class Etc
 
     /**
      * Etc 初始函数...
+     *
      * @param Scanner $scanner
-     * @param Parser $parser
-     * @param Data $data
+     * @param Parser  $parser
+     * @param Data    $data
      */
     public function __construct(
         Scanner $scanner,
-        Parser $parser,
-        Data $data
-    ) {
+        Parser  $parser,
+        Data    $data
+    )
+    {
         $this->scanner = $scanner;
         $this->parser  = $parser;
         $this->data    = $data;
@@ -59,6 +61,7 @@ class Etc
      * @DESC         |获得菜单配置
      *
      * 参数区：
+     *
      * @param string $moduleName
      */
     public function getMenuConfig(string $moduleName)

@@ -14,7 +14,7 @@ class Set implements \Weline\Framework\Console\CommandInterface
     /**
      * @inheritDoc
      */
-    public function execute(array $args = [])
+    public function execute(array $args = [], array $data = [])
     {
         p($args);
     }
@@ -22,7 +22,7 @@ class Set implements \Weline\Framework\Console\CommandInterface
     /**
      * @inheritDoc
      */
-    public function getTip(): string
+    public function tip(): string
     {
         return __('状态操作：0/1 0:关闭，1:启用');
     }

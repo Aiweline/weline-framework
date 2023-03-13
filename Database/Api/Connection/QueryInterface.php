@@ -21,48 +21,54 @@ use Weline\Framework\Database\Connection\Query;
 
 interface QueryInterface
 {
-    public const attr_IDENTITY_FIELD   = 'identity_field';
-    public const attr_TABLE            = 'table';
-    public const attr_TABLE_ALIA       = 'table_alias';
-    public const attr_INSERT           = 'insert';
-    public const attr_JOIN             = 'joins';
-    public const attr_FIELD            = 'fields';
-    public const attr_UPDATE           = 'updates';
-    public const attr_WHERE            = 'wheres';
-    public const attr_BOUND_VALUE      = 'bound_values';
-    public const attr_LIMIT            = 'limit';
-    public const attr_ORDER            = 'order';
-    public const attr_SQL              = 'sql';
-    public const attr_ADDITIONAL_SQL   = 'additional_sql';
+    public const attr_IDENTITY_FIELD = 'identity_field';
+    public const attr_TABLE = 'table';
+    public const attr_TABLE_ALIA = 'table_alias';
+    public const attr_INSERT = 'insert';
+    public const attr_JOIN = 'joins';
+    public const attr_FIELD = 'fields';
+    public const attr_UPDATE = 'updates';
+    public const attr_WHERE = 'wheres';
+    public const attr_BOUND_VALUE = 'bound_values';
+    public const attr_LIMIT = 'limit';
+    public const attr_ORDER = 'order';
+    public const attr_GROUP_BY = 'group_by';
+    public const attr_HAVING = 'having';
+    public const attr_SQL = 'sql';
+    public const attr_ADDITIONAL_SQL = 'additional_sql';
     public const attr_EXIST_UPDATE_SQL = 'exist_update_sql';
 
-    public const init_vars  = [
-        self::attr_IDENTITY_FIELD   => 'id',
-        self::attr_TABLE            => '',
-        self::attr_TABLE_ALIA       => 'main_table',
-        self::attr_INSERT           => [],
-        self::attr_JOIN             => [],
-        self::attr_FIELD            => '*',
-        self::attr_UPDATE           => [],
-        self::attr_WHERE            => [],
-        self::attr_BOUND_VALUE      => [],
-        self::attr_LIMIT            => '',
-        self::attr_ORDER            => [],
-        self::attr_SQL              => '',
-        self::attr_ADDITIONAL_SQL   => '',
+    public const init_vars = [
+        self::attr_IDENTITY_FIELD => 'id',
+        self::attr_TABLE => '',
+        self::attr_TABLE_ALIA => 'main_table',
+        self::attr_INSERT => [],
+        self::attr_JOIN => [],
+        self::attr_FIELD => 'main_table.*',
+        self::attr_UPDATE => [],
+        self::attr_WHERE => [],
+        self::attr_BOUND_VALUE => [],
+        self::attr_LIMIT => '',
+        self::attr_ORDER => [],
+        self::attr_GROUP_BY => '',
+        self::attr_HAVING => '',
+        self::attr_SQL => '',
+        self::attr_ADDITIONAL_SQL => '',
         self::attr_EXIST_UPDATE_SQL => '',
     ];
     public const query_vars = [
-        self::attr_INSERT           => [],
-        self::attr_JOIN             => [],
-        self::attr_FIELD            => '*',
-        self::attr_UPDATE           => [],
-        self::attr_WHERE            => [],
-        self::attr_BOUND_VALUE      => [],
-        self::attr_LIMIT            => '',
-        self::attr_ORDER            => [],
-        self::attr_SQL              => '',
-        self::attr_ADDITIONAL_SQL   => '',
+        self::attr_INSERT => [],
+        self::attr_JOIN => [],
+        self::attr_FIELD => 'main_table.*',
+        self::attr_UPDATE => [],
+        self::attr_WHERE => [],
+        self::attr_BOUND_VALUE => [],
+        self::attr_LIMIT => '',
+        self::attr_ORDER => [],
+        self::attr_GROUP_BY => '',
+        self::attr_HAVING => '',
+        self::attr_SQL => '',
+        self::attr_ADDITIONAL_SQL => '',
         self::attr_EXIST_UPDATE_SQL => '',
     ];
 
@@ -116,8 +122,8 @@ interface QueryInterface
      * @DateTime: 2021/8/18 0:20
      * 参数区：
      *
-     * @param array|string $field                    更新条件字段，如果查询设置有表主键则自动使用表主键
-     * @param int|string   $value_or_condition_field 更新数据示例：['id'=>1,'name'=>'用户']或者多值更新[['id'=>1,'name'=>'用户1'],['id'=>2,'name'=>'用户2']]
+     * @param array|string $field 更新条件字段，如果查询设置有表主键则自动使用表主键
+     * @param int|string $value_or_condition_field 更新数据示例：['id'=>1,'name'=>'用户']或者多值更新[['id'=>1,'name'=>'用户1'],['id'=>2,'name'=>'用户2']]
      *
      * @return QueryInterface
      */
@@ -161,16 +167,16 @@ interface QueryInterface
      * @DateTime: 2021/8/16 21:44
      * 参数区：
      *
-     * @param array|string $field           字段或者条件数组,例如：['name', 'like', '%张三%', 'AND']
+     * @param array|string $field 字段或者条件数组,例如：['name', 'like', '%张三%', 'AND']
      *                                      第一个元素：字段名
      *                                      第二个元素：逻辑符
      *                                      第三个元素：条件值
      *                                      第四个元素：where 查询链接符，可以不用指定，多个where时默认 AND 链接,
      *                                      多个where中使用，也可以全部where写在第一个元素中，
      *                                      就不需要多个where链接查询条件了
-     * @param mixed|null   $value           条件值
-     * @param string       $condition       逻辑符： < | = | like | > 等常规逻辑
-     * @param string       $where_logic     下一个where使用的逻辑 值：and | or 默认
+     * @param mixed|null $value 条件值
+     * @param string $condition 逻辑符： < | = | like | > 等常规逻辑
+     * @param string $where_logic 下一个where使用的逻辑 值：and | or 默认
      *
      * @return QueryInterface
      */
@@ -214,9 +220,9 @@ interface QueryInterface
      * @DateTime: 2022/2/24 22:28
      * 参数区：
      *
-     * @param int   $page     页码
-     * @param int   $pageSize 页大小
-     * @param array $params   参数 可用于保持分页
+     * @param int $page 页码
+     * @param int $pageSize 页大小
+     * @param array $params 参数 可用于保持分页
      *
      * @return QueryInterface
      */
@@ -236,6 +242,30 @@ interface QueryInterface
      * @return QueryInterface
      */
     public function order(string $fields, string $sort = 'ASC'): QueryInterface;
+
+    /**
+     * @DESC          # Group By语法
+     *
+     * @AUTH  秋枫雁飞
+     * @EMAIL aiweline@qq.com
+     * @DateTime: 25/2/2023 上午10:52
+     * 参数区：
+     * @param string $fields 【用英文逗号','隔开每个字段】
+     * @return QueryInterface
+     */
+    public function group(string $fields): QueryInterface;
+
+    /**
+     * @DESC          # 聚合函数后的筛选条件
+     *
+     * @AUTH  秋枫雁飞
+     * @EMAIL aiweline@qq.com
+     * @DateTime: 25/2/2023 上午11:11
+     * 参数区：
+     * @param string $having 【筛选条件】
+     * @return QueryInterface
+     */
+    public function having(string $having): QueryInterface;
 
     /**
      * @DESC          # 仅查找一个
@@ -269,16 +299,16 @@ interface QueryInterface
     public function select(): QueryInterface;
 
     /**
-     * @DESC         |插入
+     * @DESC         |插入 作为批量使用更新插入时请将表引擎设置为 ENGINE=InnoDB;改成ENGINE=MyIsam;可以解决这个问题，或者自行设置批量插入sql
      *
      * 参数区：
      *
-     * @param array $data                [数据]
-     * @param bool  $exist_update_fields [存在则更新字段]
+     * @param array $data [数据]
+     * @param array|string $exist_update_fields [数组：存在则更新字段] 检测到这些字段对应的值已经存在则更新
      *
      * @return QueryInterface
      */
-    public function insert(array $data, array $exist_update_fields = []): QueryInterface;
+    public function insert(array $data, array|string $exist_update_fields = []): QueryInterface;
 
     /**
      * @DESC         |删除

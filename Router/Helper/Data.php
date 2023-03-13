@@ -20,6 +20,7 @@ class Data
      * 参数区：
      *
      * @param array $modules
+     *
      * @throws \Weline\Framework\App\Exception
      */
     public function updateModules(array &$modules)
@@ -36,8 +37,9 @@ class Data
      *
      * 参数区：
      *
-     * @param array $routers
+     * @param array  $routers
      * @param string $path
+     *
      * @throws \Weline\Framework\App\Exception
      */
     public function updatePcRouters(string $path, array &$routers)
@@ -55,7 +57,8 @@ class Data
      * 参数区：
      *
      * @param string $path
-     * @param array $api
+     * @param array  $api
+     *
      * @throws \Weline\Framework\App\Exception
      */
     public function updateApiRouters(string $path, array &$api)

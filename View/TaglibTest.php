@@ -18,8 +18,8 @@ class TaglibTest extends TestCore
 {
     public function testVarParser()
     {
-        /**@var Taglib $taglib*/
-        $taglib = ObjectManager::getInstance(Taglib::class);
+        /**@var Taglib $taglib */
+        $taglib    = ObjectManager::getInstance(Taglib::class);
         $parse_str = $taglib->varParser('Request.param.c_id');
         p($parse_str);
     }

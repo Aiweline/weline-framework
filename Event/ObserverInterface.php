@@ -17,7 +17,7 @@ interface ObserverInterface
      * 参数区：
      *
      * @param Event $event
-     * @return mixed
+     *
      */
     public function execute(Event $event);
 }

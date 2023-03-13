@@ -31,8 +31,9 @@ class Data
      *
      * @param string $module_name
      * @param string $type
-     * @throws Exception
+     *
      * @return bool|string
+     * @throws Exception
      */
     public function getSetupClass(string $module_name, string $type = DataInterface::type_INSTALL)
     {
@@ -56,8 +57,9 @@ class Data
      *
      * @param string $module_name
      * @param string $type
-     * @throws Exception
+     *
      * @return bool|string
+     * @throws Exception
      */
     public function getSetupFile(string $module_name, string $type = DataInterface::type_INSTALL)
     {

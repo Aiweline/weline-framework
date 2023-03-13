@@ -20,7 +20,7 @@ class Scanner extends \Weline\Framework\System\File\App\Scanner
 {
     public const dir = 'Cache';
 
-    #[\JetBrains\PhpStorm\ArrayShape(['app_caches' => "array", 'framework_caches' => "array"])] public function getCaches(): array
+    public function getCaches(): array
     {
         $app_caches = $this->scanAppCaches();
 
@@ -57,7 +57,7 @@ class Scanner extends \Weline\Framework\System\File\App\Scanner
      * @DateTime: 2022/6/6 21:35
      * 参数区：
      *
-     * @param $cache_files
+     * @param        $cache_files
      * @param string $dir
      *
      * @return array
@@ -81,10 +81,15 @@ class Scanner extends \Weline\Framework\System\File\App\Scanner
             $class            = Register::parserModuleVendor($vendor) . '\\' . Register::parserModuleName($module) . '\\' . implode('\\', $cache_class_dirs);
             if (class_exists($class)) {
                 try {
-                    $obj = ObjectManager::getInstance(rtrim($class, 'Factory') . 'Factory');
+                    $obj_class = $class;
+                    if(!str_ends_with($obj_class, 'Factory')){
+                        $obj_class .= 'Factory';
+                    }
+                    $obj = ObjectManager::getInstance($obj_class);
                 } catch (\Exception $e) {
                     $obj = null;
                 }
+
                 if ($obj instanceof CacheInterface) {
                     $app_caches[] = [
                         'class' => $class,
@@ -106,8 +111,8 @@ class Scanner extends \Weline\Framework\System\File\App\Scanner
     public function scanFrameworkCaches(): array
     {
         // 扫描核心命令 兼容AppCode和composer
-        $app_framework      = glob(APP_CODE_PATH . 'Weline' . DS . 'Framework' . DS.'*'.DS . 'Cache' . DS . '*.php', GLOB_NOSORT);
-        $composer_framework = glob(VENDOR_PATH . 'Weline' . DS . 'Framework' . DS.'*'.DS . 'Cache' . DS . '*.php', GLOB_NOSORT);
+        $app_framework      = glob(APP_CODE_PATH . 'Weline' . DS . 'Framework' . DS . '*' . DS . 'Cache' . DS . '*.php', GLOB_NOSORT);
+        $composer_framework = glob(VENDOR_PATH . 'Weline' . DS . 'Framework' . DS . '*' . DS . 'Cache' . DS . '*.php', GLOB_NOSORT);
         // 合并
         $cache_files = array_merge($composer_framework, $app_framework);
         # 查找缓存管理器

@@ -37,7 +37,7 @@ class Block extends Template implements BlockInterface
         $this->is_init = true;
     }
 
-    static function getInstance(): Block|Template
+    public static function getInstance(): Block|Template
     {
         return parent::getInstance();
     }
@@ -73,7 +73,7 @@ class Block extends Template implements BlockInterface
     /**
      * @throws \Exception
      */
-    public function render()
+    public function render(): string
     {
         if (!$this->is_init) {
             throw new Exception(__('检测到Block类未调用父__init()方法：请在当前类（%1）中的__init()函数中添加parent::__init()初始化模板。', $this::class));
@@ -92,7 +92,7 @@ class Block extends Template implements BlockInterface
      * @return bool|void
      * @throws \Exception
      */
-    public function fetchHtml(string $fileName, array $dictionary = [])
+    public function fetchHtml(string $fileName, array $dictionary = []):string
     {
         $comFileName = $this->fetchTagSource('blocks', $fileName);
         ob_start();

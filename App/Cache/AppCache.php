@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /*
@@ -12,5 +13,8 @@ namespace Weline\Framework\App\Cache;
 
 class AppCache extends \Weline\Framework\Cache\CacheFactory
 {
-    function __construct(string $identity = 'app_cache', string $tip = '应用缓存', bool $permanently = true) { parent::__construct($identity, $tip, $permanently); }
+    public function __construct(string $identity = 'app_cache', string $tip = '应用缓存', bool $permanently = true)
+    {
+        parent::__construct($identity, $tip, $permanently);
+    }
 }

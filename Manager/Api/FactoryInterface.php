@@ -18,7 +18,7 @@ interface FactoryInterface
     /**
      * @DESC          # 创建一个新的创建表对象
      *
-     * @AUTH  秋枫雁飞
+     * @AUTH    秋枫雁飞
      * @EMAIL aiweline@qq.com
      * @DateTime: 2021/9/5 20:58
      * 参数区：

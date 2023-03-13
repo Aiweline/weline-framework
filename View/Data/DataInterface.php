@@ -22,6 +22,7 @@ class DataInterface
     public const view_TEMPLATE_COMPILE_DIR = 'tpl';
 
     public const dir_type_TEMPLATE = 'templates';
+    public const dir_type_BLOCKS = 'blocks';
 
     public const dir_type_STATICS = 'statics';
 

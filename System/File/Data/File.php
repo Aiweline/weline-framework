@@ -41,6 +41,7 @@ class File extends DataObject
 
     /**
      * 设置
+     *
      * @param string $origin
      */
     public function setOrigin($origin)
@@ -58,6 +59,7 @@ class File extends DataObject
 
     /**
      * 设置
+     *
      * @param string $relate
      */
     public function setRelate($relate)
@@ -75,6 +77,7 @@ class File extends DataObject
 
     /**
      * 设置
+     *
      * @param float $size
      */
     public function setSize($size)
@@ -92,6 +95,7 @@ class File extends DataObject
 
     /**
      * 设置
+     *
      * @param string $type
      */
     public function setType($type)
@@ -109,6 +113,7 @@ class File extends DataObject
 
     /**
      * 设置
+     *
      * @param string $filename
      */
     public function setFilename($filename)
@@ -126,6 +131,7 @@ class File extends DataObject
 
     /**
      * 设置
+     *
      * @param string $dirname
      */
     public function setDirname($dirname)
@@ -143,6 +149,7 @@ class File extends DataObject
 
     /**
      * 设置
+     *
      * @param string $basename
      */
     public function setBasename($basename)
@@ -160,6 +167,7 @@ class File extends DataObject
 
     /**
      * 设置
+     *
      * @param string $extension
      */
     public function setExtension($extension)
@@ -177,6 +185,7 @@ class File extends DataObject
 
     /**
      * 设置
+     *
      * @param mixed $namespace
      */
     public function setNamespace($namespace)

@@ -188,9 +188,9 @@ abstract class CacheDriverAbstract implements \Weline\Framework\Cache\CacheDrive
             // 不是字符串，json_encode转成字符串
             $key = json_encode($key);
         }
-        if(empty($attach_variables)){
-            $attach_variables['page'] = $this->getRequest()->getGet('page');
-            $attach_variables['pageSize'] = $this->getRequest()->getGet('pageSize');
+        if (empty($attach_variables)) {
+            $attach_variables['page']     = $this->getRequest()->getGet('page', 1);
+            $attach_variables['pageSize'] = $this->getRequest()->getGet('pageSize', 10);
         }
         $key .= $this->getRequest()->getUri() . $this->getRequest()->getMethod() . json_encode($attach_variables);
         if ($attach_variables) {

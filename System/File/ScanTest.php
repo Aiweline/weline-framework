@@ -18,7 +18,7 @@ class ScanTest extends TestCore
 {
     public function testScanDirTree()
     {
-        /**@var Scanner $scanner*/
+        /**@var Scanner $scanner */
         $scanner = ObjectManager::getInstance(Scanner::class);
         p($scanner->scan('E:\WelineFramework\app\code\/Weline/Admin/'));
         p($scanner->scanDirTree('E:\WelineFramework\app\code\/Weline/Admin/', 12));

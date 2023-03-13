@@ -28,18 +28,20 @@ class Set implements CommandInterface
 
     /**
      * Set 初始函数...
+     *
      * @param Printing $printing
-     * @param System $system
+     * @param System   $system
      */
     public function __construct(
         Printing $printing,
         System   $system
-    ) {
+    )
+    {
         $this->printing = $printing;
-        $this->system = $system;
+        $this->system   = $system;
     }
 
-    public function execute(array $args = [])
+    public function execute(array $args = [], array $data = [])
     {
         array_shift($args);
         $param = array_shift($args);
@@ -66,7 +68,7 @@ class Set implements CommandInterface
         }
     }
 
-    public function getTip(): string
+    public function tip(): string
     {
         return '设置翻译模式：online,实时翻译;default,缓存翻译。';
     }

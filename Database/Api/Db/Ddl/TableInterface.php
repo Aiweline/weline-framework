@@ -42,8 +42,10 @@ interface TableInterface
     // 能够支持从1970年开始的日期时间+在一些关系数据库中的自动触发器
     public const column_type_DATETIME = 'datetime';
 
-    // 能够支持1970年以前的长时间数据
-    public const column_type_TEXT = 'text';
+    // 能够支持text类型数据
+    public const column_type_TEXT       = 'text';
+    public const column_type_LONG_TEXT  = 'longtext';
+    public const column_type_MEDIU_TEXT = 'mediumtext ';
 
     // 一个真正的blob，以二进制形式存储在DB中
     public const column_type_BLOB = 'blob';
@@ -106,7 +108,7 @@ interface TableInterface
      *
      * @return static
      */
-    function setConnection(ConnectionFactory $connection): static;
+    public function setConnection(ConnectionFactory $connection): static;
 
     /**
      * @DESC          # 数据库类型

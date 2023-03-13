@@ -26,10 +26,10 @@ class Memcached extends CacheDriverAbstract
 
     public function __init()
     {
-        if (empty($config['options'])) {
-            $config['options'] = [];
+        if (empty($this->config['options'])) {
+            $this->config['options'] = [];
         }
-        if (!isset($config['host']) && !isset($config['port']) && !isset($config['timeout']) && !isset($config['options'])) {
+        if (!isset($this->config['host']) && !isset($this->config['port']) && !isset($this->config['timeout']) && !isset($this->config['options'])) {
             throw new Exception(__('请指定memcached的配置项，示例：%1', "
             'memcached' =>
                         array(
@@ -44,7 +44,12 @@ class Memcached extends CacheDriverAbstract
                             )
                         ),"));
         }
-        $this->connection = Connection::getInstance($config['host'], (int)$config['port'], (int)$config['timeout'], $config['options']);
+        $this->connection = Connection::getInstance(
+            $this->config['host'],
+            (int)$this->config['port'],
+            (int)($this->config['timeout'] ?? 1800),
+            $this->config['options'] ?? []
+        );
     }
 
     /**

@@ -9,12 +9,10 @@
 
 namespace Weline\Framework\Env\test;
 
-use Weline\Framework\Env\CheckEnv;
-use PHPUnit\Framework\TestCase;
 use Weline\Framework\Manager\ObjectManager;
+use Weline\Framework\UnitTest\TestCore;
 
-require __DIR__ . '/../../../../setup/bootstrap.php';
-class CheckEnvTest extends TestCase
+class CheckEnvTest extends TestCore
 {
     public function testSetNeed()
     {

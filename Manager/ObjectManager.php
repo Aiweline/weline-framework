@@ -88,8 +88,7 @@ class ObjectManager implements ManagerInterface
      * @param bool   $cache     是否缓存
      *
      * @return mixed
-     * @throws Exception
-     * @throws \ReflectionException
+     * @throws null
      */
     public static function getInstance(string $class = '', array $arguments = [], bool $shared = true, bool $cache = false): mixed
     {
@@ -100,25 +99,25 @@ class ObjectManager implements ManagerInterface
             self::$instance = new self();
         }
         if (isset(self::$instances[$class]) && $obj = self::$instances[$class]) {
-//            if(method_exists($obj, '__init')){
-//                $obj->__init();
-//            }
+            /*if (method_exists($obj, '__init')) {
+                $obj->__init();
+            }*/
             return $obj;
         }
         // 缓存对象读取
         if ($cache && !CLI && $shared && $cache_class_object = self::getCache()->get($class)) {
-
             self::$instances[$class] = self::initClassInstance($class, $cache_class_object);
             return self::$instances[$class];
         }
 
         // 类名规则处理
-        $class_cache_key = $class . '_cache_key';
-        $new_class       = self::$cache->get($class_cache_key);
-        if (empty($new_class)) {
-            $new_class = self::parserClass($class);
-            self::$cache->set($class_cache_key, $new_class);
-        }
+        $new_class = self::parserClass($class);
+//        $class_cache_key = $class . '_cache_key';
+//        $new_class       = self::$cache->get($class_cache_key);
+//        if (empty($new_class)) {
+//            $new_class = self::parserClass($class);
+//            self::$cache->set($class_cache_key, $new_class);
+//        }
 
         # 兼容原类参数，做到只修改特定参数
         if ($arguments) {
@@ -128,11 +127,13 @@ class ObjectManager implements ManagerInterface
         } else {
             $arguments = self::getMethodParams($new_class);
         }
-//        if ($new_class == 'Weline\Admin\Block\Page\Topbar') {
+//        if (str_contains($new_class, 'Aiweline\Bbs\Controller\Account\BaseController')) {
 //            p($arguments);
 //        }
-        $refClass                  = self::$reflections[$class] ?? self::$reflections[$class] = new ReflectionClass($new_class);
-        if($refClass->isAbstract())throw new Exception(__('抽象类无法被实例化：%1',$class));
+        $refClass = self::$reflections[$class] ?? self::$reflections[$class] = new ReflectionClass($new_class);
+//        if ($refClass->isAbstract()) {
+//            throw new Exception(__('抽象类无法被实例化：%1', $class));
+//        }
         self::$reflections[$class] = $refClass;
 //        p($refClass->getAttributes());
         $new_object           = $refClass->newInstanceArgs($arguments);
@@ -264,7 +265,7 @@ class ObjectManager implements ManagerInterface
         return self::$instances[$class];
     }
 
-    public static function getIs()
+    public static function getInstances(): array
     {
         return self::$instances;
     }
@@ -275,6 +276,7 @@ class ObjectManager implements ManagerInterface
      * @param string $class
      *
      * @return string
+     * @throws \Weline\Framework\App\Exception
      */
     public static function parserClass(string $class): string
     {
@@ -293,6 +295,7 @@ class ObjectManager implements ManagerInterface
      *
      * @param string $class
      * @param        $new_object
+     * @param bool   $init_factory
      *
      * @return mixed
      */
@@ -340,11 +343,44 @@ class ObjectManager implements ManagerInterface
             }
             $method_params = array_merge($method_params, $params);
             $instance      = $instance->newInstanceArgs($method_params);
+            $instance      = self::initClassInstance($class, $instance);
+        } else {
+            $instance = new ReflectionClass($new_class);
+            $instance = self::initClassInstance($class, $instance);
+            $paramArr = self::getMethodParams($instance, $method);
+            $instance = $instance->{$method}(...array_merge($paramArr, $params));
+        }
+        return $instance;
+    }
+
+    /**
+     * @Desc         | 创建实例并运行
+     * @param        $class
+     * @param string $method
+     * @param array  $params
+     *
+     * @return mixed
+     * @throws \ReflectionException
+     * @throws Exception
+     */
+    public static function makeWithoutFactory($class, array $params = [], string $method = '__construct'): mixed
+    {
+        // 拦截器处理
+        if ('__construct' === $method) {
+            $instance      = (new ReflectionClass($class));
+            $method_params = self::getMethodParams($instance, $method);
+            foreach ($method_params as $key => $method_param) {
+                if (empty($method_param)) {
+                    unset($method_params[$key]);
+                }
+            }
+            $method_params = array_merge($method_params, $params);
+            $instance      = $instance->newInstanceArgs($method_params);
             if (method_exists($instance, '__init')) {
                 $instance->__init();
             }
         } else {
-            $instance = new ReflectionClass($new_class);
+            $instance = new ReflectionClass($class);
             if (method_exists($instance, '__init')) {
                 $instance->__init();
             }
@@ -389,7 +425,6 @@ class ObjectManager implements ManagerInterface
                 throw new Exception(__('无法获得对象方法：%1，错误：%2', [$methodsName, $e->getMessage()]), $e);
             }
             // 判断构造函数是否有参数
-            // TODO 完成自动注入在 PHP 8.1环境下的问题
             $params = $construct->getParameters();
             if (count($params) > 0) {
                 // 判断参数类型

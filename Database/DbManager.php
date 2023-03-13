@@ -50,7 +50,7 @@ class DbManager
      */
     public function __sleep()
     {
-        return ['configProvider','connections'];
+        return ['configProvider', 'connections'];
     }
 
     /**
@@ -59,6 +59,7 @@ class DbManager
      * 参数区：
      *
      * @param ConfigProvider $configProvider
+     *
      * @return $this
      */
     public function setConfig(ConfigProvider $configProvider): static
@@ -73,9 +74,10 @@ class DbManager
      * 参数区：
      *
      * @param ConfigProvider $slave_config
+     *
      * @return $this
      */
-    public function addSlaveConfig(ConfigProvider  $slave_config): static
+    public function addSlaveConfig(ConfigProvider $slave_config): static
     {
         $this->configProvider->addSlavesConfig($slave_config);
         return $this;
@@ -99,8 +101,10 @@ class DbManager
      * 兼并新链接
      *
      * 参数区：
-     * @param string $connection_name 链接名称
-     * @param ConfigProvider|null $configProvider 链接资源配置
+     *
+     * @param string              $connection_name 链接名称
+     * @param ConfigProvider|null $configProvider  链接资源配置
+     *
      * @return ConnectionFactory
      * @throws \ReflectionException
      * @throws LinkException|\Weline\Framework\App\Exception
@@ -141,6 +145,7 @@ class DbManager
      * 参数区：
      *
      * @param string $connection_name
+     *
      * @return ConnectionFactory|null
      * @throws LinkException
      */

@@ -20,8 +20,8 @@ class BlockTest extends TestCore
 {
     public function testFetch()
     {
-        /**@var Block $block*/
-        $block = ObjectManager::getInstance(Block::class);
+        /**@var Block $block */
+        $block   = ObjectManager::getInstance(Block::class);
         $request = ObjectManager::getInstance(Request::class);
 
         $block->setTemplate('Weline_Component::message.phtml')->render();

@@ -63,7 +63,6 @@ class Handle implements RegisterInterface
      * @return array
      * @throws Exception
      */
-    #[\JetBrains\PhpStorm\ArrayShape(['router' => "mixed|string", 'rule' => "array"])]
     public function register(string $type, string $module_name, array|string $param, string $version = '', string $description = ''): array
     {
         $controller = explode('Controller', $param['class']);
@@ -73,29 +72,29 @@ class Handle implements RegisterInterface
             case DataInterface::type_API:
                 $path = '';
                 if (in_array(DataInterfaceAlias::type_api_REST_FRONTEND, $param['area'], true)) {
-                    $path                = self::path_fronted_API;
+                    $path          = self::path_fronted_API;
                     $param['area'] = DataInterfaceAlias::type_api_REST_FRONTEND;
                 } elseif (in_array(DataInterfaceAlias::type_api_BACKEND, $param['area'], true)) {
-                    $path                = self::path_backend_API;
+                    $path          = self::path_backend_API;
                     $param['area'] = DataInterfaceAlias::type_api_BACKEND;
                 } else {
                     $param['area'] = self::path_fronted_API;
                 }
                 if ($path) {
                     $router = [
-                        'module'      =>  $param['module'],
-                        'module_path' =>  $param['module_path'],
-                        'router'      =>  $param['base_router'],
+                        'module'      => $param['module'],
+                        'module_path' => $param['module_path'],
+                        'router'      => $param['base_router'],
                         'class'       => [
-                            'area'            =>  $param['area'],
-                            'name'            =>  $param['class'],
+                            'area'            => $param['area'],
+                            'name'            => $param['class'],
                             'controller_name' => $controller,
-                            'method'          =>  $param['method'],
-                            'request_method'  =>  $param['request_method'],
+                            'method'          => $param['method'],
+                            'request_method'  => $param['request_method'],
                         ],
                     ];
                     // 如果模块已安装
-                    $api = ['router' =>  $param['router'], 'rule' => $router];
+                    $api = ['router' => $param['router'], 'rule' => $router];
                     // 更新api路由
                     $this->helper->updateApiRouters($path, $api);
 
@@ -106,10 +105,10 @@ class Handle implements RegisterInterface
             case DataInterface::type_PC:
                 $path = '';
                 if (in_array(DataInterfaceAlias::type_pc_FRONTEND, $param['area'], true)) {
-                    $path                = self::path_frontend_PC;
+                    $path          = self::path_frontend_PC;
                     $param['area'] = DataInterfaceAlias::type_pc_FRONTEND;
                 } elseif (in_array(DataInterfaceAlias::type_pc_BACKEND, $param['area'], true)) {
-                    $path                = self::path_backend_PC;
+                    $path          = self::path_backend_PC;
                     $param['area'] = DataInterfaceAlias::type_pc_BACKEND;
                 }
                 $routers = [];
@@ -117,19 +116,19 @@ class Handle implements RegisterInterface
                     if (is_file($path)) {
                         $routers = require $path;
                     }
-                    $router                          = [
-                        'module'      =>  $param['module'],
-                        'module_path' =>  $param['module_path'],
-                        'router'      =>  $param['base_router'],
+                    $router                    = [
+                        'module'      => $param['module'],
+                        'module_path' => $param['module_path'],
+                        'router'      => $param['base_router'],
                         'class'       => [
-                            'area'            =>  $param['area'],
-                            'name'            =>  $param['class'],
-                            'method'          =>  $param['method'],
+                            'area'            => $param['area'],
+                            'name'            => $param['class'],
+                            'method'          => $param['method'],
                             'controller_name' => $controller,
-                            'request_method'  =>  $param['request_method'],
+                            'request_method'  => $param['request_method'],
                         ],
                     ];
-                    $routers[ $param['router']] = $router;
+                    $routers[$param['router']] = $router;
                     // 写入路由文件
                     $this->helper->updatePcRouters($path, $routers);
                 }

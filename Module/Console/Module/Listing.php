@@ -20,14 +20,15 @@ class Listing implements \Weline\Framework\Console\CommandInterface
 
     public function __construct(
         Printing $printing
-    ) {
+    )
+    {
         $this->printing = $printing;
     }
 
     /**
      * @inheritDoc
      */
-    public function execute(array $args = [])
+    public function execute(array $args = [], array $data = [])
     {
         foreach (Env::getInstance()->getModuleList() as $name => $module) {
             if ($module['status']) {
@@ -42,7 +43,7 @@ class Listing implements \Weline\Framework\Console\CommandInterface
     /**
      * @inheritDoc
      */
-    public function getTip(): string
+    public function tip(): string
     {
         return '查看模块列表';
     }

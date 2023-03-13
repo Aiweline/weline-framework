@@ -62,7 +62,7 @@ class Remove extends CommandAbstract
      * @throws \Weline\Framework\App\Exception
      * @throws ConsoleException
      */
-    public function execute(array $args = [])
+    public function execute(array $args = [], array $data = [])
     {
         array_shift($args);
 
@@ -116,7 +116,6 @@ class Remove extends CommandAbstract
                 $this->printer->warning(__('已取消执行！'));
             }
         }
-
     }
 
     /**
@@ -126,7 +125,7 @@ class Remove extends CommandAbstract
      *
      * @return string
      */
-    public function getTip(): string
+    public function tip(): string
     {
         return '移除模块以及模块数据！并执行卸载脚本（如果有）';
     }

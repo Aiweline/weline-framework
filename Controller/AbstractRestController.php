@@ -22,8 +22,9 @@ abstract class AbstractRestController extends Core
      *
      * 参数区：
      *
-     * @param $data
+     * @param        $data
      * @param string $type
+     *
      * @return false|string
      */
     public function fetch($data, string $type = self::fetch_JSON)
@@ -60,10 +61,9 @@ abstract class AbstractRestController extends Core
             if (is_numeric($val)) {
                 $xml .= "<$key>$val</$key>";
             } elseif (is_array($val)) {
-                // TODO 多维数组 $val可能是数组
                 $xml_ = str_replace('<xml>', '', $this->setXml($val));
                 $xml_ = str_replace('</xml>', '', $xml_);
-                $xml .= "<$key>{$xml_}</$key>";
+                $xml  .= "<$key>{$xml_}</$key>";
             } else {
                 $xml .= "<$key><![CDATA[$val]]></$key>";
             }

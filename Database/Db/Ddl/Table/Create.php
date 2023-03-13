@@ -27,8 +27,8 @@ class Create extends TableAbstract implements CreateInterface
     public function addColumn(string $field_name, string $type, ?int $length, string $options, string $comment): CreateInterface
     {
         # 数字字段
-        if ($type === TableInterface::column_type_INTEGER) {
-            if ($length === 0) {
+        if ($type === TableInterface::column_type_INTEGER || $type === TableInterface::column_type_SMALLINT) {
+            if (!$length) {
                 $length = 11;
             }
             if (is_int($length)) {
@@ -44,35 +44,36 @@ class Create extends TableAbstract implements CreateInterface
             }
         }
         $type_length    = $length ? "{$type}({$length})" : $type;
-        $this->fields[] = "`{$field_name}` {$type_length} {$options} COMMENT '{$comment}'," . PHP_EOL;
+        $this->fields[$field_name] = "`{$field_name}` {$type_length} {$options} COMMENT '{$comment}'";
 
         return $this;
     }
 
 
-    public function addIndex(string $type, string $name, array|string $column, string $comment='', string $index_method = ''): CreateInterface
+    public function addIndex(string $type, string $name, array|string $column, string $comment = '', string $index_method = ''): CreateInterface
     {
-        $comment = $comment?"COMMENT '{$comment}'": '';
-        $index_method = $index_method?"USING {$index_method}": '';
+        $comment      = $comment ? "COMMENT '{$comment}'" : '';
+        $index_method = $index_method ? "USING {$index_method}" : '';
+        $type         = strtoupper($type);
         switch ($type) {
             case self::index_type_DEFAULT:
-                $this->indexes[] = "INDEX `{$name}`(`{$column}`) {$index_method} {$comment}," . PHP_EOL;
+                $this->indexes[] = "INDEX `{$name}`(`{$column}`) {$index_method} {$comment}" . PHP_EOL;
 
                 break;
             case self::index_type_FULLTEXT:
-                $this->indexes[] = "FULLTEXT INDEX `{$name}`(`{$column}`) {$index_method} {$comment}," . PHP_EOL;
+                $this->indexes[] = "FULLTEXT INDEX `{$name}`(`{$column}`) {$index_method} {$comment}" . PHP_EOL;
 
                 break;
             case self::index_type_UNIQUE:
-                $this->indexes[] = "UNIQUE INDEX `{$name}`(`{$column}`) {$index_method} {$comment}," . PHP_EOL;
+                $this->indexes[] = "UNIQUE INDEX `{$name}`(`{$column}`) {$index_method} {$comment}" . PHP_EOL;
 
                 break;
             case self::index_type_SPATIAL:
-                $this->indexes[] = "SPATIAL INDEX `{$name}`(`{$column}`) {$index_method} {$comment}," . PHP_EOL;
+                $this->indexes[] = "SPATIAL INDEX `{$name}`(`{$column}`) {$index_method} {$comment}" . PHP_EOL;
 
                 break;
             case self::index_type_KEY:
-                $this->indexes[] = "KEY IDX `{$name}`(`{$column}`) {$index_method} {$comment}," . PHP_EOL;
+                $this->indexes[] = "KEY IDX `{$name}`(`{$column}`) {$index_method} {$comment}" . PHP_EOL;
 
                 break;
             case self::index_type_MULTI:
@@ -118,72 +119,39 @@ class Create extends TableAbstract implements CreateInterface
     public function create(): QueryInterface
     {
         // 字段
-        $fields_str = '';
-        foreach ($this->fields as $field) {
-            if (end($this->fields) === $field) {
-                $field = trim($field, PHP_EOL);
-                if (empty($this->indexes)) {
-                    $field = trim($field, ',');
-                }// 如果没有设置索引
-            }
-            $fields_str .= $field;
-        }
-        $fields_str = trim($fields_str, ',');
-        if (!is_int(strpos($fields_str, '`create_time`'))) {
-            $fields_str                .= ',' . PHP_EOL;
+        if(!array_key_exists('`create_time`', $this->fields)&&!array_key_exists('create_time', $this->fields)){
             $create_time_comment_words = __('创建时间');
-            $fields_str                .= "`create_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '{$create_time_comment_words}'," . PHP_EOL;
+            $this->fields['`create_time`'] = "`create_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '{$create_time_comment_words}'";
         }
-        if (!is_int(strpos($fields_str, '`update_time`'))) {
-            if (is_int(strpos($fields_str, ',' . PHP_EOL))) {
-                $fields_str = rtrim($fields_str, ',' . PHP_EOL);
-            }
-            $fields_str                = rtrim($fields_str, ',');
-            $fields_str                .= ',' . PHP_EOL;
+        if(!array_key_exists('`update_time`', $this->fields)&&!array_key_exists('update_time', $this->fields)){
             $update_time_comment_words = __('更新时间');
-            $fields_str                .= "`update_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '{$update_time_comment_words}'," . PHP_EOL;
+            $this->fields['`update_time`'] = "`update_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '{$update_time_comment_words}'";
         }
-        if (is_int(strpos($fields_str, ',' . PHP_EOL))) {
-            $fields_str = rtrim($fields_str, ',' . PHP_EOL);
-        }
+        $fields_str = implode(',' . PHP_EOL, $this->fields);
+        $fields_str = rtrim($fields_str, PHP_EOL);
         // 索引
-        $indexes_str = '';
-        foreach ($this->indexes as $index) {
-            if (end($this->indexes) === $index) {
-                if (empty($this->constraints)) {
-                    $index = trim(trim($index, PHP_EOL), ',');
-                }
-            }
-            $indexes_str .= $index;
-        }
-        if ($indexes_str) {
+        $indexes_str = implode(',', $this->indexes);
+        $indexes_str = rtrim($indexes_str, PHP_EOL);
+        // 外键
+        $foreign_key_str = implode(','.PHP_EOL, $this->foreign_keys);
+        $foreign_key_str = rtrim($foreign_key_str, PHP_EOL);
+        // 组装结尾逗号
+        if ($this->indexes) {
             $fields_str .= ',';
         }
-        $indexes_str = rtrim($indexes_str, PHP_EOL);
-        $indexes_str = rtrim($indexes_str, '\n\r');
-        // 外键
-        $foreign_key_str = '';
-        foreach ($this->foreign_keys as $foreign_key) {
-            if (end($this->foreign_keys) === $foreign_key) {
-                if (empty($this->constraints)) {
-                    $foreign_key = trim(trim($foreign_key, PHP_EOL), ',');
-                }
-            }
-            $foreign_key_str .= $foreign_key;
-        }
-        if ($foreign_key_str) {
+        if ($this->foreign_keys) {
             $indexes_str .= ',';
         }
-        $foreign_key_str = rtrim($foreign_key_str, PHP_EOL);
-        $foreign_key_str = rtrim($foreign_key_str, '\n\r');
-
+        if ($this->constraints) {
+            $foreign_key_str .= ',';
+        }
         $comment = $this->comment ? "COMMENT '{$this->comment}'" : '';
         $sql     = <<<createSQL
 CREATE TABLE {$this->table}(
  {$fields_str}
  {$indexes_str}
  {$foreign_key_str}
- {$this->constraints}
+ {$this->constraints}                 
 ) {$comment} {$this->additional}
 createSQL;
         try {

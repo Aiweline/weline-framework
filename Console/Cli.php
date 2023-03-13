@@ -33,7 +33,7 @@ class Cli extends CliAbstract
         }
         $command_class = $this->checkCommand();
 //        $this->printer->note(__('执行命令：') . $class['command'] . ' ' . (isset($this->argv[1])?$this->argv[1]:''));
-        ObjectManager::getInstance($command_class['class'])->execute($this->argv);
+        ObjectManager::getInstance($command_class['class'])->execute($this->argv, $command_class['data']);
         $this->printer->printing("\n");
         $this->printer->note(__('执行命令：') . $command_class['command'] . ' ' . ($this->argv[1] ?? '')/*,$this->printer->colorize('CLI-System','red')*/);
     }
@@ -115,16 +115,22 @@ class Cli extends CliAbstract
         }
         $commands = Env::getCommands();
         if ($arg0 !== 'command:upgrade' && empty($commands)) {
-            exit($this->printer->error('命令系统异常！请完整执行（不能简写）更新模块命令后重试：php bin/m command:upgrade'));
+            try {
+                ObjectManager::getInstance(\Weline\Framework\Console\Console\Command\Upgrade::class)->execute();
+            } catch (Exception $exception) {
+                $this->printer->error($exception->getMessage());
+                exit();
+            }
+//            exit($this->printer->error('命令系统异常！请完整执行（不能简写）更新模块命令后重试：php bin/m command:upgrade'));
         }
 
         // 检查命令
         $command_class = '';
         foreach ($commands as $group => $group_commands) {
-            if (isset($group_commands[$arg0])&& $command_data = $group_commands[$arg0]) {
-                $group_arr    = explode('#', $group);
+            if (isset($group_commands[$arg0]) && $command_data = $group_commands[$arg0]) {
+                $group_arr     = explode('#', $group);
                 $command_class = $command_data['class'];
-                return ['class' => $command_class, 'command' => $arg0];
+                return ['class' => $command_class, 'command' => $arg0, 'data' => $command_data];
             }
         }
 
@@ -133,9 +139,9 @@ class Cli extends CliAbstract
         foreach ($recommendCommands as $recommendCommand) {
             $commands = array_merge($commands, $recommendCommand);
         }
-        if (count($commands) === 1&&$command = $commands[0]){
-            foreach ($command as $c=>$data){
-                return ['class' => $data['class'], 'command' => $c];
+        if (count($commands) === 1 && $command = $commands[0]) {
+            foreach ($command as $c => $data) {
+                return ['class' => $data['class'], 'command' => $c, 'data' => $data];
             }
         }
         foreach ($recommendCommands as $key => &$command) {

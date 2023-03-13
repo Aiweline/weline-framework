@@ -16,11 +16,12 @@ use Weline\Framework\Manager\ObjectManager;
 
 class BackendRestController extends AbstractRestController
 {
-    public function __init()
-    {
-        parent::__init();
-        $this->getSession(BackendApiSession::class);
-    }
+    private BackendApiSession $session;
 
-    private ?BackendApiSession $session = null;
+    public function __construct(
+        BackendApiSession $backendApiSession,
+    )
+    {
+        $this->session = $backendApiSession;
+    }
 }

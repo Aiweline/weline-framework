@@ -70,6 +70,7 @@ class Generator
      * 参数区：
      *
      * @param $node
+     *
      * @return $this
      */
     protected function _setCurrentDom(\DOMDocument $node)
@@ -85,13 +86,14 @@ class Generator
      * 参数区：
      *
      * @param array $content
+     *
      * @return $this
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     public function arrayToXml(array $content)
     {
         $parentNode = $this->_getCurrentDom();
-        if (! $content || ! count($content)) {
+        if (!$content || !count($content)) {
             return $this;
         }
         foreach ($content as $_key => $_item) {
@@ -116,7 +118,7 @@ class Generator
             } elseif (is_string($_item)) {
                 $text = $this->getDom()->createTextNode($_item);
                 $node->appendChild($text);
-            } elseif (is_array($_item) && ! isset($_item[0])) {
+            } elseif (is_array($_item) && !isset($_item[0])) {
                 $this->_setCurrentDom($node)->arrayToXml($_item);
             } elseif (is_array($_item) && isset($_item[0])) {
                 foreach ($_item as $v) {
@@ -146,6 +148,7 @@ class Generator
      * 参数区：
      *
      * @param string $file
+     *
      * @return $this
      */
     public function save(string $file)
@@ -161,6 +164,7 @@ class Generator
      * 参数区：
      *
      * @param string $name
+     *
      * @return $this
      */
     public function setIndexedArrayItemName(string $name)

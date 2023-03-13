@@ -15,7 +15,7 @@ use Weline\Framework\Xml\Security;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Test for class \Weline\Framework\Xml\Security
+ * test for class \Weline\Framework\Xml\Security
  */
 class SecurityTest extends TestCase
 {
@@ -38,7 +38,7 @@ class SecurityTest extends TestCase
      * Run test scan method
      *
      * @param string $xmlContent
-     * @param bool $expectedResult
+     * @param bool   $expectedResult
      *
      * @dataProvider dataProviderTestScan
      */
@@ -64,7 +64,7 @@ class SecurityTest extends TestCase
                 'expectedResult' => false,
             ],
             [
-                'xmlContent' => '<?xml version="1.0"?>
+                'xmlContent'     => '<?xml version="1.0"?>
             <!DOCTYPE test [
               <!ENTITY value "value">
               <!ENTITY value1 "&value;&value;&value;&value;&value;&value;&value;&value;&value;&value;">

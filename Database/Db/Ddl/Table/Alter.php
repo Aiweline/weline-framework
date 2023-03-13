@@ -19,7 +19,6 @@ use Weline\Framework\Database\Exception\DbException;
 
 class Alter extends TableAbstract implements AlterInterface
 {
-
     public function forTable(string $table_name, string $primary_key, string $comment = '', string $new_table_name = ''): AlterInterface
     {
         # 开始表操作
@@ -30,20 +29,22 @@ class Alter extends TableAbstract implements AlterInterface
     /**
      * @DESC          # 添加字段
      *
-     * @AUTH  秋枫雁飞
+     * @AUTH    秋枫雁飞
      * @EMAIL aiweline@qq.com
      * @DateTime: 2021/8/26 21:31
      * 参数区：
-     * @param string $field_name 字段名
-     * @param string $type 字段类型
-     * @param int|null $length 长度
-     * @param string $options 配置
-     * @param string $comment 字段注释
+     *
+     * @param string   $field_name 字段名
+     * @param string   $type       字段类型
+     * @param int|null $length     长度
+     * @param string   $options    配置
+     * @param string   $comment    字段注释
+     *
      * @return AlterInterface
      */
     public function addColumn(string $field_name, string $after_column, string $type, ?int $length, string $options, string $comment): AlterInterface
     {
-        $type_length = $length ? "{$type}({$length})" : $type;
+        $type_length    = $length ? "{$type}({$length})" : $type;
         $this->fields[] = "ADD COLUMN `{$field_name}` {$type_length} {$options} COMMENT '{$comment}' " . (empty($after_column) ? 'FIRST' : "AFTER `{$after_column}`");
         return $this;
     }
@@ -51,11 +52,13 @@ class Alter extends TableAbstract implements AlterInterface
     /**
      * @DESC          # 删除字段
      *
-     * @AUTH  秋枫雁飞
+     * @AUTH    秋枫雁飞
      * @EMAIL aiweline@qq.com
      * @DateTime: 2021/9/5 16:09
      * 参数区：
+     *
      * @param string $field_name
+     *
      * @return AlterInterface
      */
     public function deleteColumn(string $field_name): AlterInterface
@@ -69,14 +72,15 @@ class Alter extends TableAbstract implements AlterInterface
      *
      * 参数区：
      *
-     * @param string $type
-     * @param string $name
+     * @param string       $type
+     * @param string       $name
      * @param array|string $column
+     *
      * @return AlterInterface
      */
-    public function addIndex(string $type, string $name, array|string $column, string $comment='', string $index_method = 'BTREE'): AlterInterface
+    public function addIndex(string $type, string $name, array|string $column, string $comment = '', string $index_method = 'BTREE'): AlterInterface
     {
-        $comment = $comment?"comment '{$comment}'":"";
+        $comment = $comment ? "comment '{$comment}'" : "";
         switch ($type) {
             case self::index_type_DEFAULT:
                 $this->indexes[] = "INDEX {$name}(`{$column}`) USING {$index_method} {$comment}," . PHP_EOL;
@@ -103,7 +107,7 @@ class Alter extends TableAbstract implements AlterInterface
                 if (!is_array($column)) {
                     new Exception(self::index_type_MULTI . __('：此索引的column需要array类型,当前类型') . "{$type_of_column}" . ' 例如：[ID,NAME(19),AGE]');
                 }
-                $column = implode(',', $column);
+                $column          = implode(',', $column);
                 $this->indexes[] = "INDEX {$name}(`$column`) USING {$index_method} {$comment}," . PHP_EOL;
 
                 break;
@@ -120,6 +124,7 @@ class Alter extends TableAbstract implements AlterInterface
      * 参数区：
      *
      * @param string $additional_sql
+     *
      * @return AlterInterface
      */
     public function addAdditional(string $additional_sql = 'ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;'): AlterInterface
@@ -133,7 +138,9 @@ class Alter extends TableAbstract implements AlterInterface
      * @DESC         |表约束
      *
      * 参数区：
+     *
      * @param string $constraints
+     *
      * @return AlterInterface
      */
     public function addConstraints(string $constraints = ''): AlterInterface
@@ -145,7 +152,7 @@ class Alter extends TableAbstract implements AlterInterface
 
     public function alterColumn(string $old_field, string $field_name, string $after_field = '', string $type = null, ?int $length = null, string $options = null, string $comment = null): AlterInterface
     {
-        $type_length = $length ? "{$type}({$length})" : $type;
+        $type_length                    = $length ? "{$type}({$length})" : $type;
         $this->alter_fields[$old_field] = ['field_name' => $field_name, 'after_field' => $after_field, 'type_length' => $type_length, 'options' => $options, 'comment' => $comment,];
 
         return $this;
@@ -165,7 +172,7 @@ class Alter extends TableAbstract implements AlterInterface
         # --如果存在要新增的字段
         if ($this->fields) {
             $fields = join(',', $this->fields);
-            $sql = "ALTER TABLE {$this->table} $fields";
+            $sql    = "ALTER TABLE {$this->table} $fields";
             try {
                 $this->query->query($sql);
             } catch (\Exception $exception) {
@@ -174,10 +181,10 @@ class Alter extends TableAbstract implements AlterInterface
         }
         try {
             # 检测更新表注释
-            $ddl = $this->getCreateTableSql();
+            $ddl               = $this->getCreateTableSql();
             $ddl_comment_array = explode('COMMENT=', $ddl);
-            $comment = str_replace('"', '', array_pop($ddl_comment_array));
-            $comment = str_replace('\'', '', $comment);
+            $comment           = str_replace('"', '', array_pop($ddl_comment_array));
+            $comment           = str_replace('\'', '', $comment);
             # --检测存在评论，并且评论不相同时，更新表评论
             if ($this->comment && $comment !== $this->comment) {
                 try {
@@ -269,8 +276,8 @@ class Alter extends TableAbstract implements AlterInterface
 
     public function addForeignKey(string $FK_Name, string $FK_Field, string $references_table, string $references_field, bool $on_delete = false, bool $on_update = false): AlterInterface
     {
-        $on_delete_str = $on_delete ? 'on delete cascade' : '';
-        $on_update_str = $on_update ? 'on update cascade' : '';
+        $on_delete_str        = $on_delete ? 'on delete cascade' : '';
+        $on_update_str        = $on_update ? 'on update cascade' : '';
         $this->foreign_keys[] = "constraint {$FK_Name} foreign key ({$FK_Field}) references {$references_table}({$references_field}) {$on_delete_str} {$on_update_str}";
         return $this;
     }

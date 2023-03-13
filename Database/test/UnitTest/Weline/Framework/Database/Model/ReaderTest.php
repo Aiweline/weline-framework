@@ -14,6 +14,7 @@ use Weline\Framework\UnitTest\TestCore;
 class ReaderTest extends TestCore
 {
     private Reader $reader;
+
     public function setUp(): void
     {
         $this->reader = ObjectManager::getInstance(Reader::class);

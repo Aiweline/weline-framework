@@ -82,6 +82,7 @@ class Parser
      * 参数区：
      *
      * @param $node
+     *
      * @return $this
      */
     protected function _setCurrentDom($node)
@@ -111,11 +112,12 @@ class Parser
      * 参数区：
      *
      * @param $currentNode
+     *
      * @return array|string
      */
     protected function _xmlToArray($currentNode = false)
     {
-        if (! $currentNode) {
+        if (!$currentNode) {
             $currentNode = $this->getDom();
         }
         $content = '';
@@ -136,8 +138,8 @@ class Parser
                         $value = ['_value' => $value, '_attribute' => $attributes];
                     }
                     if (isset($content[$node->nodeName])) {
-                        if ((is_string($content[$node->nodeName]) || ! isset($content[$node->nodeName][0]))
-                            || (is_array($value) && ! is_array($content[$node->nodeName][0]))
+                        if ((is_string($content[$node->nodeName]) || !isset($content[$node->nodeName][0]))
+                            || (is_array($value) && !is_array($content[$node->nodeName][0]))
                         ) {
                             $oldValue                   = $content[$node->nodeName];
                             $content[$node->nodeName]   = [];
@@ -171,6 +173,7 @@ class Parser
      * 参数区：
      *
      * @param string $file
+     *
      * @return $this
      */
     public function load(string $file): static
@@ -186,8 +189,9 @@ class Parser
      * 参数区：
      *
      * @param $string
-     * @throws \Weline\Framework\Exception\Core
+     *
      * @return $this
+     * @throws \Weline\Framework\Exception\Core
      */
     public function loadXML($string): static
     {
@@ -218,10 +222,11 @@ class Parser
      *
      * 参数区：
      *
-     * @param int $errorNo
+     * @param int    $errorNo
      * @param string $errorStr
      * @param string $errorFile
-     * @param int $errorLine
+     * @param int    $errorLine
+     *
      * @throws \Weline\Framework\Exception\Core
      */
     public function errorHandler(int $errorNo, string $errorStr, string $errorFile, int $errorLine)

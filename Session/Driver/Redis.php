@@ -11,37 +11,33 @@ namespace Weline\Framework\Session\Driver;
 
 class Redis extends AbstractSessionDriverHandlerDriverHandle implements DriverInterface
 {
-    public function __construct(array $config)
+    public function close()
     {
+        // TODO: Implement close() method.
     }
 
-    public function set($name, $value)
+    public function destroy($session_id)
     {
-        // TODO: Implement set() method.
+        // TODO: Implement destroy() method.
     }
 
-    public function get($name): mixed
+    public function gc($maxlifetime)
     {
-        // TODO: Implement get() method.
+        // TODO: Implement gc() method.
     }
 
-    public function del($name)
-    {
-        // TODO: Implement del() method.
-    }
-
-    public function des()
-    {
-        // TODO: Implement des() method.
-    }
-
-    public function open()
+    public function open($save_path, $name)
     {
         // TODO: Implement open() method.
     }
 
-    public function gc(int $sessMaxLifeTime)
+    public function read($session_id)
     {
-        // TODO: Implement gc() method.
+        // TODO: Implement read() method.
+    }
+
+    public function write($session_id, $session_data)
+    {
+        // TODO: Implement write() method.
     }
 }

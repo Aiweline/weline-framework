@@ -10,6 +10,7 @@
 namespace Weline\Framework\Http;
 
 use Weline\Framework\App\Env;
+use Weline\Framework\App\Exception;
 use Weline\Framework\Http\Request\RequestFilter;
 use Weline\Framework\Manager\ObjectManager;
 
@@ -19,6 +20,8 @@ class Request extends Request\RequestAbstract implements RequestInterface
 
     private string $module_name = '';
 
+    private bool $check_param = false;
+
     public function __init()
     {
         parent::__init();
@@ -27,9 +30,35 @@ class Request extends Request\RequestAbstract implements RequestInterface
         }
     }
 
-    public function getUrlPath(): string
+    /**
+     * @DESC          # 方法描述
+     *
+     * @AUTH    秋枫雁飞
+     * @EMAIL aiweline@qq.com
+     * @DateTime: 2022/12/23 23:11
+     * 参数区：
+     *
+     * @param bool $check_param
+     *
+     * @return bool
+     */
+    public function checkParam(bool $check_param = true): bool
     {
-        return $this->parse_url()['path'];
+        $this->check_param = $check_param;
+        return $this->check_param;
+    }
+
+    public function getUrlPath(string $url = ''): string
+    {
+        if ($url) {
+            return parse_url($url)['path'] ?? '';
+        }
+        return $this->parse_url()['path'] ?? "";
+    }
+
+    public function getRouteUrlPath(string $url=''): string
+    {
+        return str_replace('/' . $this->getAreaRouter() . '/', '', $this->getUrlPath($url));
     }
 
     /**
@@ -40,7 +69,7 @@ class Request extends Request\RequestAbstract implements RequestInterface
         return $this->getRouterData('module_path');
     }
 
-    public function getHeader(string $key = null)
+    public function getHeader(string $key = null): array|string|null
     {
         if (empty($key)) {
             return $this->getServer(self::HEADER);
@@ -65,7 +94,7 @@ class Request extends Request\RequestAbstract implements RequestInterface
         } else {
             $data = RequestFilter::filter(gettype($default), $data);
         }
-        return $data;
+        return $this->checkResult($key, $data);
     }
 
     public function getParams()
@@ -84,7 +113,8 @@ class Request extends Request\RequestAbstract implements RequestInterface
     public function getBodyParam($key, mixed $default = null)
     {
         $params = $this->getBodyParams(true);
-        return $params[$key] ?? $default;
+        $result = $params[$key] ?? $default;
+        return $this->checkResult($key, $result);
     }
 
     public function getBodyParams(bool $array = false)
@@ -101,7 +131,9 @@ class Request extends Request\RequestAbstract implements RequestInterface
             $params_ = [];
             foreach (explode('&', $params) as $key => $value) {
                 $value = explode('=', $value);
-                if (count($value) === 2) $params_[$value[0]] = $value[1] ?? '';
+                if (count($value) === 2) {
+                    $params_[$value[0]] = $value[1] ?? '';
+                }
             }
             $params = $params_;
         }
@@ -114,7 +146,12 @@ class Request extends Request\RequestAbstract implements RequestInterface
         if ('' === $key) {
             return $_POST;
         }
-        return $_POST[$key] ?? $default;
+        $result = $_POST[$key] ?? $default;
+        if ($default) {
+            $result = $this->getDefaultTypeData($result, $default);
+        }
+
+        return $this->checkResult($key, $result);
     }
 
     public function getGet(string $key = '', mixed $default = null)
@@ -122,7 +159,24 @@ class Request extends Request\RequestAbstract implements RequestInterface
         if ('' === $key) {
             return $_GET;
         }
-        return $_GET[$key] ?? $default;
+        $result = $_GET[$key] ?? $default;
+        if ($default) {
+            $result = $this->getDefaultTypeData($result, $default);
+        }
+        return $this->checkResult($key, $result);
+    }
+
+    private function checkResult(string $key, mixed &$result): mixed
+    {
+        if ($this->check_param) {
+            if ($result === null) {
+                if (PROD) {
+                    $this->_response->redirect(404);
+                }
+                throw new Exception(__('未提供参数：%1', $key));
+            }
+        }
+        return $result;
     }
 
     public function isPost(): bool
@@ -203,64 +257,6 @@ class Request extends Request\RequestAbstract implements RequestInterface
         return $realip;
     }
 
-    public function getUrl(string $path = '', array $params = [], bool $merge_params = false): string
-    {
-        if ($path) {
-            $url = $this->getBaseHost() . '/' . ltrim($path, '/');
-        } else {
-            $url = $this->getBaseUrl();
-        }
-        return $this->extractedUrl($params, $merge_params, $url);
-    }
-
-    public function getAdminUrl(string $path = '', array $params = [], bool $merge_params = true): string
-    {
-        if ($path) {
-            $url = $this->getBaseHost() . '/' . Env::getInstance()->getConfig('admin') . (('/' === $path) ? '' : '/' . $path);
-        } else {
-            $url = $this->getBaseUrl();
-        }
-        return $this->extractedUrl($params, $merge_params, $url);
-    }
-
-    public function getApiAdminUrl(string $path = '', array $params = [], bool $merge_params = true): string
-    {
-        if ($path) {
-            $url = $this->getBaseHost() . '/' . Env::getInstance()->getConfig('api_admin') . '/' . $path;
-        } else {
-            $url = $this->getBaseUrl();
-        }
-        return $this->extractedUrl($params, $merge_params, $url);
-    }
-
-    /**
-     * @DESC          # 提取Url
-     *
-     * @AUTH    秋枫雁飞
-     * @EMAIL aiweline@qq.com
-     * @DateTime: 2022/2/8 23:27
-     * 参数区：
-     *
-     * @param array  $params
-     * @param bool   $merge_params
-     * @param string $url
-     *
-     * @return string
-     */
-    public function extractedUrl(array $params, bool $merge_params, string $url): string
-    {
-        if ($params) {
-            if ($merge_params) {
-                $url .= '?' . http_build_query(array_merge($this->getGet(), $params));
-            } else {
-                $url .= '?' . http_build_query($params);
-            }
-        } else {
-            $url .= ($this->getGet() && $merge_params) ? '?' . http_build_query($this->getGet()) : '';
-        }
-        return $url;
-    }
-
     /**
      * @DESC          # 设置规则数据
      *
@@ -305,5 +301,50 @@ class Request extends Request\RequestAbstract implements RequestInterface
         } else {
             return $this->getData('rule');
         }
+    }
+
+    /**
+     * @DESC          # 获取Url构建器
+     *
+     * @AUTH    秋枫雁飞
+     * @EMAIL aiweline@qq.com
+     * @DateTime: 2022/9/21 22:15
+     * 参数区：
+     * @return Url
+     * @throws \ReflectionException
+     * @throws \Weline\Framework\App\Exception
+     */
+    public function getUrlBuilder(): Url
+    {
+        return ObjectManager::getInstance(Url::class);
+    }
+
+    /**
+     * @DESC          # 获取默认值类型的数据
+     *
+     * @AUTH    秋枫雁飞
+     * @EMAIL aiweline@qq.com
+     * @DateTime: 2022/10/7 12:12
+     * 参数区：
+     *
+     * @param mixed $data
+     * @param mixed $default
+     *
+     * @return array|bool|int|mixed|string
+     */
+    public function getDefaultTypeData(mixed $data, mixed $default): mixed
+    {
+        if (is_bool($default)) {
+            $data = (bool)$data;
+        } elseif (is_string($default)) {
+            $data = (string)$data;
+        } elseif (is_array($default)) {
+            $data = (array)$data;
+        } elseif (is_int($default) || is_integer($default)) {
+            $data = (int)$data;
+        } elseif (is_float($default) || is_double($default)) {
+            $data = (float)$data;
+        }
+        return $data;
     }
 }

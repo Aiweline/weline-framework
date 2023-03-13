@@ -167,7 +167,7 @@ class DataObject implements \ArrayAccess
      */
     public function clearDataObject(): DataObject
     {
-        $this->_data=[];
+        $this->_data = [];
         return $this;
     }
 
@@ -434,7 +434,8 @@ class DataObject implements \ArrayAccess
         string $rootName = 'item',
         bool   $addOpenTag = false,
         bool   $addCdata = true
-    ): string {
+    ): string
+    {
         return $this->toXml($arrAttributes, $rootName, $addOpenTag, $addCdata);
     }
 

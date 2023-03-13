@@ -27,16 +27,17 @@ class Cache implements CommandInterface
     private CacheInterface $eventCache;
 
     public function __construct(
-        Printing $printing,
+        Printing   $printing,
         EventCache $eventCache
-    ) {
+    )
+    {
         $this->printing   = $printing;
         $this->eventCache = $eventCache->create();
     }
 
-    public function execute(array $args = [])
+    public function execute(array $args = [], array $data = [])
     {
-        if (! isset($args[1])) {
+        if (!isset($args[1])) {
             $this->printing->error(__('错误的缓存处理参数！-c：清除缓存，-f：刷新缓存！'));
             exit(0);
         }
@@ -57,7 +58,7 @@ class Cache implements CommandInterface
         }
     }
 
-    public function getTip(): string
+    public function tip(): string
     {
         return '事件缓存管理！-c：清除缓存；-f：刷新缓存。';
     }

@@ -9,11 +9,7 @@
 
 namespace Weline\Framework\App\Controller;
 
-use JetBrains\PhpStorm\NoReturn;
-use Weline\Framework\App\Session\FrontendApiSession;
-use Weline\Framework\App\Session\FrontendSession;
 use Weline\Framework\Controller\AbstractRestController;
-use Weline\Framework\Manager\ObjectManager;
 
 class FrontendRestController extends AbstractRestController
 {
@@ -23,10 +19,10 @@ class FrontendRestController extends AbstractRestController
      * 参数区：
      *
      * @param string $msg
-     * @param bool $data
-     * @param int $code
+     * @param bool   $data
+     * @param int    $code
      */
-    #[NoReturn] public function errorXml(string $msg = '错误！', mixed $data = false, int $code = 400)
+    public function errorXml(string $msg = '错误！', mixed $data = false, int $code = 400)
     {
         die($this->fetch(['msg' => $msg, 'data' => $data, 'code' => $code]));
     }

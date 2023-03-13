@@ -20,12 +20,13 @@ class FormKey
     private string $_key = '';
     private array $_key_paths = [];
 
-    public const key_name = 'form_key';
+    public const key_name       = 'form_key';
     public const form_key_paths = 'form_key_paths';
 
     public function __construct(
         Session $session
-    ) {
+    )
+    {
         $this->_session = $session;
     }
 
@@ -49,7 +50,6 @@ class FormKey
             $this->setKey();
         }
         $this->_key_paths[] = $path;
-        # FIXME _key_paths 这个参数可以存储到缓存
         $this->_session->setData(self::form_key_paths, implode(',', $this->_key_paths));
         return $this->_session->getData(self::key_name);
     }

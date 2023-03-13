@@ -33,6 +33,7 @@ abstract class CommandAbstract implements CommandInterface
      *
      * @param string $module_path
      * @param string $command
+     *
      * @return string
      */
     protected function getCommandPath(string $module_path, string $command = null): string

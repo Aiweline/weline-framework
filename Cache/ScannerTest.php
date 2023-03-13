@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /*
@@ -14,17 +15,17 @@ use PHPUnit\Framework\TestCase;
 
 class ScannerTest extends TestCase
 {
-
     public function testScanAppCaches()
     {
         $scanner = new Scanner();
-        $data = $scanner->scanAppCaches();
+        $data    = $scanner->scanAppCaches();
         $this->assertTrue(true);
     }
+
     public function testScanFrameworkCaches()
     {
         $scanner = new Scanner();
-        $data = $scanner->scanFrameworkCaches();
+        $data    = $scanner->scanFrameworkCaches();
         p($data);
         $this->assertTrue(true);
     }

@@ -49,7 +49,7 @@ class Session implements SessionInterface
                     session_id($sess_id);
                 }
                 session_set_cookie_params(3600, $identity_path);
-                session_set_cookie_params(['samesite' => 'Strict', 'Secure' => true]);
+//                session_set_cookie_params(['samesite' => 'Strict', 'Secure' => false]);
             }
             $this->session = SessionManager::getInstance()->create();
             $this->setType($type)->setData('path', $identity_path);
@@ -103,9 +103,12 @@ class Session implements SessionInterface
      *
      * @return string
      */
-    public function getData(string $name): mixed
+    public function getData(string $name = null): mixed
     {
-        return $this->session->get($name);
+        if ($name) {
+            return $this->session->get($name);
+        }
+        return $this->session->get();
     }
 
     /**
@@ -168,7 +171,7 @@ class Session implements SessionInterface
         if ($this->user) {
             return $this->user;
         }
-        $this->user = ObjectManager::getInstance($model)->load($this->session->get($this::login_KEY_ID));
+        $this->user = ObjectManager::getInstance($model)->load($this->session->get($this::login_KEY_ID) ?: '');
         return $this->user;
     }
 

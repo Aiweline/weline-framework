@@ -17,9 +17,9 @@ class SortTest extends TestCore
 {
     public function testDependenciesSort()
     {
-        /**@var Sort $sort*/
+        /**@var Sort $sort */
         $sort = $this->getInstance(Sort::class);
-        $ds = [
+        $ds   = [
             ['id' => 'top', 'parent' => ['docBody']],
             ['id' => 'header_border_container', 'parent' => ['top']],
             ['id' => 'header_left', 'parent' => ['header_border_container']],

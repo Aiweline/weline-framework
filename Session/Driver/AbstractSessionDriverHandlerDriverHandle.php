@@ -14,6 +14,7 @@ abstract class AbstractSessionDriverHandlerDriverHandle implements DriverInterfa
     private function __clone()
     {
     }
+
     public function __construct(array $config)
     {
         session_set_save_handler($this, true);

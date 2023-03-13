@@ -19,7 +19,7 @@ interface ModelInterface
     /**
      * @DESC          # 设置 【开发模式下每次都会执行】
      *
-     * @AUTH  秋枫雁飞
+     * @AUTH    秋枫雁飞
      * @EMAIL aiweline@qq.com
      * @DateTime: 2021/9/7 20:05
      * 参数区：
@@ -30,7 +30,7 @@ interface ModelInterface
     /**
      * @DESC          # 模块更新时执行
      *
-     * @AUTH  秋枫雁飞
+     * @AUTH    秋枫雁飞
      * @EMAIL aiweline@qq.com
      * @DateTime: 2021/9/7 20:07
      * 参数区：
@@ -41,7 +41,7 @@ interface ModelInterface
     /**
      * @DESC          # 模块安装时执行
      *
-     * @AUTH  秋枫雁飞
+     * @AUTH    秋枫雁飞
      * @EMAIL aiweline@qq.com
      * @DateTime: 2021/9/7 20:07
      * 参数区：

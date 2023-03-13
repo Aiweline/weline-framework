@@ -71,6 +71,7 @@ interface RequestInterface
      * 参数区：
      *
      * @param string|null $key
+     *
      * @return array|null
      */
     public function getHeader(string $key = null);
@@ -81,6 +82,7 @@ interface RequestInterface
      * 参数区：
      *
      * @param string $auth_type
+     *
      * @return array|string|null
      */
     public function getAuth(string $auth_type = self::auth_TYPE_BEARER);
@@ -91,6 +93,7 @@ interface RequestInterface
      * 参数区：
      *
      * @param string $key
+     *
      * @return string
      */
     public function getApiKey(string $key): string;
@@ -101,6 +104,7 @@ interface RequestInterface
      * 参数区：
      *
      * @param string $key
+     *
      * @return mixed
      */
     public function getParam(string $key);
@@ -120,6 +124,7 @@ interface RequestInterface
      * 参数区：
      *
      * @param $key
+     *
      * @return mixed
      */
     public function getBodyParam($key);
@@ -197,21 +202,9 @@ interface RequestInterface
     public function getBaseHost(): string;
 
     /**
-     * @DESC          # 获取URL链接
-     *
-     * @AUTH  秋枫雁飞
-     * @EMAIL aiweline@qq.com
-     * @DateTime: 2021/9/21 19:33
-     * 参数区：
-     * @param string $path
-     * @return string
-     */
-    public function getUrl(string $path=''): string;
-
-    /**
      * @DESC          # 获取模组名字
      *
-     * @AUTH  秋枫雁飞
+     * @AUTH    秋枫雁飞
      * @EMAIL aiweline@qq.com
      * @DateTime: 2021/9/22 19:46
      * 参数区：

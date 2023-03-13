@@ -13,9 +13,9 @@ use Weline\Framework\Manager\ObjectManager;
 
 class Debug extends \Weline\Framework\Console\CommandAbstract
 {
-    public function execute(array $args = [])
+    public function execute(array $args = [], array $data = [])
     {
-        if (! isset($args[1])) {
+        if (!isset($args[1])) {
             if (DEV) {
                 $this->printer->error('请输入要测试的类！ex:bin/m dev:debug [class] (请用初始化函数测试类，此处不接受运行类方法。)');
             }
@@ -24,7 +24,7 @@ class Debug extends \Weline\Framework\Console\CommandAbstract
         $class = ObjectManager::getInstance($args[1]);
     }
 
-    public function getTip(): string
+    public function tip(): string
     {
         return '开发测试：用于运行测试对象！';
     }

@@ -17,7 +17,8 @@ interface InterceptorInterface
      * 参数区：
      *
      * @param string $method
-     * @param array $arguments
+     * @param array  $arguments
+     *
      * @return mixed
      */
     public function ___callParentMethod(string $method, array $arguments);

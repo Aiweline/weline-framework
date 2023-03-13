@@ -60,7 +60,7 @@ class Upgrade extends CommandAbstract
      *
      * @return string
      */
-    public function getTip(): string
+    public function tip(): string
     {
         return '更新命令';
     }
@@ -76,17 +76,20 @@ class Upgrade extends CommandAbstract
      * 参数区：
      *
      * @param array $args
+     * @param array $data
      *
      * @return mixed|void
      * @throws \ReflectionException
      * @throws \Weline\Framework\App\Exception
      */
-    public function execute(array $args = [])
+    public function execute(array $args = [], array $data = [])
     {
         // 删除命令文件
         if (is_file(Env::path_COMMANDS_FILE)) {
-            list($out, $var) = $this->system->exec('rm ' . Env::path_COMMANDS_FILE);
-            $this->printer->printList($out);
+            $data = $this->system->exec('rm ' . Env::path_COMMANDS_FILE);
+            if ($data) {
+                $this->printer->printList($data);
+            }
         }
 
         $commands = $this->scan();
@@ -137,6 +140,7 @@ class Upgrade extends CommandAbstract
         # 模组命令
         $active_modules = Env::getInstance()->getActiveModules();
         $command_files  = [];
+        unset($active_modules['Weline_Framework']);
         foreach ($active_modules as $module_name => $module) {
             $pattern = $module['base_path'] . 'Console' . DS . '*';
             $files   = [];
@@ -146,6 +150,10 @@ class Upgrade extends CommandAbstract
                 // 排除非框架系统命令类
                 if (class_exists($class)) {
                     try {
+                        $classRef = ObjectManager::getReflectionInstance($class);
+                        if ($classRef->isAbstract()) {
+                            continue;
+                        }
                         $command_class = ObjectManager::getInstance($class);
                         if ($command_class instanceof CommandInterface) {
                             $file_array = explode('\\', $file);
@@ -155,9 +163,10 @@ class Upgrade extends CommandAbstract
                             array_pop($file_array);
                             $command_prefix                                           = strtolower(implode(':', $file_array));
                             $commands[$command_prefix . '#' . $module_name][$command] = [
-                                'tip'   => $command_class->getTip(),
-                                'class' => $class,
-                                'type'  => 'module'
+                                'tip'    => $command_class->tip(),
+                                'class'  => $class,
+                                'type'   => 'module',
+                                'module' => $module['name']
                             ];
                         } else {
                             if (DEV && CLI) {
@@ -182,7 +191,7 @@ class Upgrade extends CommandAbstract
             true
         );
         $this->scan->globFile(
-            Env::framework_code_path . '*' . DS. 'Console' . DS . '*',
+            Env::framework_code_path . '*' . DS . 'Console' . DS . '*',
             $framework_files,
             '.php',
             Env::framework_code_path,
@@ -194,6 +203,10 @@ class Upgrade extends CommandAbstract
             // 排除非框架系统命令类
             if (class_exists($class)) {
                 try {
+                    $classRef = ObjectManager::getReflectionInstance($class);
+                    if ($classRef->isAbstract()) {
+                        continue;
+                    }
                     $command_class = ObjectManager::getInstance($class);
                     if ($command_class instanceof CommandInterface) {
                         $class_array = explode('\\', $class);
@@ -206,9 +219,10 @@ class Upgrade extends CommandAbstract
                         array_pop($class_array);
                         $command_prefix                                                                 = strtolower(implode(':', $class_array));
                         $commands[$command_prefix . '#Weline_Framework_' . $framework_module][$command] = [
-                            'tip'   => $command_class->getTip(),
-                            'class' => $class,
-                            'type'  => 'framework'
+                            'tip'    => $command_class->tip(),
+                            'class'  => $class,
+                            'type'   => 'framework',
+                            'module' => 'Weline_Framework'
                         ];
                     } else {
                         if (DEV && CLI) {

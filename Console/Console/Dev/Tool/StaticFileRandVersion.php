@@ -20,14 +20,15 @@ class StaticFileRandVersion implements \Weline\Framework\Console\CommandInterfac
 
     public function __construct(
         Printing $printing
-    ) {
+    )
+    {
         $this->printing = $printing;
     }
 
     /**
      * @inheritDoc
      */
-    public function execute(array $args = [])
+    public function execute(array $args = [], array $data = [])
     {
         if (Env::getInstance()->getConfig('static_file_rand_version')) {
             Env::getInstance()->setConfig('static_file_rand_version', false);
@@ -41,7 +42,7 @@ class StaticFileRandVersion implements \Weline\Framework\Console\CommandInterfac
     /**
      * @inheritDoc
      */
-    public function getTip(): string
+    public function tip(): string
     {
         return '随机静态文件版本号：协助开发模式下实时刷新浏览器更新静态css,js,less等静态文件。';
     }

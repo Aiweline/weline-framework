@@ -10,6 +10,7 @@
 namespace Weline\Framework\UnitTest;
 
 require __DIR__ . '/../../../../../index.php';
+
 trait Boot
 {
 }

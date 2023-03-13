@@ -19,7 +19,8 @@ class Hooker
 
     public function __construct(
         HookReader $hookReader
-    ) {
+    )
+    {
         $this->hookReader = $hookReader;
     }
 

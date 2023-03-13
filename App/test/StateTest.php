@@ -17,7 +17,7 @@ class StateTest extends TestCore
 {
     public function testGetStateCode()
     {
-        /**@var $ob State*/
+        /**@var $ob State */
         $ob = ObjectManager::getInstance(State::class);
         p($ob->getStateCode(), 0, 2);
     }

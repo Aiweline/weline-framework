@@ -40,8 +40,10 @@ abstract class CliAbstract implements CommandInterface
 
     /**
      * Cli 初始函数...
+     *
      * @param string $msg
-     * @param array $argv
+     * @param array  $argv
+     *
      * @throws \ReflectionException
      */
     public function __construct(string $msg, array $argv)
@@ -65,7 +67,7 @@ abstract class CliAbstract implements CommandInterface
      *
      * @return string
      */
-    public function getTip(): string
+    public function tip(): string
     {
         return 'CLI ' . self::version;
     }
@@ -81,6 +83,7 @@ abstract class CliAbstract implements CommandInterface
      * 参数区：
      *
      * @param $command
+     *
      * @return string
      */
     protected function getCommandPath($command = null): string
@@ -106,9 +109,9 @@ abstract class CliAbstract implements CommandInterface
      * @param array|null $args
      *
      * @return mixed|void
-     *@throws \Weline\Framework\App\Exception
+     * @throws \Weline\Framework\App\Exception
      */
-    public function execute(array $args = null)
+    public function execute(array $args = null, array $data = [])
     {
         $commands = isset($this->getCommandList()[$args]) ? $this->getCommandList()[$args] : $this->getCommandList();
 
@@ -125,8 +128,8 @@ abstract class CliAbstract implements CommandInterface
      *
      * 参数区：
      *
-     * @throws \Weline\Framework\App\Exception
      * @return array|string[][]
+     * @throws \Weline\Framework\App\Exception
      */
     public function getCommandList(): array
     {

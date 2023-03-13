@@ -25,7 +25,7 @@ class File implements DriverInterface, SessionDriverHandlerInterface
      */
     public function __construct(array $config)
     {
-        $this->config = $config;
+        $this->config      = $config;
         $this->sessionPath = isset($this->config['path']) ? BP . str_replace('/', DS, $this->config['path']) : BP . 'var' . DS . 'session' . DS;
         if (!is_dir($this->sessionPath)) {
             mkdir($this->sessionPath, 0700);
@@ -49,12 +49,12 @@ class File implements DriverInterface, SessionDriverHandlerInterface
         return false;
     }
 
-    public function get($name): mixed
+    public function get($name = null): mixed
     {
-        if (isset($_SESSION[$name])) {
-            return $_SESSION[$name];
+        if ($name) {
+            return $_SESSION[$name] ?? null;
         }
-        return false;
+        return $_SESSION;
     }
 
     public function delete($name): bool

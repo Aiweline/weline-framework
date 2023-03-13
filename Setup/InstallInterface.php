@@ -14,11 +14,12 @@ interface InstallInterface
     /**
      * @DESC          # 安装函数：仅初次安装会执行
      *
-     * @AUTH  秋枫雁飞
+     * @AUTH    秋枫雁飞
      * @EMAIL aiweline@qq.com
      * @DateTime: 2022/1/18 20:28
      * 参数区：
-     * @param Data\Setup $setup
+     *
+     * @param Data\Setup   $setup
      * @param Data\Context $context
      */
     public function setup(Data\Setup $setup, Data\Context $context): void;

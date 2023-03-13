@@ -25,15 +25,16 @@ class Printing extends AbstractPrint
      *
      * 参数区：
      *
-     * @param $message
+     * @param             $message
      * @param string|null $log_path
-     * @param int $message_type
+     * @param int         $message_type
+     *
      * @throws \Weline\Framework\App\Exception
      */
     public function debug($message, string $log_path = null, int $message_type = 3)
     {
         if ($log_path === null) {
-            $log_path = $this->etc->getLogPath(Env::log_path_ERROR);
+            $log_path = str_replace('\\', DS, $this->etc->getLogPath(Env::log_path_ERROR));
         }
         $this->write($log_path, is_array($message) ? var_export($message, true) : $message, $message_type);
     }

@@ -11,12 +11,12 @@ namespace Weline\Framework\Console;
 
 class Command extends CommandAbstract
 {
-    public function execute(array $args = [])
+    public function execute(array $args = [], array $data = [])
     {
         return '定位命令';
     }
 
-    public function getTip(): string
+    public function tip(): string
     {
         return '定位命令';
     }

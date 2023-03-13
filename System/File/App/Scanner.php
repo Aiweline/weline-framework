@@ -27,7 +27,7 @@ class Scanner extends Scan
      * 参数区：
      * @return array
      */
-    function scanModules(): array
+    public function scanModules(): array
     {
         # 扫描app模块
         $app_modules = glob(APP_CODE_PATH . '*' . DS . '*' . DS . RegisterInterface::register_file, GLOB_NOSORT);

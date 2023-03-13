@@ -11,7 +11,7 @@ namespace Weline\Framework\Cache;
 
 use Weline\Framework\App;
 use Weline\Framework\App\Env;
-use Weline\Framework\Manager\ObjectManager;
+
 use function PHPUnit\Framework\isInstanceOf;
 
 class CacheFactory implements CacheFactoryInterface
@@ -42,7 +42,7 @@ class CacheFactory implements CacheFactoryInterface
         $this->identity = $identity;
         $this->tip      = $tip;
         $this->keep     = $permanently;
-        $this->status   = DEV?($this->config['status'][$identity]??$permanently):($permanently?:$this->config['status'][$identity]??1);
+        $this->status   = DEV ? ($this->config['status'][$identity] ?? $permanently) : ($permanently ?: $this->config['status'][$identity] ?? 1);
     }
 
     public function isKeep(): bool
@@ -73,10 +73,10 @@ class CacheFactory implements CacheFactoryInterface
         if (empty($driver) && isset($this->config['default'])) {
             $driver = $this->config['default'];
         }
-        if (class_exists($driver)) {
-            $driver_class = $driver;
-        } else {
+        if (class_exists(self::driver_NAMESPACE . ucfirst($driver))) {
             $driver_class = self::driver_NAMESPACE . ucfirst($driver);
+        } else {
+            $driver_class = $driver;
         }
         $status       = (bool)Env::getInstance()->getData('cache/status/' . $this->identity);
         $this->driver = new $driver_class($this->identity, $this->config['drivers'][$driver], $tip ?: $this->tip, $status ?: $this->status);
@@ -94,7 +94,7 @@ class CacheFactory implements CacheFactoryInterface
     /**
      * @return string
      */
-    public function getTip(): string
+    public function tip(): string
     {
         return $this->tip;
     }

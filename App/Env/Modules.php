@@ -24,7 +24,7 @@ class Modules
     public function getList()
     {
         $modules_file = Env::path_MODULES_FILE;
-        if (! is_file($modules_file)) {
+        if (!is_file($modules_file)) {
             $file = new File();
             $file->open($modules_file, $file::mode_w_add);
             $text = '<?php return ' . w_var_export([], true) . ';?>';

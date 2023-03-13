@@ -22,7 +22,7 @@ class PluginsManagerTest extends TestCore
 
     public function setUp(): void
     {
-        $this->pluginsManager =  ObjectManager::getInstance(PluginsManager::class);
+        $this->pluginsManager = ObjectManager::getInstance(PluginsManager::class);
     }
 
     public function testScanPlugins()
@@ -30,6 +30,7 @@ class PluginsManagerTest extends TestCore
 //        p($this->pluginsManager->scanPlugins());
 //        p($this->pluginsManager->getPluginInstanceList('Aiweline\Index\Controller\Index'));
 //        p($this->pluginsManager->generatorInterceptor('Aiweline\Index\Controller\Index'));
-        p($this->pluginsManager->generatorInterceptor());
+//        p($this->pluginsManager->generatorInterceptor());
+        self::assertIsObject($this->pluginsManager->generatorInterceptor(), 'Framework_Plugin::测试生成插件器。');
     }
 }

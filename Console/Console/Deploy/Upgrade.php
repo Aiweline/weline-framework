@@ -29,51 +29,49 @@ class Upgrade extends CommandAbstract
 
     public function __construct(
         AppScanner $scanner,
-        System $system
-    ) {
+        System     $system
+    )
+    {
         $this->scanner = $scanner;
         $this->system  = $system;
     }
 
-    public function execute(array $args = [])
+    public function execute(array $args = [], array $data = [])
     {
-        // 扫描代码
-        list($registers) = $this->scanner->scanAppModules();
+        // 活跃模块
+        $modules = Env::getInstance()->getActiveModules();
         // 注册模块
-        foreach ($registers as $vendor => $modules) {
-            foreach ($modules as  $module) {
-                $name= $module['name'];
-                $vendor = $module['vendor'];
-                $module_view_static_dir = $module['base_path']  . DataInterface::dir . DS . DataInterface::dir_type_STATICS;
-                $module_view_dir        = $module['path']  .DS. DataInterface::dir . DS;
-                // windows的文件复制兼容
-                if (IS_WIN) {
-                    $module_view_dir .= DataInterface::dir_type_STATICS . DS;
-                }
-                # FIXME 兼容composer下模块的静态文件
-                $origin_view_dir = $module_view_static_dir;
-                if (is_dir($origin_view_dir)) {
-                    $this->printer->note($vendor . '_' . $name . '...');
-                    // 主题配置
-                    $theme        = Env::getInstance()->getConfig('theme', Env::default_theme_DATA);
+        foreach ($modules as $module) {
+            $name                   = $module['name'];
+            $module_view_static_dir = $module['base_path'] . DataInterface::dir . DS . DataInterface::dir_type_STATICS;
+            $module_view_dir        = $module['path'] . DataInterface::dir;
+            // windows的文件复制兼容
+            if (IS_WIN) {
+                $module_view_dir .= DS.DataInterface::dir_type_STATICS . DS;
+            }
+            $origin_view_dir = $module_view_static_dir;
+            if (is_dir($origin_view_dir)) {
+                $this->printer->note($name . '...');
+                // 主题配置
+                $theme = Env::getInstance()->getConfig('theme', Env::default_theme_DATA);
 
-                    # 主题目录
-                    $pub_view_dir = PUB . 'static' . DS . $theme['path'] . DS .$module_view_dir;
-                    if (is_int(strpos($pub_view_dir, '\\'))) {
-                        $pub_view_dir = str_replace('\\', DS, $pub_view_dir);
-                    }
-                    if (! is_dir($pub_view_dir)) {
-                        mkdir($pub_view_dir, 0775, true);
-                    }
-                    list($out, $vars) = $this->system->exec("cp -rf $origin_view_dir $pub_view_dir");
-                    $this->printer->warning(implode('', $out));
+                # 主题目录
+                $pub_view_dir = PUB . 'static' . DS . $theme['path'] . DS . $module_view_dir;
+
+                if (!is_dir($pub_view_dir)) {
+                    mkdir($pub_view_dir, 0775, true);
+                }
+
+                $out = $this->system->exec("cp -rf $origin_view_dir $pub_view_dir");
+                if ($out) {
+                    $this->printer->warning(implode('', $out['output']));
                 }
             }
         }
         $this->printer->success('静态文件部署完毕！');
     }
 
-    public function getTip(): string
+    public function tip(): string
     {
         return '静态资源同步更新。';
     }

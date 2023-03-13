@@ -81,16 +81,12 @@ class Handle implements HandleInterface, RegisterInterface
         Data        $helper,
         Printing    $printer,
         System      $system,
-        SetupHelper $setup_helper,
-        SetupData   $setup_data,
         Compress    $compress
     )
     {
         $this->modules      = Env::getInstance()->getModuleList();
         $this->helper       = $helper;
         $this->system       = $system;
-        $this->setup_data   = $setup_data;
-        $this->setup_helper = $setup_helper;
         $this->printer      = $printer;
         $this->compress     = $compress;
     }
@@ -122,7 +118,6 @@ class Handle implements HandleInterface, RegisterInterface
         $module_path = $this->modules[$module]['base_path'] . DS;
 
         $zip = $this->compress->compression("{$module_path}", APP_CODE_PATH . $module, APP_CODE_PATH);
-        // TODO 完成模块卸载 兼容 win 和 linux
 
         $this->printer->note($zip);
         $this->printer->note('3、卸载应用代码...');
@@ -158,6 +153,9 @@ class Handle implements HandleInterface, RegisterInterface
      */
     public function register(string $type, string $module_name, array|string $param, string $version = '', string $description = ''): mixed
     {
+        if (DEV) {
+            $this->printer->error($module_name . '：处理...', '开发');
+        }
         if (!isset($param['base_path'])) {
             throw new Exception(__('尚未设置基础路径！%1', 'base_path'));
         }
@@ -168,7 +166,7 @@ class Handle implements HandleInterface, RegisterInterface
             throw new Exception(__('尚未设置模组名！%1', 'module_name'));
         }
         # 检测位置
-        $base_path = $param['base_path'];
+        $base_path = $param['base_path'] ?? $param;
         $position  = 'app';
         if (str_contains($base_path, VENDOR_PATH)) {
             $position = 'composer';
@@ -176,125 +174,59 @@ class Handle implements HandleInterface, RegisterInterface
         if (str_contains($base_path, VENDOR_PATH . DS . 'weline' . DS . 'framework' . DS) || str_contains($base_path, APP_CODE_PATH . DS . 'Weline' . DS . 'Framework' . DS)) {
             $position = 'framework';
         }
-        if (str_contains($base_path, APP_CODE_PATH.'Weline'. DS)) {
+        if (str_contains($base_path, APP_CODE_PATH . 'Weline' . DS)) {
             $position = 'system';
         }
-        if (str_contains($base_path, VENDOR_PATH.'weline'. DS)) {
+        if (str_contains($base_path, VENDOR_PATH . 'weline' . DS)) {
             $position = 'system';
         }
-        # 模块数据
-        $module = new Module();
-        $module->setStatus(true);
-        $module->setPosition($position);
-        $module->setName($module_name);
-        $module->setNamespacePath(str_replace('_', '\\', $param['module_name']));
-        $module->setBasePath($param['base_path']);
-        $module->setPath($param['dir_path']);
-        $module->setVersion($version ?: '1.0.0');
-        $module->setDescription($description ?: '');
-        if (DEV) {
-            $this->printer->error($module->getName() . '：处理...', '开发');
-        }
+
         // 模块路径
         // 模型管理器
         /**@var ModelManager $modelManager */
         $modelManager = ObjectManager::getInstance(ModelManager::class);
         // 检测配置文件完整
         $router   = '';
-        $filepath = $module->getBasePath() . DS . DataInterface::file_etc_Env;
+        $filepath = $param['base_path'] . DS . DataInterface::file_etc_Env;
         $env      = [];
         if (is_file($filepath)) {
             $env = (array)require $filepath;
-            if (!isset($env['router']) || empty($env['router'])) {
+            if (!isset($env['router'])) {
                 // 如果文件不存在则读取模块名字作为router
-                $env = $this->getEnv($module, $env);
+                $env = $this->getEnv($module_name, $env);
             }
         }
 //        if ('Weline_Frontend' === $module->getName()) {
 //            p($env['router']);
 //        }
         if (empty($env)) {
-            $env = $this->getEnv($module, $env);
+            $env = $this->getEnv($module_name, $env);
         }                                          // 如果文件不存在则读取模块名字作为router
-        $router = strtolower($env['router'] ?: '');// TODO 定义路由区分大小写
-        $module->setRouter($router);
-        $this->setup_context = ObjectManager::make(SetupContext::class, ['module_name' => $module->getName(), 'module_version' => $version, 'module_description' => $description], '__construct');
-        $setup_dir           =  $module->getBasePath() . \Weline\Framework\Setup\Data\DataInterface::dir;
-        $setup_namespace     = $module->getNamespacePath() . '\\' . ucfirst(\Weline\Framework\Setup\Data\DataInterface::dir) . '\\';
-        if (is_dir($setup_dir) && DEV) {
-            $this->printer->setup($setup_dir . '：升级目录...', '开发');
-        }
+        $router = strtolower($env['router'] ?: '');
+        # 模块数据
+        $module = new Module();
+        $module->setStatus(true)
+               ->setPosition($position)
+               ->setName($module_name)
+               ->setRouter($router)
+               ->setNamespacePath(str_replace('_', '\\', $param['module_name']))
+               ->setBasePath($param['base_path'])
+               ->setPath($param['dir_path'])
+               ->setVersion($version ?: '1.0.0')
+               ->setDescription($description ?: '');
+
+
         // 已经存在模块则更新
         if ($this->helper->isInstalled($this->modules, $module->getName())) {
             if ($this->helper->isDisabled($this->modules, $module->getName())) {
                 $module->setStatus(false);
                 $this->printer->warning(str_pad($module->getName(), 45) . __('已禁用！'));
-            } else {
-                // 是否更新模块：是则加载模块下的Setup模块下的文件进行更新
-                $old_version = $this->modules[$module->getName()]['version'];
-                if ($this->helper->isUpgrade($this->modules, $module->getName(), $version)) {
-                    $this->printer->note(__("扩展 %1 升级中...", $module->getName()));
-                    $this->printer->setup(__('升级 %1 到 %2', [$old_version, $version]));
-
-                    # 升级模块的模型
-                    $modelManager->update($module->getName(), $this->setup_context, 'upgrade');
-
-                    foreach (\Weline\Framework\Setup\Data\DataInterface::upgrade_FILES as $upgrade_FILE) {
-                        $setup_file = $setup_dir . DS . $upgrade_FILE . '.php';
-                        if (file_exists($setup_file)) {
-                            $setup  = ObjectManager::getInstance($setup_namespace . $upgrade_FILE);
-                            $this->setup_data->setModuleContext($this->setup_context);
-                            $result = $setup->setup($this->setup_data, $this->setup_context);
-                            $this->printer->note("{$result}");
-                        }
-                    }
-                }
-
-                # 升级模块的模型
-                if (DEV) {
-                    $this->printer->setup($module->getName() . '：模型升级...', '开发');
-                    $modelManager->update($module->getName(), $this->setup_context, 'setup');
-                    $this->printer->setup($module->getName() . '：模型升级完成...', '开发');
-                }
-                // 更新路由
-                if (DEV) {
-                    $this->printer->setup($module->getName() . '：更新路由...', '开发');
-                }
-                $this->modules[$module->getName()] = $module->getData();
-
-                $this->helper->registerModuleRouter($this->modules, $module->getBasePath(), $module->getName(), $router);
-                if (DEV) {
-                    $this->printer->setup($module->getName() . '：更新路由完成...', '开发');
-                }
-                $this->modules[$module->getName()] = $module->getData();
-                $this->printer->success(str_pad($module->getName(), 45) . __('已更新！'));
             }
         } else {
             $this->printer->setup("扩展{$module->getName()}安装中...");
-            $this->printer->note("模型安装install...");
-            # 模型安装install
-            $modelManager->update($module->getName(), $this->setup_context, 'install');
             // 全新安装
-            $module->setRouter($router);
             $module->setStatus(true);
-
-            // 安装模块：加载模块下的Setup模块下的安装文件进行安装
-            foreach (\Weline\Framework\Setup\Data\DataInterface::install_FILES as $install_FILE) {
-                $setup_file = $setup_dir . DS . $install_FILE . '.php';
-                if (file_exists($setup_file)) {
-                    $setup = ObjectManager::getInstance($setup_namespace . $install_FILE);
-                    $this->setup_data->setModuleContext($this->setup_context);
-                    $setup->setup($this->setup_data, $this->setup_context);
-                }
-            }
-
-            # 执行模型setup
-            if (DEV) {
-                $modelManager->update($module->getName(), $this->setup_context, 'setup');
-            }
             $this->modules[$module->getName()] = $module->getData();
-            // 更新路由
-            $this->helper->registerModuleRouter($this->modules, $module->getBasePath(), $module->getName(), $router);
             $this->printer->success(str_pad($module->getName(), 45) . __('已安装！'));
         }
         $this->modules[$module->getName()] = $module->getData();
@@ -316,14 +248,185 @@ class Handle implements HandleInterface, RegisterInterface
      *
      * @return array
      */
-    public function getEnv(Module $module, array $env): array
+    public function getEnv($module_name, array $env): array
     {
-        $env['router'] = strtolower($module->getName());
+        $env['router'] = strtolower($module_name);
         if (DEV) {
-            $this->printer->note($module->getName() . '：模块没有设定路由别名，因此沿用模块名称作为路由入口！', '开发');
-            $this->printer->warning('{http://demo.com/' . $module->getName() . '}', '示例');
-            $this->printer->warning('设置路由别名请到：模块目录下的etc/env.php,修改return ["router"=>"' . $module->getName() . '"];', '提示');
+            $this->printer->note($module_name . '：模块没有设定路由别名，因此沿用模块名称作为路由入口！', '开发');
+            $this->printer->warning('{http://demo.com/' . $module_name . '}', '示例');
+            $this->printer->warning('设置路由别名请到：模块目录下的etc/env.php,修改return ["router"=>"' . $module_name . '"];', '提示');
         }
         return $env;
+    }
+
+    /**
+     * @DESC          # 升级模型
+     *
+     * @AUTH    秋枫雁飞
+     * @EMAIL aiweline@qq.com
+     * @DateTime: 2023/1/8 0:05
+     * 参数区：
+     */
+    public function setupModel(Module $module): Module
+    {
+        $setup_context = ObjectManager::make(SetupContext::class, [
+            'module_name'        => $module->getName(),
+            'module_version'     => $module->getVersion(),
+            'module_description' => $module->getDescription()
+        ],                                   '__construct');
+        $modelManager  = $this->getModuleManager();
+        // 已经存在模块则更新
+        if ($this->helper->isInstalled($this->modules, $module->getName())) {
+            if ($this->helper->isDisabled($this->modules, $module->getName())) {
+                $module->setStatus(false);
+                $this->printer->warning(str_pad($module->getName(), 45) . __('已禁用！'));
+            } else {
+                // 是否更新模块：是则加载模块下的Setup模块下的文件进行更新
+                $old_version = $this->modules[$module->getName()]['version'];
+                if ($this->helper->isUpgrade($this->modules, $module->getName(), $module->getVersion())) {
+                    $this->printer->note(__('扩展 %1 升级中...', $module->getName()));
+                    $this->printer->setup(__('升级 %1 到 %2', [$old_version, $module->getVersion()]));
+
+                    # 升级模块的模型
+                    $modelManager->update($module, $setup_context, 'upgrade');
+                }
+
+                # 升级模块的模型
+                if (DEV) {
+                    $this->printer->setup($module->getName() . '：模型升级...', '开发');
+                    $modelManager->update($module, $setup_context, 'setup');
+                    $this->printer->setup($module->getName() . '：模型升级完成...', '开发');
+                }
+                $this->printer->success(str_pad($module->getName(), 45) . __('已更新！'));
+            }
+        } else {
+            $this->printer->setup("扩展{$module->getName()}安装中...");
+            $this->printer->note('模型安装install...');
+            # 模型安装install
+            $modelManager->update($module, $setup_context, 'install');
+            // 全新安装
+            $module->setStatus(true);
+            # 执行模型setup
+            if (DEV) {
+                $modelManager->update($module, $setup_context, 'setup');
+            }
+            $this->printer->success(str_pad($module->getName(), 45) . __('已安装！'));
+        }
+        return $module;
+    }
+
+    /**
+     * @DESC          # 安装脚本
+     *
+     * @AUTH    秋枫雁飞
+     * @EMAIL aiweline@qq.com
+     * @DateTime: 2023/1/8 0:05
+     * 参数区：
+     */
+    public function setupInstall(Module $module): Module
+    {
+        $setup_context   = ObjectManager::make(SetupContext::class, [
+            'module_name'        => $module->getName(),
+            'module_version'     => $module->getVersion(),
+            'module_description' => $module->getDescription()
+        ],                                     '__construct');
+        $setup_dir       = $module->getBasePath() . \Weline\Framework\Setup\Data\DataInterface::dir;
+        $setup_namespace = $module->getNamespacePath() . '\\' . ucfirst(\Weline\Framework\Setup\Data\DataInterface::dir) . '\\';
+        if (is_dir($setup_dir) && DEV) {
+            $this->printer->setup($setup_dir . '：升级目录...', '开发');
+        }
+        // 已经存在模块则更新
+        if ($this->helper->isInstalled($this->modules, $module->getName())) {
+            if ($this->helper->isDisabled($this->modules, $module->getName())) {
+                $module->setStatus(false);
+                $this->printer->warning(str_pad($module->getName(), 45) . __('已禁用！'));
+            } else {
+                // 是否更新模块：是则加载模块下的Setup模块下的文件进行更新
+                $old_version = $this->modules[$module->getName()]['version'];
+                if ($this->helper->isUpgrade($this->modules, $module->getName(), $module->getVersion())) {
+                    $this->printer->note(__('扩展 %1 升级中...', $module->getName()));
+                    $this->printer->setup(__('升级 %1 到 %2', [$old_version, $module->getVersion()]));
+
+                    foreach (\Weline\Framework\Setup\Data\DataInterface::upgrade_FILES as $upgrade_FILE) {
+                        $setup_file = $setup_dir . DS . $upgrade_FILE . '.php';
+                        if (file_exists($setup_file)) {
+                            $setup = ObjectManager::getInstance($setup_namespace . $upgrade_FILE);
+                            $this->setup_data->setModuleContext($this->setup_context);
+                            $result = $setup->setup($this->setup_data, $this->setup_context);
+                            $this->printer->note("{$result}");
+                        }
+                    }
+                }
+                $this->printer->success(str_pad($module->getName(), 45) . __('已更新！'));
+            }
+        } else {
+            $this->printer->setup("扩展{$module->getName()}安装中...");
+            $module->setStatus(true);
+            // 安装模块：加载模块下的Setup模块下的安装文件进行安装
+            foreach (\Weline\Framework\Setup\Data\DataInterface::install_FILES as $install_FILE) {
+                $setup_file = $setup_dir . DS . $install_FILE . '.php';
+                if (file_exists($setup_file)) {
+                    $setup = ObjectManager::getInstance($setup_namespace . $install_FILE);
+                    $this->setup_data->setModuleContext($setup_context);
+                    $setup->setup($this->setup_data, $setup_context);
+                }
+            }
+            $this->printer->success(str_pad($module->getName(), 45) . __('已安装！'));
+        }
+//        // 更新模块
+        $this->helper->updateModules($this->modules);
+        return $module;
+    }
+
+    /**
+     * @DESC          # 注册路由
+     *
+     * @AUTH    秋枫雁飞
+     * @EMAIL aiweline@qq.com
+     * @DateTime: 2023/1/8 0:08
+     * 参数区：
+     */
+    public function registerRoute(Module $module): Module
+    {
+        // 已经存在模块则更新
+        if ($this->helper->isDisabled($this->modules, $module->getName())) {
+            $module->setStatus(false);
+            $this->printer->warning(str_pad($module->getName(), 45) . __('已禁用！'));
+        } else {
+            // 更新路由
+            if (DEV) {
+                $this->printer->setup($module->getName() . '：更新路由...', '开发');
+            }
+            $this->helper->registerModuleRouter($this->modules, $module->getBasePath(), $module->getName(), $module->getRouter());
+            if (DEV) {
+                $this->printer->setup($module->getName() . '：更新路由完成...', '开发');
+            }
+            $this->printer->success(str_pad($module->getName(), 45) . __('已更新！'));
+        }
+        return $module;
+    }
+
+    /**
+     * @DESC          # 获取模型管理器
+     *
+     * @AUTH    秋枫雁飞
+     * @EMAIL aiweline@qq.com
+     * @DateTime: 2023/1/8 0:19
+     * 参数区：
+     * @return \Weline\Framework\Database\Model\ModelManager
+     * @throws \ReflectionException
+     * @throws \Weline\Framework\App\Exception
+     */
+    private function getModuleManager(): ModelManager
+    {
+        return ObjectManager::getInstance(ModelManager::class);
+    }
+
+    /**
+     * @return array
+     */
+    public function getModules(): array
+    {
+        return $this->modules;
     }
 }

@@ -39,8 +39,7 @@ class Sort
                         $add = false;
                     }
                 }
-
-                if ($add) {
+                if ($add||end($dependencies)) {
                     $dependencies_sort[$d[$entity_id]] = $d;
                     unset($dependencies[$k]);
                 }

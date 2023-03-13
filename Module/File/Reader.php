@@ -24,13 +24,15 @@ class Reader extends DataObject
 
     /**
      * ModuleFileReader 初始函数...
+     *
      * @param Scanner $scanner
-     * @param string $path
+     * @param string  $path
      */
     public function __construct(
         string $path = 'etc' . DS . 'module.xml',
-        array $data = []
-    ) {
+        array  $data = []
+    )
+    {
         $this->path = $path;
         parent::__construct($data);
     }
@@ -45,11 +47,13 @@ class Reader extends DataObject
     /**
      * @DESC          # 读取文件
      *
-     * @AUTH  秋枫雁飞
+     * @AUTH    秋枫雁飞
      * @EMAIL aiweline@qq.com
      * @DateTime: 2021/9/6 22:55
      * 参数区：
+     *
      * @param \Closure|null $callback
+     *
      * @return array
      */
     public function getFileList(\Closure $callback = null): array
@@ -60,11 +64,13 @@ class Reader extends DataObject
     /**
      * @DESC          # 设置相对模块的文件路径
      *
-     * @AUTH  秋枫雁飞
+     * @AUTH    秋枫雁飞
      * @EMAIL aiweline@qq.com
      * @DateTime: 2021/11/24 17:23
      * 参数区：
+     *
      * @param string $file_path
+     *
      * @return string
      */
     public function setFilePath(string $file_path): string

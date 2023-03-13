@@ -28,7 +28,8 @@ class Install extends \Weline\Framework\Console\CommandAbstract
     public function __construct(
         Runner $runner,
         System $system
-    ) {
+    )
+    {
         $this->runner = $runner;
         $this->system = $system;
     }
@@ -36,7 +37,7 @@ class Install extends \Weline\Framework\Console\CommandAbstract
     /**
      * @inheritDoc
      */
-    public function execute(array $args = [])
+    public function execute(array $args = [], array $data = [])
     {
         $install_file = BP . 'setup/install.lock';
         if (is_file($install_file)) {
@@ -83,11 +84,11 @@ class Install extends \Weline\Framework\Console\CommandAbstract
         }
         $db_config = $args_config['db'] ?? [];
         $db_config = array_intersect_key($db_config, $db_keys);
-        $db_config['type'] ?? $db_config['type'] = 'mysql';
-        $db_config['hostport'] ?? $db_config['hostport'] = '3306';
-        $db_config['prefix'] ?? $db_config['prefix'] = 'm_';
-        $db_config['charset'] ?? $db_config['charset'] = 'utf8';
-        $db_config['collate'] ?? $db_config['collate'] = 'utf8_general_ci';
+            $db_config['type'] ?? $db_config['type'] = 'mysql';
+            $db_config['hostport'] ?? $db_config['hostport'] = '3306';
+            $db_config['prefix'] ?? $db_config['prefix'] = 'm_';
+            $db_config['charset'] ?? $db_config['charset'] = 'utf8';
+            $db_config['collate'] ?? $db_config['collate'] = 'utf8_general_ci';
         foreach ($db_keys as $db_key => $v) {
             if (!isset($db_config[$db_key])) {
                 $this->printer->error('数据库' . $db_key . '配置不能为空！示例：bin/m system:install --db-' . $db_key . '=demo', '系统');
@@ -126,7 +127,7 @@ class Install extends \Weline\Framework\Console\CommandAbstract
     /**
      * @inheritDoc
      */
-    public function getTip(): string
+    public function tip(): string
     {
         return '框架安装';
     }

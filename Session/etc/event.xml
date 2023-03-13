@@ -4,6 +4,7 @@
         xmlns="urn:Weline_Framework::Event/etc/xsd/event.xsd">
     <!--处理前后台session-->
     <event name="WelineFramework_Session::process_area">
-        <observer name="WelineFramework_Session::process_session" instance="Weline\Framework\Session\Observer\ProcessSession" disabled="false" shared="true"/>
+        <observer name="WelineFramework_Session::process_session" instance="Weline\Framework\Session\Observer\ProcessSession" disabled="false"
+                  shared="true"/>
     </event>
 </config>

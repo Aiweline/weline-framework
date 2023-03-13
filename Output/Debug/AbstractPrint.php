@@ -22,9 +22,10 @@ abstract class AbstractPrint extends \Weline\Framework\Output\AbstractPrint impl
      * 参数区：
      *
      * @param array|string $data
-     * @param string $message
-     * @param string $color
-     * @param int $pad_length
+     * @param string       $message
+     * @param string       $color
+     * @param int          $pad_length
+     *
      * @return mixed|void
      */
     public function error($data = 'Error!', string $message = '', string $color = self::ERROR, int $pad_length = 25): mixed
@@ -45,7 +46,8 @@ abstract class AbstractPrint extends \Weline\Framework\Output\AbstractPrint impl
      * @param string $data
      * @param string $message
      * @param string $color
-     * @param int $pad_length
+     * @param int    $pad_length
+     *
      * @return mixed|void
      */
     public function success(string $data = 'Success!', string $message = '', string $color = self::ERROR, int $pad_length = 25): mixed
@@ -66,7 +68,8 @@ abstract class AbstractPrint extends \Weline\Framework\Output\AbstractPrint impl
      * @param string $data
      * @param string $message
      * @param string $color
-     * @param int $pad_length
+     * @param int    $pad_length
+     *
      * @return mixed|void
      */
     public function warning(string $data = 'Warning!', string $message = '', string $color = self::WARNING, int $pad_length = 25): mixed
@@ -87,7 +90,8 @@ abstract class AbstractPrint extends \Weline\Framework\Output\AbstractPrint impl
      * @param string $data
      * @param string $message
      * @param string $color
-     * @param int $pad_length
+     * @param int    $pad_length
+     *
      * @return mixed|void
      */
     public function note(string $data = 'Note!', string $message = '', string $color = self::NOTE, int $pad_length = 25): mixed
@@ -97,6 +101,7 @@ abstract class AbstractPrint extends \Weline\Framework\Output\AbstractPrint impl
 
     /**
      * ----------------辅助方法-------------------
+     *
      * @param mixed $data
      * @param mixed $message
      * @param mixed $color
@@ -114,9 +119,9 @@ abstract class AbstractPrint extends \Weline\Framework\Output\AbstractPrint impl
      * 参数区：
      *
      * @param array|string $data
-     * @param string $message
-     * @param string $color
-     * @param int $pad_length
+     * @param string       $message
+     * @param string       $color
+     * @param int          $pad_length
      */
     public function doPrint(array|string $data, string $message, string $color, int $pad_length = 0): mixed
     {
@@ -144,7 +149,7 @@ abstract class AbstractPrint extends \Weline\Framework\Output\AbstractPrint impl
      * @param string $data
      * @param string $message
      * @param string $color
-     * @param int $pad_length
+     * @param int    $pad_length
      */
     public function printing(string $data = 'Printing!', string $message = '', string $color = self::NOTE, int $pad_length = 0): void
     {
@@ -169,6 +174,7 @@ COMMAND_LIST;
      *
      * @param string $text
      * @param string $status
+     *
      * @return string
      */
     public function colorize($text, $status): string

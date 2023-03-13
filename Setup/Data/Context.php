@@ -26,17 +26,18 @@ class Context
 
     /**
      * Context 初始函数...
+     *
      * @param string $module_name
      * @param string $module_version
      * @param string $module_description
      */
     public function __construct(string $module_name, string $module_version, string $module_description = '')
     {
-        $this->module_name = $module_name;
-        $this->module_version = $module_version;
+        $this->module_name        = $module_name;
+        $this->module_version     = $module_version;
         $this->module_description = $module_description;
-        $this->modules = Env::getInstance()->getModuleList();
-        $this->printer = new Printing();
+        $this->modules            = Env::getInstance()->getModuleList();
+        $this->printer            = new Printing();
     }
 
     public function getModuleName()

@@ -10,15 +10,23 @@
 namespace Weline\Framework\Http\Request;
 
 use Weline\Framework\App\Env;
+use Weline\Framework\App\Exception;
 use Weline\Framework\App\State;
+use Weline\Framework\Cache\CacheInterface;
 use Weline\Framework\Controller\Data\DataInterface;
 use Weline\Framework\DataObject\DataObject;
 use Weline\Framework\Event\EventsManager;
+use Weline\Framework\Http\Cache\RequestCache;
+use Weline\Framework\Http\Request;
 use Weline\Framework\Http\Response;
 use Weline\Framework\Manager\ObjectManager;
+use Weline\Framework\Router\Cache\RouterCache;
 
-abstract class RequestAbstract extends DataObject
+abstract class RequestAbstract extends RequestFilter
 {
+    /**缓存专区*/
+    public string $uri_cache_key = '';
+    public ?string $uri_cache_url_path_data = null;
     public const HEADER = 'header';
 
     public const MOBILE_DEVICE_HEADERS = [
@@ -31,11 +39,12 @@ abstract class RequestAbstract extends DataObject
     ];
 
     private string $area_router = State::area_frontend;
+    private ?string $uri = null;
 
     /**
-     * @var RequestFilter
+     * @var CacheInterface|null
      */
-    public RequestFilter $_filter;
+    public ?CacheInterface $cache = null;
 
     private array $parse_url = [];
 
@@ -46,22 +55,29 @@ abstract class RequestAbstract extends DataObject
 
     public function __init()
     {
-        $url_arr           = explode('/', trim($this->getModuleUrlPath(), '/'));
-        $this->area_router = array_shift($url_arr);
-        if (empty($this->_filter)) {
-            $this->_filter = RequestFilter::getInstance();
+        if (empty($this->cache)) {
+            $this->cache = ObjectManager::getInstance(RequestCache::class . 'Factory');
+        }
+        if (empty($this->uri_cache_key)) {
+            $this->uri_cache_key = $this->getUri() . $this->getMethod();
         }
         if (empty($this->_response)) {
             $this->_response = $this->getResponse();
         }
+        $url_arr           = explode('/', trim($this->getModuleUrlPath(), '/'));
+        $this->area_router = array_shift($url_arr);
     }
 
-    public function parse_url(): bool|int|array|string|null
+    public function parse_url(string $url = ''): bool|int|array|string|null
     {
-        if (empty($this->parse_url)) {
-            $this->parse_url = parse_url($this->getUri());
+        if (empty($url)) {
+            if (empty($this->parse_url)) {
+                $this->parse_url = parse_url(rtrim($this->getUri(), '/'));
+            }
+            return $this->parse_url;
+        } else {
+            return parse_url(rtrim($url, '/'));
         }
-        return $this->parse_url;
     }
 
     /**
@@ -70,6 +86,8 @@ abstract class RequestAbstract extends DataObject
      * 参数区：
      *
      * @param array $router
+     *
+     * @return \Weline\Framework\Http\Request\RequestAbstract
      */
     public function setRouter(array $router): RequestAbstract
     {
@@ -85,7 +103,7 @@ abstract class RequestAbstract extends DataObject
      */
     public function getRouter(): array
     {
-        return $this->getData('router')??[];
+        return $this->getData('router') ?? [];
     }
 
     /**
@@ -118,6 +136,8 @@ abstract class RequestAbstract extends DataObject
      * 参数区：
      *
      * @return string
+     * @throws \ReflectionException
+     * @throws \Weline\Framework\App\Exception
      */
     public function getRequestArea(): string
     {
@@ -215,7 +235,7 @@ abstract class RequestAbstract extends DataObject
                 case self::HEADER:
                     $params = [];
                     foreach ($_SERVER as $name => $value) {
-                        if (substr($name, 0, 5) === 'HTTP_') {
+                        if (str_starts_with($name, 'HTTP_')) {
                             $params[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
                         }
                     }
@@ -232,6 +252,27 @@ abstract class RequestAbstract extends DataObject
     }
 
     /**
+     * @DESC         |设置头
+     *
+     * @Author       秋枫雁飞
+     * @Email        aiweline@qq.com
+     * @Forum        https://bbs.aiweline.com
+     * @Description  此文件源码由Aiweline（秋枫雁飞）开发，请勿随意修改源码！
+     *
+     * 参数区：
+     *
+     * @param string $key
+     * @param string $value
+     *
+     * @return RequestAbstract
+     */
+    public function setServer(string $key, string $value): static
+    {
+        $_SERVER[$key] = $value;
+        return $this;
+    }
+
+    /**
      * @DESC         |请求方法
      *
      * 参数区：
@@ -240,7 +281,7 @@ abstract class RequestAbstract extends DataObject
      */
     public function getMethod(): string
     {
-        return $_SERVER['REQUEST_METHOD'];
+        return $_SERVER['REQUEST_METHOD'] ?? '';
     }
 
     /**
@@ -290,7 +331,27 @@ abstract class RequestAbstract extends DataObject
 
     public function getUri(): string
     {
-        return $this->getServer('REQUEST_URI');
+        if (!is_null($this->uri)) {
+            return $this->uri;
+        }
+        $uri      = rtrim($this->getServer('REQUEST_URI'), '/');
+        $url_path = $this->cache->get($this->uri_cache_key);
+        if ($url_path !== false) {
+            $this->uri_cache_url_path_data = $url_path;
+            $this->setServer('REQUEST_URI', $uri);
+            return $url_path;
+        }
+        # url 重写
+        if ($uri && $this->isGet()) {
+            /**@var EventsManager $event */
+            $event = ObjectManager::getInstance(EventsManager::class);
+            $data  = new DataObject(['uri' => $uri]);
+            $event->dispatch('Weline_Framework_Router::router_start', ['data' => $data]);
+            $uri = $data->getData('uri');
+            $this->setServer('REQUEST_URI', $uri);
+        }
+        $this->uri = $uri;
+        return $uri;
     }
 
     /**
@@ -304,15 +365,20 @@ abstract class RequestAbstract extends DataObject
      */
     public function getModuleUrlPath(): string
     {
-        $url_exp = parse_url($this->getUri());
+        $url_exp = $this->parse_url();
         return array_shift($url_exp);
     }
 
     public function getBaseUrl(): string
     {
         $uri     = $this->getUri();
-        $url_exp = explode('?', rtrim($uri, '/'));
+        $url_exp = explode('?', $uri);
         return $this->getBaseHost() . array_shift($url_exp);
+    }
+
+    function getFullUrl(): string
+    {
+        return $this->getServer('REQUEST_SCHEME') . '://' . $this->getServer('SERVER_NAME') . $this->getServer('REQUEST_URI');
     }
 
     public function getBaseUri(): string
@@ -346,8 +412,8 @@ abstract class RequestAbstract extends DataObject
      * 参数区：
      *
      * @return Response
-     * @throws \Weline\Framework\App\Exception
      * @throws \ReflectionException
+     * @throws \Weline\Framework\App\Exception
      */
     public function getResponse(): Response
     {

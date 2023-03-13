@@ -24,17 +24,14 @@ abstract class AbstractPrint implements PrintInterface
 
     public function success(string $data = 'Success!', string $message = '', string $color = self::ERROR, int $pad_length = 25)
     {
-        // TODO: Implement success() method.
     }
 
     public function warning(string $data = 'Warning!', string $message = '', string $color = self::ERROR, int $pad_length = 25)
     {
-        // TODO: Implement warning() method.
     }
 
     public function note(string $data = 'Note!', string $message = '', string $color = self::ERROR, int $pad_length = 25)
     {
-        // TODO: Implement note() method.
     }
 
     /**
@@ -52,6 +49,7 @@ abstract class AbstractPrint implements PrintInterface
      * 参数区：
      *
      * @param string $message
+     *
      * @return mixed|string
      */
     public function printing(string $message = 'Printing!')
@@ -66,7 +64,8 @@ abstract class AbstractPrint implements PrintInterface
      *
      * @param string $log_path
      * @param string $content
-     * @param int $type
+     * @param int    $type
+     *
      * @throws \Weline\Framework\App\Exception
      */
     protected function write(string $log_path, string $content, int $type)

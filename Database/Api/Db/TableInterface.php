@@ -65,27 +65,27 @@ interface TableInterface
 
     public const index_type_KEY = 'KEY';//--用KEY创建普通索引
 
-    public const table_TABLE = 'table';
-    public const table_COMMENT = 'comment';
-    public const table_FIELDS = 'fields';
-    public const table_ALERT_FIELDS = 'alter_fields';
+    public const table_TABLE         = 'table';
+    public const table_COMMENT       = 'comment';
+    public const table_FIELDS        = 'fields';
+    public const table_ALERT_FIELDS  = 'alter_fields';
     public const table_DELETE_FIELDS = 'delete_fields';
-    public const table_INDEXS = 'indexes';
-    public const table_FOREIGN_KEYS = 'foreign_keys';
-    public const table_TYPE = 'type';
-    public const table_CONSTRAINTS = 'constraints';
-    public const table_ADDITIONAL = 'additional';
+    public const table_INDEXS        = 'indexes';
+    public const table_FOREIGN_KEYS  = 'foreign_keys';
+    public const table_TYPE          = 'type';
+    public const table_CONSTRAINTS   = 'constraints';
+    public const table_ADDITIONAL    = 'additional';
 
     public const init_vars = [
-        self::table_TABLE => '',
-        self::table_COMMENT => '',
-        self::table_FIELDS => [],
-        self::table_ALERT_FIELDS => [],
+        self::table_TABLE         => '',
+        self::table_COMMENT       => '',
+        self::table_FIELDS        => [],
+        self::table_ALERT_FIELDS  => [],
         self::table_DELETE_FIELDS => [],
-        self::table_INDEXS => [],
-        self::table_FOREIGN_KEYS => [],
-        self::table_CONSTRAINTS => '',
-        self::table_ADDITIONAL => 'ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;',
+        self::table_INDEXS        => [],
+        self::table_FOREIGN_KEYS  => [],
+        self::table_CONSTRAINTS   => '',
+        self::table_ADDITIONAL    => 'ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;',
     ];
 
     /**
@@ -100,11 +100,12 @@ interface TableInterface
      *
      * @return mixed
      */
-    function setConnection(ConnectionFactory $connection);
+    public function setConnection(ConnectionFactory $connection);
+
     /**
      * @DESC          # 创建表
      *
-     * @AUTH  秋枫雁飞
+     * @AUTH    秋枫雁飞
      * @EMAIL aiweline@qq.com
      * @DateTime: 2021/9/5 21:03
      * 参数区：
@@ -115,7 +116,7 @@ interface TableInterface
     /**
      * @DESC          # 修改表
      *
-     * @AUTH  秋枫雁飞
+     * @AUTH    秋枫雁飞
      * @EMAIL aiweline@qq.com
      * @DateTime: 2021/9/5 21:04
      * 参数区：

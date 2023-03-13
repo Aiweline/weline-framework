@@ -26,9 +26,10 @@ class Core extends \Exception
 
     /**
      * Exception 初始函数...
-     * @param $message
+     *
+     * @param                 $message
      * @param \Exception|null $cause
-     * @param int $code
+     * @param int             $code
      */
     public function __construct($message = null, \Exception $cause = null, $code = 0)
     {
@@ -174,6 +175,7 @@ class Core extends \Exception
      * @param string $message
      * @param string $file
      * @param string $line
+     *
      * @return string
      */
     private function prepareMessage($code = '', $message = '', $file = '', $line = '')
@@ -198,6 +200,7 @@ class Core extends \Exception
      * @param string $message
      * @param string $file
      * @param string $line
+     *
      * @return string
      */
     private function prepareHtmlMessage($code = '', $message = '', $file = '', $line = ''): string
@@ -226,6 +229,7 @@ class Core extends \Exception
      * @param string $ele
      * @param string $message
      * @param string $color
+     *
      * @return string
      */
     private function preHtmlFrontColor(string $ele, string $message, string $color): string
@@ -240,7 +244,7 @@ class Core extends \Exception
 
     public function __toString()
     {
-        return $this->message =CLI ? $this->preCliFrontColor() : $this->preHtmlFrontColor('b', $this->message, '#945252');
+        return $this->message = CLI ? $this->preCliFrontColor() : $this->preHtmlFrontColor('b', $this->message, '#945252');
     }
 
     /**
@@ -248,8 +252,8 @@ class Core extends \Exception
      *
      * 参数区：
      *
-     * @throws \Weline\Framework\App\Exception
      * @return string
+     * @throws \Weline\Framework\App\Exception
      */
     public function getErrorCode(): string
     {
@@ -262,10 +266,10 @@ class Core extends \Exception
         $fileSource = $file->open($this->file, $file::mode_r)->getSource();
 
         $returnTxt  = $isCli ? $startColor : '<div style="padding:25px;color:#767678;background-color:#9e9e9e42;margin: 15px 8px 8px 8px">'; // 初始化返回
-        $i          = 1; // 行数
+        $i          = 1;                                                                                                                     // 行数
         $start_line = $this->line - 2;
         $end_line   = $this->line + 2;
-        while (! feof($fileSource)) {
+        while (!feof($fileSource)) {
             $buffer = fgets($fileSource);
             $buffer = $isCli ? $buffer : str_replace(' ', '&nbsp;', $buffer);
             $line   = $isCli ? '第 ' . $i . ' 行# ' : '<b style="color: gray">第 ' . $i . ' 行#</b>';

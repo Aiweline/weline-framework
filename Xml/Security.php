@@ -19,6 +19,7 @@ class Security
      * 参数区：
      *
      * @param string $xmlContent
+     *
      * @return bool
      */
     private function heuristicScan(string $xmlContent)
@@ -44,6 +45,7 @@ class Security
      * 参数区：
      *
      * @param string $xmlContent
+     *
      * @return bool
      */
     public function scan(string $xmlContent)
@@ -59,31 +61,31 @@ class Security
 
         $document = new DOMDocument();
 
-        $loadEntities         = libxml_disable_entity_loader(true);
+//        $loadEntities         = libxml_disable_entity_loader(true);
         $useInternalXmlErrors = libxml_use_internal_errors(true);
 
         /**
          * 在禁用网络访问的情况下加载XML (LIBXML_NONET)
          * 以 PHP-FPM 运行时禁用错误助手
          */
-        set_error_handler(
-            function ($errno, $errstr) {
-                if (substr_count($errstr, 'DOMDocument::loadXML()') > 0) {
-                    return true;
-                }
-
-                return false;
-            },
-            E_WARNING
-        );
+//        set_error_handler(
+//            function ($errno, $errstr) {
+//                if (substr_count($errstr, 'DOMDocument::loadXML()') > 0) {
+//                    return true;
+//                }
+//
+//                return false;
+//            },
+//            E_WARNING
+//        );
 
         $result = (bool)$document->loadXML($xmlContent, LIBXML_NONET);
         restore_error_handler();
         // 实体加载到上一设置
-        libxml_disable_entity_loader($loadEntities);
+//        libxml_disable_entity_loader($loadEntities);
         libxml_use_internal_errors($useInternalXmlErrors);
 
-        if (! $result) {
+        if (!$result) {
             return false;
         }
 

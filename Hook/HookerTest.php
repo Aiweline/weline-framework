@@ -18,7 +18,7 @@ class HookerTest extends TestCase
 {
     public function testGetHook()
     {
-        /**@var Hooker $hooker*/
+        /**@var Hooker $hooker */
         $hooker = ObjectManager::getInstance(Hooker::class);
         p($hooker->getHook('title'));
     }

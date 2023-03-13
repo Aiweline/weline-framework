@@ -21,7 +21,7 @@ class Loader
         require __DIR__ . '/functions.php';
         require __DIR__ . '/func_debug.php';
         # 加载模块自定义助手函数
-        if(is_file(Env::path_FUNCTIONS_FILE)){
+        if (is_file(Env::path_FUNCTIONS_FILE)) {
             require Env::path_FUNCTIONS_FILE;
         }
     }

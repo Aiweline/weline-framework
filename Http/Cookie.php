@@ -14,15 +14,16 @@ use Weline\I18n\Model\I18n;
 
 class Cookie
 {
-    static function set(string $key, string $value, int $expire = 3600 * 24 * 7, array $options = [])
+    public static function set(string $key, string $value, int $expire = 3600 * 24 * 7, array $options = [])
     {
         $_options['path'] = '/';
-        $_options['domain'] = getenv('HTTP_HOST');
-        if($options)$_options = array_merge($_options, $options);
+        if ($options) {
+            $_options = array_merge($_options, $options);
+        }
         setcookie($key, $value, time() + $expire, ...$_options);
     }
 
-    static function get(string $key, $default = null)
+    public static function get(string $key, $default = null)
     {
         return $_COOKIE[$key] ?? $default;
     }
@@ -36,17 +37,13 @@ class Cookie
      * 参数区：
      * @return string
      */
-    static public function getLang(): string
+    public static function getLang(): string
     {
         // 用户语言优先
         $lang = $_COOKIE['WELINE-USER-LANG'] ?? null;
         // 默认网站语言
         if (empty($lang)) {
             $lang = self::get('WELINE-WEBSITE-LANG', 'zh_Hans_CN');
-            if (!CLI) {
-                self::set('WELINE-WEBSITE-LANG', $lang);
-                self::set('WELINE-USER-LANG', $lang);
-            }
         }
         return $lang;
     }
@@ -59,10 +56,9 @@ class Cookie
      * @DateTime: 2022/6/24 22:47
      * 参数区：
      * @return string
-     * @throws \ReflectionException
-     * @throws \Weline\Framework\App\Exception
+     * @throws Null
      */
-    static public function getLangLocal(): string
+    public static function getLangLocal(): string
     {
         return ObjectManager::getInstance(I18n::class)->getLocalByCode(self::getLang());
     }

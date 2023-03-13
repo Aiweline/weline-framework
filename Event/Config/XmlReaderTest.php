@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /*
@@ -15,7 +16,7 @@ use Weline\Framework\UnitTest\TestCore;
 
 class XmlReaderTest extends TestCore
 {
-    function testRead()
+    public function testRead()
     {
         $data = ObjectManager::getInstance(XmlReader::class)->read();
         p($data);

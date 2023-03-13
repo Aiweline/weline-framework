@@ -14,12 +14,14 @@ interface SessionDriverHandlerInterface
     /**
      * @DESC          # 设置数据
      *
-     * @AUTH  秋枫雁飞
+     * @AUTH    秋枫雁飞
      * @EMAIL aiweline@qq.com
      * @DateTime: 2021/11/8 17:07
      * 参数区：
+     *
      * @param $name
      * @param $value
+     *
      * @return mixed
      */
     public function set($name, $value): bool;
@@ -30,18 +32,21 @@ interface SessionDriverHandlerInterface
      * 参数区：
      *
      * @param $name
+     *
      * @return mixed
      */
-    public function get($name): mixed;
+    public function get($name = null): mixed;
 
     /**
      * @DESC          # 删除数据
      *
-     * @AUTH  秋枫雁飞
+     * @AUTH    秋枫雁飞
      * @EMAIL aiweline@qq.com
      * @DateTime: 2021/11/8 17:03
      * 参数区：
+     *
      * @param $name
+     *
      * @return bool
      */
     public function delete($name): bool;
@@ -51,7 +56,7 @@ interface SessionDriverHandlerInterface
     /**
      * @DESC          # 获取Session ID
      *
-     * @AUTH  秋枫雁飞
+     * @AUTH    秋枫雁飞
      * @EMAIL aiweline@qq.com
      * @DateTime: 2021/11/20 13:52
      * 参数区：

@@ -19,17 +19,17 @@ class Reindex implements \Weline\Framework\Console\CommandInterface
     /**
      * @inheritDoc
      */
-    public function execute(array $args = [])
+    public function execute(array $args = [], array $data = [])
     {
-        /**@var EventsManager $eventManager*/
+        /**@var EventsManager $eventManager */
         $eventManager = ObjectManager::getInstance(EventsManager::class);
-        $eventManager->dispatch('Framework_Database::indexer', ['args'=>$args]);
+        $eventManager->dispatch('Framework_Database::indexer', ['args' => $args]);
     }
 
     /**
      * @inheritDoc
      */
-    public function getTip(): string
+    public function tip(): string
     {
         return '重建数据库表索引。示例：index:reindex weline_indexer （其中weline_indexer是模型索引器名，可以多个Model使用同一个索引器）';
     }

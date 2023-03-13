@@ -28,11 +28,12 @@ class MessageManager
 
     public function __construct(
         Session $session
-    ) {
+    )
+    {
         $this->session = $session;
     }
 
-    public function addError(string $msg = '',string $class = 'danger',string $title = '')
+    public function addError(string $msg = '', string $class = 'danger', string $title = '')
     {
         $title = $title ?: __('错误！');
         $this->session->addData('system-message', $this->processMessage($msg, $title, $class));
@@ -45,7 +46,7 @@ class MessageManager
         return (bool)$this->session->getData('has-error');
     }
 
-    public function addException(\Exception $exception,string $class = 'warning')
+    public function addException(\Exception $exception, string $class = 'warning')
     {
         $msg = $exception->getMessage();
         $this->session->addData('system-message', $this->processMessage($msg, __('异常警告！'), $class));
@@ -58,7 +59,7 @@ class MessageManager
         return (bool)$this->session->getData('has-exception');
     }
 
-    public function addSuccess(string $msg = '',string $class = 'success',string  $title = '')
+    public function addSuccess(string $msg = '', string $class = 'success', string $title = '')
     {
         $title = $title ?: __('操作成功！');
         $this->session->addData('system-message', $this->processMessage($msg, $title, $class));
@@ -71,7 +72,7 @@ class MessageManager
         return (bool)$this->session->getData('has-success');
     }
 
-    public function addWarning(string $msg = '',string $class = 'warning',string $title = '')
+    public function addWarning(string $msg = '', string $class = 'warning', string $title = '')
     {
         $title = $title ?: __('警告！');
         $this->session->addData('system-message', $this->processMessage($msg, $title, $class));
@@ -84,7 +85,7 @@ class MessageManager
         return (bool)$this->session->getData('has-warning');
     }
 
-    public function addNotes(string $msg = '',string $class = 'notes',string $title = '')
+    public function addNotes(string $msg = '', string $class = 'notes', string $title = '')
     {
         $title = $title ?: __('提示！');
         $this->session->addData('system-message', $this->processMessage($msg, $title, $class));

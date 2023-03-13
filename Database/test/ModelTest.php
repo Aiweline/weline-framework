@@ -18,6 +18,7 @@ use Weline\Framework\UnitTest\TestCore;
 class ModelTest extends TestCore
 {
     private WelineModel $model;
+
     public function setUp(): void
     {
         $this->model = ObjectManager::getInstance(WelineModel::class);
@@ -51,17 +52,19 @@ class ModelTest extends TestCore
         $this->model->setData('stores', 8888)->setData('id', 7);
         p($this->model->save());// 处理id字符串时不更新问题
 
-        p($this->model->save(['stores'=>8818]));
-        p($this->model->save(['id'=>8,'stores'=>8818]));
+        p($this->model->save(['stores' => 8818]));
+        p($this->model->save(['id' => 8, 'stores' => 8818]));
     }
+
     public function testWhere()
     {
-        p($this->model->where([['id',6],['stores',666]])->find()->fetch());
+        p($this->model->where([['id', 6], ['stores', 666]])->find()->fetch());
     }
+
     public function testUpdate()
     {
         $this->model->load('6');
         p($this->model->getData(), true);
-        p($this->model->save(['stores'=>777]));
+        p($this->model->save(['stores' => 777]));
     }
 }

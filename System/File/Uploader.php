@@ -11,8 +11,6 @@ declare(strict_types=1);
 
 namespace Weline\Framework\System\File;
 
-use JetBrains\PhpStorm\Pure;
-use Weline\Framework\App\Env;
 use Weline\Framework\App\Exception;
 use Weline\Framework\Http\Request;
 use Weline\Framework\Manager\ObjectManager;
@@ -23,10 +21,10 @@ class Uploader
     private string $uploader_dir = 'uploader' . DS;
     private string $module_dir = '';
     private string $module_name = '';
-    private array $accepted_origins = ['http://localhost', 'http://192.168.1.1', 'http://127.0.0.1'];
+    private array $accepted_origins = ['http://localhost', 'http://127.0.0.1'];
     private array $ext = ['gif', 'jpg', 'png', 'jpeg'];
 
-    function checkDomain()
+    public function checkDomain(): void
     {
         if (isset($_SERVER['HTTP_ORIGIN'])) {
             // 验证来源是否在白名单内
@@ -91,13 +89,17 @@ class Uploader
     {
         // 简单的过滤一下文件名是否合格
         if (preg_match('/[\x{4e00}-\x{9fa5}:：,，。…、~`＠＃￥％＆×＋｜｛｝＝－＊＾＄～｀!@#$%^&*()\+=（）！￥{}【】\[\]\|\"\'’‘“”；;《》<>\?\？\·]/u', $filename, $matches)) {
-            if (!CLI) header('HTTP/1.1 400 Invalid file name.');
+            if (!CLI) {
+                header('HTTP/1.1 400 Invalid file name.');
+            }
             throw new Exception(__('无效文件名。'));
         }
 
         // 验证扩展名
         if (!in_array(strtolower(pathinfo($filename, PATHINFO_EXTENSION)), $this->ext)) {
-            if (!CLI) header('HTTP/1.1 400 Invalid extension.');
+            if (!CLI) {
+                header('HTTP/1.1 400 Invalid extension.');
+            }
             throw new Exception(__('无效拓展名。'));
         }
     }
@@ -136,17 +138,21 @@ class Uploader
         if (1 === count($_FILES)) {
             $file     = array_pop($_FILES);
             $filename = $file['name'];
-            if ($filename) $result = $this->saveFile($file['tmp_name'], $filename);
+            if ($filename) {
+                $result = $this->saveFile($file['tmp_name'], $filename);
+            }
         } else {
             foreach ($_FILES as $FILE) {
                 $filename = $FILE['name'];
-                if ($filename) $result[] = $this->saveFile($FILE['tmp_name'], $filename);
+                if ($filename) {
+                    $result[] = $this->saveFile($FILE['tmp_name'], $filename);
+                }
             }
         }
         return $result;
     }
 
-    function getUploadFilename(string $filename)
+    public function getUploadFilename(string $filename): string
     {
         $this->checkFilename($filename);
         if (!str_starts_with($filename, BP)) {
@@ -171,7 +177,6 @@ class Uploader
      */
     public function saveFile(string $tmp_file, string $filename): string
     {
-        $this->checkDomain();
         $filename = $this->getUploadFilename($filename);
         $dir      = dirname($filename);
         if (!is_dir($dir)) {
@@ -243,7 +248,7 @@ class Uploader
         $this->module_dir = $module_dir;
     }
 
-    public function delete(string $filepath)
+    public function delete(string $filepath): bool
     {
         $filename = $this->getUploadFilename($filepath);
         if (is_file($filename)) {

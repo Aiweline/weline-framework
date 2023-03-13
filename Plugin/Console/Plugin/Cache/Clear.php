@@ -27,8 +27,9 @@ class Clear implements \Weline\Framework\Console\CommandInterface
 
     public function __construct(
         PluginCache $pluginCache,
-        Printing $printing
-    ) {
+        Printing    $printing
+    )
+    {
         $this->pluginCache = $pluginCache->create();
         $this->printing    = $printing;
     }
@@ -36,7 +37,7 @@ class Clear implements \Weline\Framework\Console\CommandInterface
     /**
      * @inheritDoc
      */
-    public function execute(array $args = [])
+    public function execute(array $args = [], array $data = [])
     {
         $this->pluginCache->clear();
         $this->printing->success(__('拦截器缓存清理成功！'), '系统');
@@ -45,7 +46,7 @@ class Clear implements \Weline\Framework\Console\CommandInterface
     /**
      * @inheritDoc
      */
-    public function getTip(): string
+    public function tip(): string
     {
         return __('插件缓存清理！');
     }

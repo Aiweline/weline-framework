@@ -28,6 +28,7 @@ trait TraitDataObject
     /**
      * DataObject 初始函数...
      * # 默认情况下，查找第一个参数作为数组，并将其指定为对象属性
+     *
      * @param array $data
      */
     public function __construct(array $data = [])
@@ -44,6 +45,7 @@ trait TraitDataObject
      * 参数区：
      *
      * @param array $arr
+     *
      * @return $this
      */
     public function addData(array $arr)
@@ -65,8 +67,9 @@ trait TraitDataObject
      *
      * 参数区：
      *
-     * @param $key
+     * @param      $key
      * @param null $value
+     *
      * @return $this
      */
     public function setData($key, $value = null)
@@ -86,6 +89,7 @@ trait TraitDataObject
      * 参数区：
      *
      * @param null $key
+     *
      * @return $this
      */
     public function unsetData($key = null)
@@ -118,7 +122,8 @@ trait TraitDataObject
      * 参数区：
      *
      * @param string $key
-     * @param null $index
+     * @param null   $index
+     *
      * @return array|mixed|string|null
      */
     public function getData($key = '', $index = null)
@@ -158,6 +163,7 @@ trait TraitDataObject
      * 参数区：
      *
      * @param $path
+     *
      * @return array|mixed|null
      */
     public function getDataByPath($path)
@@ -184,6 +190,7 @@ trait TraitDataObject
      * 参数区：
      *
      * @param $key
+     *
      * @return mixed|null
      */
     public function getDataByKey($key)
@@ -197,6 +204,7 @@ trait TraitDataObject
      * 参数区：
      *
      * @param $key
+     *
      * @return mixed|null
      */
     protected function _getData($key)
@@ -213,8 +221,9 @@ trait TraitDataObject
      *
      * 参数区：
      *
-     * @param $key
+     * @param       $key
      * @param array $args
+     *
      * @return $this
      */
     public function setDataUsingMethod($key, $args = [])
@@ -230,8 +239,9 @@ trait TraitDataObject
      *
      * 参数区：
      *
-     * @param $key
+     * @param      $key
      * @param null $args
+     *
      * @return mixed
      */
     public function getDataUsingMethod($key, $args = null)
@@ -250,12 +260,13 @@ trait TraitDataObject
      * 参数区：
      *
      * @param string $key
+     *
      * @return bool
      */
     public function hasData($key = ''): bool
     {
-        if (empty($key) || ! is_string($key)) {
-            return ! empty($this->_data);
+        if (empty($key) || !is_string($key)) {
+            return !empty($this->_data);
         }
 
         return array_key_exists($key, $this->_data);
@@ -267,6 +278,7 @@ trait TraitDataObject
      * 参数区：
      *
      * @param array $keys
+     *
      * @return array
      */
     public function toArray(array $keys = []): array
@@ -293,6 +305,7 @@ trait TraitDataObject
      * 参数区：
      *
      * @param array $keys
+     *
      * @return array
      */
     public function convertToArray(array $keys = []): array
@@ -305,10 +318,11 @@ trait TraitDataObject
      *
      * 参数区：
      *
-     * @param array $keys 必须表示的键数组
-     * @param string $rootName 根节点名称
-     * @param bool $addOpenTag 允许添加初始xml节点的标志
-     * @param bool $addCdata 需要在CDATA中包装所有值的标志
+     * @param array  $keys       必须表示的键数组
+     * @param string $rootName   根节点名称
+     * @param bool   $addOpenTag 允许添加初始xml节点的标志
+     * @param bool   $addCdata   需要在CDATA中包装所有值的标志
+     *
      * @return string
      */
     public function toXml(array $keys = [], $rootName = 'item', $addOpenTag = false, $addCdata = true): string
@@ -342,18 +356,20 @@ trait TraitDataObject
      *
      * 参数区：
      *
-     * @param array $arrAttributes 必须表示的键数组
-     * @param string $rootName 根节点名称
-     * @param bool $addOpenTag 允许添加初始xml节点的标志
-     * @param bool $addCdata 需要在CDATA中包装所有值的标志
+     * @param array  $arrAttributes 必须表示的键数组
+     * @param string $rootName      根节点名称
+     * @param bool   $addOpenTag    允许添加初始xml节点的标志
+     * @param bool   $addCdata      需要在CDATA中包装所有值的标志
+     *
      * @return string
      */
     public function convertToXml(
         array $arrAttributes = [],
-        $rootName = 'item',
-        $addOpenTag = false,
-        $addCdata = true
-    ): string {
+              $rootName = 'item',
+              $addOpenTag = false,
+              $addCdata = true
+    ): string
+    {
         return $this->toXml($arrAttributes, $rootName, $addOpenTag, $addCdata);
     }
 
@@ -363,6 +379,7 @@ trait TraitDataObject
      * 参数区：
      *
      * @param array $keys 需要转化的keys
+     *
      * @return mixed
      */
     public function toJson(array $keys = [])
@@ -378,6 +395,7 @@ trait TraitDataObject
      * 参数区：
      *
      * @param array $keys
+     *
      * @return mixed
      */
     public function convertToJson(array $keys = [])
@@ -391,6 +409,7 @@ trait TraitDataObject
      * Will use $format as an template and substitute {{key}} for attributes
      *
      * @param string $format
+     *
      * @return string
      */
 
@@ -400,6 +419,7 @@ trait TraitDataObject
      * 参数区：
      *
      * @param string $format
+     *
      * @return string|string[]
      */
     public function toString($format = '')
@@ -424,6 +444,7 @@ trait TraitDataObject
      *
      * @param $method
      * @param $args
+     *
      * @return $this|array|bool|mixed|string|null
      */
     public function __call($method, $args)
@@ -479,6 +500,7 @@ trait TraitDataObject
      * 参数区：
      *
      * @param $name
+     *
      * @return mixed|string
      */
     protected function _underscore($name)
@@ -501,10 +523,11 @@ trait TraitDataObject
      *
      * 参数区：
      *
-     * @param array $keys 允许转化的键
+     * @param array  $keys           允许转化的键
      * @param string $valueSeparator 键和值之间的分隔符
      * @param string $fieldSeparator 键/值对之间的分隔符
-     * @param string $quote 引用标志
+     * @param string $quote          引用标志
+     *
      * @return string
      */
     public function serialize($keys = [], $valueSeparator = '=', $fieldSeparator = ' ', $quote = '"'): string
@@ -528,15 +551,16 @@ trait TraitDataObject
      *
      * 参数区：
      *
-     * @param null $data
+     * @param null  $data
      * @param array $objects
+     *
      * @return array|string
      */
     public function debug($data = null, &$objects = [])
     {
         if ($data === null) {
             $hash = spl_object_hash($this);
-            if (! empty($objects[$hash])) {
+            if (!empty($objects[$hash])) {
                 return '*** RECURSION ***';
             }
             $objects[$hash] = true;
@@ -563,6 +587,7 @@ trait TraitDataObject
      *
      * @param mixed $offset
      * @param mixed $value
+     *
      * @link http://www.php.net/manual/en/arrayaccess.offsetset.php
      */
     public function offsetSet($offset, $value): void
@@ -576,6 +601,7 @@ trait TraitDataObject
      * 参数区：
      *
      * @param mixed $offset
+     *
      * @return bool
      * @link http://www.php.net/manual/en/arrayaccess.offsetexists.php
      */
@@ -590,6 +616,7 @@ trait TraitDataObject
      * 参数区：
      *
      * @param mixed $offset
+     *
      * @link http://www.php.net/manual/en/arrayaccess.offsetunset.php
      */
     public function offsetUnset($offset): void
@@ -603,6 +630,7 @@ trait TraitDataObject
      * 参数区：
      *
      * @param mixed $offset
+     *
      * @return mixed|null
      * @link http://www.php.net/manual/en/arrayaccess.offsetget.php
      */

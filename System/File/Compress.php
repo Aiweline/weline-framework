@@ -19,11 +19,13 @@ class Compress
 
     /**
      * Compress 初始函数...
+     *
      * @param \ZipArchive $zipArchive
      */
     public function __construct(
         \ZipArchive $zipArchive
-    ) {
+    )
+    {
         $this->zipArchive = $zipArchive;
     }
 
@@ -36,11 +38,12 @@ class Compress
      *
      * 参数区：
      *
-     * @param string $path
+     * @param string      $path
      * @param string|null $to_path
      * @param string|null $zip_base_path
-     * @throws Exception
+     *
      * @return string
+     * @throws Exception
      */
     public function compression(string $path, string $to_path = null, string $zip_base_path = null)
     {
@@ -85,6 +88,7 @@ class Compress
      *
      * @param $path
      * @param $zip
+     *
      * @return $this
      */
     public function addFileToZip($path)
@@ -122,7 +126,8 @@ class Compress
      * 参数区：
      *
      * @param string $file_name 添加的字符串在压缩包里的命名 支持路径命名 比如：add/string.txt
-     * @param string $string 添加的字符串文本内容 比如：'Is file content'
+     * @param string $string    添加的字符串文本内容 比如：'Is file content'
+     *
      * @return $this
      */
     public function addString(string $file_name, string $string)
@@ -137,8 +142,9 @@ class Compress
      *
      * 参数区：
      *
-     * @param string $zip_file
+     * @param string      $zip_file
      * @param string|null $out_dir
+     *
      * @return $this
      */
     public function deCompression(string $zip_file, string $out_dir = null)
@@ -151,7 +157,7 @@ class Compress
         $out_dir = $out_dir ? $out_dir : dirname($zip_file);
         if ($this->zipArchive->open($zip_file) === true) {
             $this->zipArchive->extractTo($out_dir);//假设解压缩到在当前路径下images文件夹的子文件夹php
-            $this->zipArchive->close();//关闭处理的zip文件
+            $this->zipArchive->close();            //关闭处理的zip文件
         } else {
             throw new Exception(__('解压文件打开异常：') . $zip_file);
         }
@@ -184,6 +190,7 @@ class Compress
      * 参数区：
      *
      * @param $file
+     *
      * @throws Exception
      */
     public function addFiles($file)

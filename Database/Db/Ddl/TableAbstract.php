@@ -39,23 +39,23 @@ abstract class TableAbstract implements TableInterface
 
     protected string $additional = 'ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;';
 
-    protected ?ConnectionFactory $connection=null;
-    protected ?QueryInterface $query=null;
+    protected ?ConnectionFactory $connection = null;
+    protected ?QueryInterface $query = null;
 
     /**
      * @DESC          # 设置链接
      *
-     * @AUTH  秋枫雁飞
+     * @AUTH    秋枫雁飞
      * @EMAIL aiweline@qq.com
      * @DateTime: 2021/9/5 18:11
      * 参数区：
      * @throws Exception
      * @throws \ReflectionException
      */
-    public function setConnection(ConnectionFactory $connection):static
+    public function setConnection(ConnectionFactory $connection): static
     {
         $this->connection = $connection;
-        $this->query = $connection->getQuery();
+        $this->query      = $connection->getQuery();
         return $this;
     }
 
@@ -100,16 +100,17 @@ abstract class TableAbstract implements TableInterface
     /**
      * @DESC          # 开始表操作
      *
-     * @AUTH  秋枫雁飞
+     * @AUTH    秋枫雁飞
      * @EMAIL aiweline@qq.com
      * @DateTime: 2021/9/5 18:23
      * 参数区：
+     *
      * @param string $table
      * @param string $primary_key
      * @param string $comment
      * @param string $new_table_name
      */
-    protected function startTable(string $table, string $comment = '', string $primary_key='', string $new_table_name = '')
+    protected function startTable(string $table, string $comment = '', string $primary_key = '', string $new_table_name = '')
     {
         # 清空所有表操作属性
         $this->init_vars();
@@ -117,15 +118,15 @@ abstract class TableAbstract implements TableInterface
         if ($primary_key) {
             $this->primary_key = $primary_key;
         }
-        $this->table = $table;
+        $this->table          = $table;
         $this->new_table_name = $new_table_name ? '`' . $this->connection->getConfigProvider()->getDatabase() . '`.`' . $new_table_name . '`' : '';
-        $this->comment = $comment;
+        $this->comment        = $comment;
     }
 
     /**
      * @DESC          # 清空所有表操作属性
      *
-     * @AUTH  秋枫雁飞
+     * @AUTH    秋枫雁飞
      * @EMAIL aiweline@qq.com
      * @DateTime: 2021/9/5 18:22
      * 参数区：
@@ -190,11 +191,13 @@ abstract class TableAbstract implements TableInterface
     /**
      * @DESC          # 读取表字段
      *
-     * @AUTH  秋枫雁飞
+     * @AUTH    秋枫雁飞
      * @EMAIL aiweline@qq.com
      * @DateTime: 2021/9/5 17:32
      * 参数区：
+     *
      * @param string $table_name 【1、如果存在表名就读取对应表的字段；2、不存在则读取Table类设置的表名】
+     *
      * @return mixed
      */
     public function getTableColumns(string $table_name = ''): mixed
@@ -206,11 +209,13 @@ abstract class TableAbstract implements TableInterface
     /**
      * @DESC          # 读取创建表SQL
      *
-     * @AUTH  秋枫雁飞
+     * @AUTH    秋枫雁飞
      * @EMAIL aiweline@qq.com
      * @DateTime: 2021/9/5 22:08
      * 参数区：
+     *
      * @param string $table_name
+     *
      * @return mixed
      */
     public function getCreateTableSql(string $table_name = ''): mixed

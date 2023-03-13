@@ -18,7 +18,7 @@ class Compile extends \Weline\Framework\Console\CommandAbstract
     /**
      * @inheritDoc
      */
-    public function execute(array $args = [])
+    public function execute(array $args = [], array $data = [])
     {
         // 扫描代码
         $scanner = new AppScanner();
@@ -32,7 +32,7 @@ class Compile extends \Weline\Framework\Console\CommandAbstract
             }
         }
         # 分配编译事件
-        /**@var EventsManager $evenManager*/
+        /**@var EventsManager $evenManager */
         $evenManager = ObjectManager::getInstance(EventsManager::class);
         $evenManager->dispatch('Framework_Console::compile');
     }
@@ -40,7 +40,7 @@ class Compile extends \Weline\Framework\Console\CommandAbstract
     /**
      * @inheritDoc
      */
-    public function getTip(): string
+    public function tip(): string
     {
         return 'DI依赖编译';
     }

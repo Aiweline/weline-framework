@@ -104,7 +104,7 @@ class Scanner extends \Weline\Framework\System\File\App\Scanner
     public function scanVendorModulesWithFiles(string $file_or_dir = '', \Closure $callback = null): array
     {
         # 使用现有激活的模块进行文件扫描
-        $modules = Env::getInstance()->getActiveModules();
+        $modules       = Env::getInstance()->getActiveModules();
         $modules_files = [];
         foreach ($modules as $key => $module) {
             $position  = $module['position'];

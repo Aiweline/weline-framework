@@ -38,8 +38,8 @@
                     Plugin name must be unique.
                 </xs:documentation>
             </xs:annotation>
-            <xs:selector xpath="plugin" />
-            <xs:field xpath="@name" />
+            <xs:selector xpath="plugin"/>
+            <xs:field xpath="@name"/>
         </xs:unique>
     </xs:element>
 
@@ -50,10 +50,10 @@
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
-            <xs:element name="interceptor" type="interceptorDeclaration" minOccurs="1" maxOccurs="unbounded" />
+            <xs:element name="interceptor" type="interceptorDeclaration" minOccurs="1" maxOccurs="unbounded"/>
         </xs:sequence>
-        <xs:attribute name="name" type="pluginName" use="required" />
-        <xs:attribute name="class" type="pluginClass" use="required" />
+        <xs:attribute name="name" type="pluginName" use="required"/>
+        <xs:attribute name="class" type="pluginClass" use="required"/>
     </xs:complexType>
 
     <xs:complexType name="interceptorDeclaration">
@@ -62,10 +62,10 @@
                 Interceptor declaration.
             </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="name" type="xs:string" use="required" />
-        <xs:attribute name="instance" type="xs:string" use="optional" />
-        <xs:attribute name="disabled" type="xs:boolean" use="optional" />
-        <xs:attribute name="sort" type="xs:integer" use="optional" />
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="instance" type="xs:string" use="optional"/>
+        <xs:attribute name="disabled" type="xs:boolean" use="optional"/>
+        <xs:attribute name="sort" type="xs:integer" use="optional"/>
     </xs:complexType>
     <xs:simpleType name="pluginName">
         <xs:annotation>
@@ -84,7 +84,7 @@
             </xs:documentation>
         </xs:annotation>
         <xs:restriction base="xs:string">
-            <xs:pattern value="[a-zA-Z0-9_]+" />
+            <xs:pattern value="[a-zA-Z0-9_]+"/>
         </xs:restriction>
     </xs:simpleType>
 </xs:schema>

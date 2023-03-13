@@ -27,11 +27,12 @@ class Set extends CommandAbstract
 
     public function __construct(
         System $system
-    ) {
+    )
+    {
         $this->system = $system;
     }
 
-    public function execute(array $args = [])
+    public function execute(array $args = [], array $data = [])
     {
         array_shift($args);
         $param = array_shift($args);
@@ -48,12 +49,16 @@ class Set extends CommandAbstract
                 ObjectManager::getInstance(Compile::class)->execute();
                 $this->printer->note('正在清除pub目录下生成的静态文件...');
                 $this->cleanThemeDir();
+                $this->printer->note('正在执行清理模板缓存...');
+                $this->cleanTplComDir();
                 $this->printer->note('正在执行静态资源部署...');
                 /**@var $deploy_upgrade Upgrade */
                 $deploy_upgrade = ObjectManager::getInstance(Upgrade::class);
                 $deploy_upgrade->execute();
                 break;
             case 'dev':
+                $this->cleanTplComDir();
+                $this->printer->note('正在执行清理模板缓存...');
                 break;
             default:
                 $this->printer->error(' ╮(๑•́ ₃•̀๑)╭  ：错误的部署模式：' . $param);
@@ -68,7 +73,7 @@ class Set extends CommandAbstract
         }
     }
 
-    public function getTip(): string
+    public function tip(): string
     {
         return '部署模式设置。（dev:开发模式；prod:生产环境。）';
     }
@@ -80,17 +85,11 @@ class Set extends CommandAbstract
      */
     protected function cleanTplComDir()
     {
-        // 扫描代码
-        $scanner = new AppScanner();
-        list($apps)    = $scanner->scanAppModules();
-        // 注册模块
-        foreach ($apps as $vendor => $modules) {
-            foreach ($modules as $name => $register) {
-                $module_view_tpl_com_dir = APP_CODE_PATH . $vendor . DS . $name . DS . DataInterface::dir . DS . DataInterface::view_TEMPLATE_COMPILE_DIR . DS;
-                if (is_dir($module_view_tpl_com_dir)) {
-                    $this->printer->note($vendor . '_' . $name . '...');
-                    $this->system->exec("rm -rf $module_view_tpl_com_dir");
-                }
+        $modules = Env::getInstance()->getModuleList();
+        foreach ($modules as $module) {
+            $tpl_dir = $module['base_path'] . DS . 'view' . DS . 'tpl';
+            if (is_dir($tpl_dir)) {
+                $this->system->exec("rm -rf {$tpl_dir}");
             }
         }
     }
@@ -105,7 +104,9 @@ class Set extends CommandAbstract
      * @DESC         |清理模块生成主题文件目录
      *
      * 参数区：
+     *
      * @param string $theme
+     *
      * @throws \Weline\Framework\App\Exception
      */
     protected function cleanThemeDir(string $theme = 'default')

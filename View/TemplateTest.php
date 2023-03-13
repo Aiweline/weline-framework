@@ -16,7 +16,7 @@ class TemplateTest extends TestCore
 {
     public function testGetFile()
     {
-        /**@var Template $template*/
+        /**@var Template $template */
         $template = Template::getInstance();
         p($template->fetchTagSource(\Weline\Framework\View\Data\DataInterface::dir_type_STATICS, trim("Aiweline_Index::/css/index.css")));
     }

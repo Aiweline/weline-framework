@@ -26,6 +26,7 @@ class Install implements DataInterface
      * 参数区：
      *
      * @param array $routerParam
+     *
      * @throws \Weline\Framework\Console\ConsoleException
      * @throws \Weline\Framework\App\Exception
      */

@@ -15,26 +15,28 @@ use Weline\Framework\Controller\PcController;
 use Weline\Framework\DataObject\DataObject;
 use Weline\Framework\Event\EventsManager;
 use Weline\Framework\Http\Url;
+use Weline\Framework\Http\UrlInterface;
 use Weline\Framework\Manager\ObjectManager;
 use Weline\Framework\Session\Session;
 
 class BackendController extends PcController
 {
     protected CacheInterface $cache;
+    protected BackendSession $session;
 
     public function __init()
     {
         $this->cache = $this->getControllerCache();
-        if(!isset($this->session)){
+        if (!isset($this->session)) {
             $this->session = ObjectManager::getInstance(BackendSession::class);
         }
         parent::__init();
     }
 
-    public function isAllowed(): void
+    protected function isAllowed(): void
     {
         parent::isAllowed();
-        # 验证除了登录页面以外的所有地址需要登录 FIXME 处理无限跳转问题
+        # 验证除了登录页面以外的所有地址需要登录
         if (!CLI and !$this->session->isLogin()) {
             $whitelist_url_cache_key = 'whitelist_url_cache_key';
             $whitelist_url           = $this->cache->get($whitelist_url_cache_key);
@@ -46,22 +48,23 @@ class BackendController extends PcController
                 $whitelist_url = $whitelistUrlData->getData('whitelist_url');
                 $this->cache->set($whitelist_url_cache_key, $whitelist_url);
             }
-            if (!in_array($this->request->getUrl(), $whitelist_url)) {
-                $no_login_url_cache_key = 'no_login_redirect_url';
-                $no_login_redirect_url  = $this->cache->get($no_login_url_cache_key);
-                if (!$no_login_redirect_url) {
-                    /**@var EventsManager $evenManager */
-                    $evenManager        = ObjectManager::getInstance(EventsManager::class);
-                    $noLoginRedirectUrl = new DataObject(['no_login_redirect_url' => []]);
-                    $evenManager->dispatch('Framework_Router::backend_no_login_redirect_url', ['data' => $noLoginRedirectUrl]);
-                    $no_login_redirect_url = $noLoginRedirectUrl->getData('no_login_redirect_url');
-                    $this->cache->set($no_login_url_cache_key, $no_login_redirect_url);
-                }
-                if ($no_login_redirect_url) {
-                    $this->redirect($no_login_redirect_url);
-                }
-                $this->noRouter();
-            }
+//            if (!in_array($this->_url->getUrl(), $whitelist_url)) {
+//
+//                $no_login_url_cache_key = 'no_login_redirect_url';
+//                $no_login_redirect_url  = $this->cache->get($no_login_url_cache_key);
+//                if (!$no_login_redirect_url) {
+//                    /**@var EventsManager $evenManager */
+//                    $evenManager        = ObjectManager::getInstance(EventsManager::class);
+//                    $noLoginRedirectUrl = new DataObject(['no_login_redirect_url' => []]);
+//                    $evenManager->dispatch('Framework_Router::backend_no_login_redirect_url', ['data' => $noLoginRedirectUrl]);
+//                    $no_login_redirect_url = $noLoginRedirectUrl->getData('no_login_redirect_url');
+//                    $this->cache->set($no_login_url_cache_key, $this->_url->getUri($no_login_redirect_url));
+//                }
+//                if ($no_login_redirect_url) {
+//                    $this->redirect($no_login_redirect_url);
+//                }
+//                $this->noRouter();
+//            }
         }
     }
 }

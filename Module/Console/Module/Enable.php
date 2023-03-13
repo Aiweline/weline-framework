@@ -16,7 +16,7 @@ use Weline\Framework\Module\Helper\Data;
 
 class Enable extends Command
 {
-    public function execute(array $args = [])
+    public function execute(array $args = [], array $data = [])
     {
         $command     = array_shift($args);
         $module_list = Env::getInstance()->getModuleList();
@@ -24,7 +24,7 @@ class Enable extends Command
             $this->printer->error('请先更新模块:bin/m module:upgrade');
             exit();
         }
-        if (! empty($args)) {
+        if (!empty($args)) {
             foreach ($args as $module) {
                 if (isset($module_list[$module])) {
                     $module_list[$module]['status'] = true;
@@ -34,7 +34,7 @@ class Enable extends Command
                     $this->printer->error('不存在的模块:' . $module);
                 }
             }
-            /**@var Data $helper*/
+            /**@var Data $helper */
             $helper = ObjectManager::getInstance(Data::class);
             $helper->updateModules($module_list);
             # 请继续执行 php bin/m module:upgrade
@@ -44,7 +44,7 @@ class Enable extends Command
         }
     }
 
-    public function getTip(): string
+    public function tip(): string
     {
         return '模块启用';
     }

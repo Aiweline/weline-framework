@@ -14,6 +14,8 @@ namespace Weline\Framework\Module;
 interface ModuleInterface
 {
     public function getName();
+
     public function getPath();
+
     public function getVersion();
 }

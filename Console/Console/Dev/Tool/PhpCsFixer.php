@@ -19,21 +19,22 @@ class PhpCsFixer implements \Weline\Framework\Console\CommandInterface
 
     public function __construct(
         Printing $printing
-    ) {
+    )
+    {
         $this->printing = $printing;
     }
 
     /**
      * @inheritDoc
      */
-    public function execute(array $args = [])
+    public function execute(array $args = [], array $data = [])
     {
         array_shift($args);
         $show = true;
         /*剥离参数选项*/
         if (in_array('no-show', $args)) {
-            foreach ($args as $key=>$arg) {
-                if ('no-show'===$arg) {
+            foreach ($args as $key => $arg) {
+                if ('no-show' === $arg) {
                     unset($args[$key]);
                 }
             }
@@ -61,7 +62,7 @@ class PhpCsFixer implements \Weline\Framework\Console\CommandInterface
     /**
      * @inheritDoc
      */
-    public function getTip(): string
+    public function tip(): string
     {
         return '代码美化工具';
     }

@@ -66,7 +66,7 @@ if (!function_exists('__')) {
      *
      * @return string
      */
-    function __(string $words, array|string $args = null): string
+    function __(string $words, array|string|int $args = null): string
     {
         return \Weline\Framework\Phrase\Parser::parse($words, $args);
     }
@@ -161,12 +161,12 @@ if (!function_exists('framework_view_process_block')) {
      * @throws ReflectionException
      * @throws \Weline\Framework\App\Exception
      */
-    function framework_view_process_block(array $data):string
+    function framework_view_process_block(array $data): string
     {
-        if(!isset($data['class'])){
-            $data['class'] =$data[0]??'';
-            if(!$data['class']){
-                throw new \Weline\Framework\App\Exception(__('framework.view.block.class_not_found %1',$data['class']));
+        if (!isset($data['class'])) {
+            $data['class'] = $data[0] ?? '';
+            if (!$data['class']) {
+                throw new \Weline\Framework\App\Exception(__('framework.view.block.class_not_found %1', $data['class']));
             }
         }
 
@@ -174,10 +174,10 @@ if (!function_exists('framework_view_process_block')) {
         # 处理参数
         array_shift($data);
         $params = [];
-        foreach ($data as $key=> $param) {
-            if(is_string($key)){
+        foreach ($data as $key => $param) {
+            if (is_string($key)) {
                 $params[$key] = $param;
-            }else{
+            } else {
                 $param = explode('=', $param);
                 if (isset($param[1])) {
                     $params[$param[0]] = $param[1];
@@ -190,8 +190,8 @@ if (!function_exists('framework_view_process_block')) {
             $cache = ObjectManager::getInstance(ViewCache::class)->create();
             /**@var Request $request */
             $request   = ObjectManager::getInstance(Request::class);
-            $cache_key = $block_class. '_' . json_encode(array_merge($request->getParams(), $params));
-            $result    = $cache->get($cache_key)?:'';
+            $cache_key = $block_class . '_' . json_encode(array_merge($request->getParams(), $params));
+            $result    = $cache->get($cache_key) ?: '';
 //            if($block_class == 'Weline\Admin\Block\Backend\Page\Topnav'){
 //                p($result,1);
 //                p(ObjectManager::make($block_class, ['data' => $params])->render());
@@ -201,7 +201,7 @@ if (!function_exists('framework_view_process_block')) {
                 $result = ObjectManager::make($block_class, ['data' => $params])->render();
                 $cache->set($cache_key, $result, $cache_time);
             }
-        }else{
+        } else {
             $result = ObjectManager::make($block_class, ['data' => $params])->render();
         }
         return $result;

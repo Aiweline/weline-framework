@@ -24,7 +24,8 @@ interface PrintInterface extends \Weline\Framework\Output\PrintInterface
      * @param string $data
      * @param string $message
      * @param string $color
-     * @param int $pad_length
+     * @param int    $pad_length
+     *
      * @return mixed
      */
     public function error($data = 'CLI Error!', string $message = '', string $color = self::ERROR, int $pad_length = 25);
@@ -42,10 +43,12 @@ interface PrintInterface extends \Weline\Framework\Output\PrintInterface
      * @param string $data
      * @param string $message
      * @param string $color
-     * @param int $pad_length
+     * @param int    $pad_length
+     *
      * @return mixed
      */
     public function setup($data = 'CLI Error!', string $message = '', string $color = self::ERROR, int $pad_length = 25);
+
     /**
      * @DESC         |CLI 成功打印
      *
@@ -59,7 +62,8 @@ interface PrintInterface extends \Weline\Framework\Output\PrintInterface
      * @param string $data
      * @param string $message
      * @param string $color
-     * @param int $pad_length
+     * @param int    $pad_length
+     *
      * @return mixed
      */
     public function success(string $data = 'CLI Success!', string $message = '', string $color = self::ERROR, int $pad_length = 25);
@@ -77,7 +81,8 @@ interface PrintInterface extends \Weline\Framework\Output\PrintInterface
      * @param string $data
      * @param string $message
      * @param string $color
-     * @param int $pad_length
+     * @param int    $pad_length
+     *
      * @return mixed
      */
     public function warning(string $data = 'CLI Warning!', string $message = '', string $color = self::ERROR, int $pad_length = 25);
@@ -95,7 +100,8 @@ interface PrintInterface extends \Weline\Framework\Output\PrintInterface
      * @param string $data
      * @param string $message
      * @param string $color
-     * @param int $pad_length
+     * @param int    $pad_length
+     *
      * @return mixed
      */
     public function note(string $data = 'CLI Note!', string $message = '', string $color = self::ERROR, int $pad_length = 25);

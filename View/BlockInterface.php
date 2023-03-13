@@ -15,7 +15,7 @@ interface BlockInterface
 {
     public function setTemplate(string $template);
 
-    public function render();
+    public function render():string;
 
     public function __toString();
 }

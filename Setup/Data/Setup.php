@@ -27,12 +27,13 @@ class Setup
      */
     private Printing $printing;
 
-    private ?ConnectionFactory $master_connection=null;
-    private ?ConnectionFactory $connection=null;
+    private ?ConnectionFactory $master_connection = null;
+    private ?ConnectionFactory $connection = null;
 
     /**
      * Setup 初始函数...
-     * @param DbSetup $setup_db
+     *
+     * @param DbSetup  $setup_db
      * @param Printing $printing
      */
     public function __construct(
@@ -48,7 +49,7 @@ class Setup
      * 设置模组上下文
      * @return void
      */
-    function setModuleContext(SetupContext $context)
+    public function setModuleContext(SetupContext $context)
     {
         # 解析模组数据库配置文件
         $db_file = $context->getModulePath() . DS . 'etc' . DS . 'db.php';
@@ -69,7 +70,7 @@ class Setup
                 return $this->master_connection;
             }
             $this->master_connection = ObjectManager::getInstance(DbManagerFactory::class);
-            $this->connection = $this->master_connection;
+            $this->connection        = $this->master_connection;
             $this->setup_db->setConnection($this->connection);
         }
     }
@@ -77,7 +78,7 @@ class Setup
     /**
      * @DESC          # 获取数据库链接
      *
-     * @AUTH  秋枫雁飞
+     * @AUTH    秋枫雁飞
      * @EMAIL aiweline@qq.com
      * @DateTime: 2021/8/31 20:47
      * 参数区：
@@ -92,7 +93,7 @@ class Setup
     /**
      * @DESC          # 打印
      *
-     * @AUTH  秋枫雁飞
+     * @AUTH    秋枫雁飞
      * @EMAIL aiweline@qq.com
      * @DateTime: 2021/8/31 20:48
      * 参数区：

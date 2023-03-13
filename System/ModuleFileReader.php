@@ -31,7 +31,8 @@ class ModuleFileReader extends DataObject
     public function __construct(
         Scanner $scanner,
         string  $path = 'etc' . DS . 'module.xml'
-    ) {
+    )
+    {
         $this->scanner = $scanner;
         $this->path    = $path;
         parent::__construct();
@@ -54,6 +55,7 @@ class ModuleFileReader extends DataObject
     {
         return $this->scanner->scanVendorModulesWithFiles($this->path, $callback);
     }
+
     /**
      * @DESC          # 读取文件
      *

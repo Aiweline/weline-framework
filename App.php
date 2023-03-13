@@ -96,6 +96,10 @@ class App
         if (is_file(APP_CODE_PATH . 'config.php')) {
             require APP_CODE_PATH . 'config.php';
         }
+        // 开发 目录
+        if (!defined('DEV_PATH')) {
+            define('DEV_PATH', BP . 'dev' . DS);
+        }
         // 主题 目录
         if (!defined('APP_DESIGN_PATH')) {
             define('APP_DESIGN_PATH', APP_CODE_PATH . 'design' . DS);
@@ -113,10 +117,10 @@ class App
             define('DEBUG', false);
         }
         // 调试模式
-        if (!defined('UMASK')) {
-            define('UMASK', 0022);
+        if (!defined('SYSTEM_UMASK')) {
+            define('SYSTEM_UMASK', 0022);
         }
-        umask(UMASK);
+        umask(SYSTEM_UMASK);
         // 通用加载
         \Weline\Framework\Common\Loader::load();
         // ############################# 环境配置 #####################
@@ -194,19 +198,8 @@ class App
                     throw new Exception(__('系统错误：%1', $e->getMessage()));
                 }
             } else {
-                //                    $cache     = (new ObjectCache())->create();
-//                    $cache_key = 'framework_system_container_cache';
+                // FIXME 可以尝试缓存所有容器内容
                 $result = ObjectManager::getInstance(\Weline\Framework\Router\Core::class)->start();
-                //                /**@var ObjectManager $container */
-//                if (!DEV && $container = $cache->get($cache_key)) {
-//                    $result = $container::getInstance(\Weline\Framework\Router\Core::class)->start();
-                ////                    p();
-//                } else {
-//                    $container = ObjectManager::getInstance();
-//                    $result    = $container::getInstance(\Weline\Framework\Router\Core::class)->start();
-//                    $cache->set($cache_key, $container);
-                ////                    p();
-//                }
                 exit($result);
             }
         }

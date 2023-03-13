@@ -69,10 +69,10 @@ interface CreateInterface extends TableInterface
      * @DateTime: 2021/9/5 17:26
      * 参数区：
      *
-     * @param string       $type       【索引类型】
-     * @param string       $name       【索引名】
+     * @param string       $type         【索引类型】
+     * @param string       $name         【索引名】
      * @param array|string $column
-     * @param string       $comment    【索引注释】
+     * @param string       $comment      【索引注释】
      * @param string       $index_method 【索引类型】
      *
      * @return CreateInterface

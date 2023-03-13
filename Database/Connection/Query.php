@@ -17,7 +17,11 @@ use Weline\Framework\Database\AbstractModel;
 use Weline\Framework\Database\Api\Connection\QueryInterface;
 use Weline\Framework\Database\Exception\DbException;
 use Weline\Framework\Database\Connection\Query\QueryTrait;
+use Weline\Framework\Database\Exception\SqlParserException;
+use Weline\Framework\Database\Model;
 use Weline\Framework\Manager\ObjectManager;
+
+use function DeepCopy\deep_copy;
 
 abstract class Query implements QueryInterface
 {
@@ -36,8 +40,10 @@ abstract class Query implements QueryInterface
     public array $bound_values = [];
     public string $limit = '';
     public array $order = [];
+    public string $group_by = '';
+    public string $having = '';
 
-    public ?PDOStatement $PDOStatement = null;
+    private ?PDOStatement $PDOStatement = null;
     public string $sql = '';
     public string $additional_sql = '';
 
@@ -58,12 +64,16 @@ abstract class Query implements QueryInterface
         return $this;
     }
 
-    public function insert(array $data, array $exist_update_fields = []): QueryInterface
+    public function insert(array $data, array|string $exist_update_fields = []): QueryInterface
     {
         if ($exist_update_fields) {
             $this->exist_update_sql = 'ON DUPLICATE KEY UPDATE ';
-            foreach ($exist_update_fields as $field) {
-                $this->exist_update_sql .= "`$field`=VALUES(`$field`),";
+            if (is_string($exist_update_fields)) {
+                $this->exist_update_sql .= "`$exist_update_fields`=VALUES(`$exist_update_fields`),";
+            } else {
+                foreach ($exist_update_fields as $field) {
+                    $this->exist_update_sql .= "`$field`=VALUES(`$field`),";
+                }
             }
             $this->exist_update_sql = trim($this->exist_update_sql, ',');
         }
@@ -73,8 +83,11 @@ abstract class Query implements QueryInterface
             $this->insert = $data;
         }
         $fields = '(';
-        foreach ($this->insert[0] as $field => $value) {
-            $fields .= "`$field`,";
+        if (count($this->insert)) {
+            $first_insert = $this->insert[array_key_first($this->insert)];
+            foreach ($first_insert as $field => $value) {
+                $fields .= "`$field`,";
+            }
         }
         $fields           = rtrim($fields, ',') . ')';
         $origin_fields    = $this->fields;
@@ -126,22 +139,34 @@ abstract class Query implements QueryInterface
 
     public function fields(string $fields): QueryInterface
     {
-        $this->fields = $fields;
+        if ($this->fields === '*' || $this->fields === 'main_table.*') {
+            $this->fields = $fields;
+        } else {
+            $this->fields = $fields . ',' . $this->fields;
+            $fields       = explode(',', $this->fields);
+            $fields       = array_unique($fields);
+            $this->fields = implode(',', $fields);
+        }
         return $this;
     }
 
     public function where(array|string $field, mixed $value = null, string $condition = '=', string $where_logic = 'AND'): QueryInterface
     {
-//        if (PROD) {
-//            $this->cache->get();// TODO 缓存
-//        }
         if (is_array($field)) {
             foreach ($field as $f_key => $where_array) {
-                # 处理两个元素数组
-                if (2 === count($where_array)) {
+                if (!is_array($where_array)) {
+                    $value          = $where_array;
+                    $where_array    = [];
+                    $where_array[0] = $f_key;
+                    $where_array[1] = '=';
+                    $where_array[2] = $value;
+                    $where_array[3] = $where_logic;
+                } elseif (2 === count($where_array)) {# 处理两个元素数组
                     $where_array[2] = $where_array[1];
                     $where_array[1] = '=';
                 }
+
+
                 # 检测条件数组 下角标 必须为数字
                 $this->checkWhereArray($where_array, $f_key);
                 # 检测条件数组 检测第二个元素必须是限定的 条件操作符
@@ -159,12 +184,23 @@ abstract class Query implements QueryInterface
 //            } else {
 //                $this->wheres[] = [$field];
 //            }
-            $where_array = [$field, $condition, $value, $where_logic];
-            # 检测条件数组 下角标 必须为数字
-            $this->checkWhereArray($where_array, 0);
-            # 检测条件数组 检测第二个元素必须是限定的 条件操作符
-            $this->checkConditionString($where_array);
-            $this->wheres[] = $where_array;
+            if (is_array($value)) {
+                foreach ($value as $item) {
+                    $where_array = [$field, $condition, $item, $where_logic];
+                    # 检测条件数组 下角标 必须为数字
+                    $this->checkWhereArray($where_array, 0);
+                    # 检测条件数组 检测第二个元素必须是限定的 条件操作符
+                    $this->checkConditionString($where_array);
+                    $this->wheres[] = $where_array;
+                }
+            } else {
+                $where_array = [$field, $condition, $value, $where_logic];
+                # 检测条件数组 下角标 必须为数字
+                $this->checkWhereArray($where_array, 0);
+                # 检测条件数组 检测第二个元素必须是限定的 条件操作符
+                $this->checkConditionString($where_array);
+                $this->wheres[] = $where_array;
+            }
         }
         return $this;
     }
@@ -194,17 +230,17 @@ abstract class Query implements QueryInterface
         if ($params) {
             $this->pagination = array_merge($this->pagination, $params);
         }
+        $this->pagination['params'] = $params;
         $this->page(intval($this->pagination['page']), $pageSize);
         $query                         = clone $this;
-        $total                         = $this->total();
+        $total                         = $query->total();
         $this->pagination['totalSize'] = $total;
         $lastPage                      = intval($total / $pageSize);
         if ($total % $pageSize) {
             $lastPage += 1;
         }
         $this->pagination['lastPage'] = $lastPage;
-        $query->pagination            = $this->pagination;
-        return $query;
+        return $this;
     }
 
     public function order(string $field, string $sort = 'DESC'): QueryInterface
@@ -213,6 +249,18 @@ abstract class Query implements QueryInterface
             $field = $this->parserFiled($field);
         }
         $this->order[$field] = $sort;
+        return $this;
+    }
+
+    public function group(string $fields): QueryInterface
+    {
+        $this->group_by = 'group by ' . $fields;
+        return $this;
+    }
+
+    public function having(string $having): QueryInterface
+    {
+        $this->having = 'having ' . $having;
         return $this;
     }
 
@@ -230,6 +278,7 @@ abstract class Query implements QueryInterface
         $this->fetch_type = 'find';
         $this->fields     = "count({$field}) as `{$alias}`";
         $this->prepareSql('find');
+//        p($this->getLastSql());
         $result = $this->fetch();
         if (isset($result[$alias])) {
             $result = $result[$alias];
@@ -301,7 +350,9 @@ abstract class Query implements QueryInterface
                 break;
         }
         $this->fetch_type = '';
+//        $this->clear();
         $this->clearQuery();
+//        $this->reset();
         return $result;
     }
 
@@ -350,6 +401,7 @@ abstract class Query implements QueryInterface
         foreach (self::init_vars as $init_field => $init_var) {
             $this->$init_field = $init_var;
         }
+        $this->PDOStatement = null;
         return $this;
     }
 
@@ -430,7 +482,6 @@ abstract class Query implements QueryInterface
                 $this->where("YEAR({$field})=YEAR(DATE_SUB(NOW(),INTERVAL 1 YEAR))");
                 break;
             default:
-
         }
         return $this;
     }

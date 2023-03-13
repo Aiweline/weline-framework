@@ -21,8 +21,8 @@ abstract class ResourceReader extends \Weline\Framework\Module\File\Reader imple
 
     public function __construct(string $path, string $file, $source_type, array $data = [])
     {
-        $this->file = $file;
-        $this->path = $path;
+        $this->file        = $file;
+        $this->path        = $path;
         $this->source_type = $source_type;
         parent::__construct($path, $data);
     }
@@ -37,24 +37,22 @@ abstract class ResourceReader extends \Weline\Framework\Module\File\Reader imple
         if (empty($callback)) {
             $callback = function ($data) {
                 $need_data = [];
-                foreach ($data as $vendor => $module_data) {
-                    foreach ($module_data as $name => $dir_data) {
-                        foreach ($dir_data as $dir => $dir_files) {
+                foreach ($data as $module => $module_data) {
+                    foreach ($module_data as $dir => $dir_data) {
+                        foreach ($dir_data as $file_index => $dir_file) {
                             /**@var File $dir_file */
-                            foreach ($dir_files as $dir_file) {
-                                if ($this->file === $dir_file->getBaseName() || empty($this->file)) {
-                                    $area = 'frontend';
-                                    if (is_int(strpos($dir_file->getNamespace(), 'backend'))) {
-                                        $area = 'backend';
-                                    }
-                                    $need_data[] = [
-                                    'module' => $vendor . '_' . $name,
-                                    'dir' => $dir,
-                                    'area' => $area,
-                                    'file' => $dir_file->getRelate(),
+                            if ($this->file === $dir_file->getBaseName() || empty($this->file)) {
+                                $area = 'frontend';
+                                if (is_int(strpos($dir_file->getNamespace(), 'backend'))) {
+                                    $area = 'backend';
+                                }
+                                $need_data[] = [
+                                    'module' => $module,
+                                    'dir'    => $dir,
+                                    'area'   => $area,
+                                    'file'   => $dir_file->getRelate(),
                                     'origin' => $dir_file->getOrigin(),
                                 ];
-                                }
                             }
                         }
                     }

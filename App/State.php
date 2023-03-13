@@ -9,15 +9,18 @@
 
 namespace Weline\Framework\App;
 
+use Weline\Framework\DataObject\DataObject;
 use Weline\Framework\Http\Request;
 
-class State
+class State extends DataObject
 {
     public const area_backend = 'backend';
 
     public const area_frontend = 'frontend';
 
     public const area_base = 'base';
+
+    public static bool $is_backend = false;
 
     /**
      * @var Request
@@ -26,18 +29,30 @@ class State
 
     /**
      * State 初始函数...
+     *
      * @param Request $request
      */
     public function __construct(
         Request $request
-    ) {
+    )
+    {
+        parent::__construct();
         $this->request = $request;
+        self::$is_backend = $this->request->isBackend();
     }
 
     public function getStateCode()
     {
-        p($this->request->getModuleName());
-
         return $this->request->getAreaRouter();
+    }
+
+    static function isBackend(): bool
+    {
+        return self::$is_backend;
+    }
+
+    static function setIsBackend()
+    {
+        self::$is_backend = true;
     }
 }

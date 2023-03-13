@@ -31,42 +31,35 @@ class ModelManager
     private Printing $printing;
 
     public function __construct(
-        ModuleFileReader   $moduleReader,
-        Printing $printing
-    ) {
+        ModuleFileReader $moduleReader,
+        Printing         $printing
+    )
+    {
         $this->moduleReader = $moduleReader;
-        $this->printing = $printing;
+        $this->printing     = $printing;
     }
 
 
-    public function update(string $module_name, Context $context, string $type)
+    public function update(Module $module, Context $context, string $type): void
     {
         if (!in_array($type, ['setup', 'upgrade', 'install'])) {
             throw new Exception(__('$type允许的值不在：%1 中', "'setup','upgrade','install'"));
         }
-        $modelSetup = ObjectManager::getInstance(ModelSetup::class);
-        $model_files_data = $this->moduleReader->read($module_name, 'Model');
-        foreach ($model_files_data as $model_path => $model_files) {
+        $modelSetup       = ObjectManager::getInstance(ModelSetup::class);
+        $model_files_data = array_reverse($this->moduleReader->readClass($module->getBasePath(), 'Model'));
+        foreach ($model_files_data as $key => $model_class) {
             if (PROD) {
-                $this->printing->printing($model_path);
+                $this->printing->printing($model_class);
             }
-            /**@var File $model_file */
-            foreach ($model_files as $model_file) {
-                if (class_exists($model_file->getNamespace() . '\\' . $model_file->getFilename())) {
-                    /**@var ModelInterface|AbstractModel $model */
-                    $class = $model_file->getNamespace() . '\\' . $model_file->getFilename();
-//                    if(str_ends_with($class, 'Test')){
-//                        continue;
-//                    }
-                    $model = ObjectManager::getInstance($class);
-                    if ($model instanceof AbstractModel) {
-                        if (PROD) {
-                            $this->printing->printing($model::class);
-                        }
-                        $modelSetup->putModel($model);
-                        # 执行模型升级
-                        $model->$type($modelSetup, $context);
+            if (class_exists($model_class)) {
+                $model = ObjectManager::getInstance($model_class);
+                if ($model instanceof AbstractModel) {
+                    if (PROD) {
+                        $this->printing->printing($model::class);
                     }
+                    $modelSetup->putModel($model);
+                    # 执行模型升级
+                    $model->$type($modelSetup, $context);
                 }
             }
         }

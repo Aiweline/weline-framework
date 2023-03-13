@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /*
@@ -15,14 +16,11 @@ use Weline\Framework\Setup\Db\ModelSetup;
 
 class Caches extends \Weline\Framework\Database\Model
 {
-
-
     /**
      * @inheritDoc
      */
     public function setup(ModelSetup $setup, Context $context): void
     {
-        // TODO: Implement setup() method.
     }
 
     /**
@@ -30,7 +28,6 @@ class Caches extends \Weline\Framework\Database\Model
      */
     public function upgrade(ModelSetup $setup, Context $context): void
     {
-        // TODO: Implement upgrade() method.
     }
 
     /**
@@ -38,6 +35,5 @@ class Caches extends \Weline\Framework\Database\Model
      */
     public function install(ModelSetup $setup, Context $context): void
     {
-        // TODO: Implement install() method.
     }
 }

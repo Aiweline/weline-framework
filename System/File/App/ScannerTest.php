@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /*
@@ -14,7 +15,6 @@ use PHPUnit\Framework\TestCase;
 
 class ScannerTest extends TestCase
 {
-
     public function testScanModules()
     {
         $scanner = new Scanner();

@@ -26,8 +26,9 @@ class Flush implements \Weline\Framework\Console\CommandInterface
 
     public function __construct(
         EventCache $eventCache,
-        Printing $printing
-    ) {
+        Printing   $printing
+    )
+    {
         $this->printing   = $printing;
         $this->eventCache = $eventCache;
     }
@@ -35,7 +36,7 @@ class Flush implements \Weline\Framework\Console\CommandInterface
     /**
      * @inheritDoc
      */
-    public function execute(array $args = [])
+    public function execute(array $args = [], array $data = [])
     {
         $this->eventCache->create()->flush();
 
@@ -45,7 +46,7 @@ class Flush implements \Weline\Framework\Console\CommandInterface
     /**
      * @inheritDoc
      */
-    public function getTip(): string
+    public function tip(): string
     {
         return __('刷新系统事件缓存！');
     }

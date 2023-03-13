@@ -52,7 +52,7 @@ class ConfigProvider extends DataObject implements ConfigProviderInterface
             $this->addSlavesConfig($slaves);
         }
         # 主数据库
-        $master = $db_conf['master']??$db_conf;
+        $master = $db_conf['master'] ?? $db_conf;
         parent::__construct($master);
     }
 
@@ -92,14 +92,14 @@ class ConfigProvider extends DataObject implements ConfigProviderInterface
      * @DateTime: 2022/5/22 13:17
      * 参数区：
      */
-    function addSlavesConfig($slaves)
+    public function addSlavesConfig($slaves)
     {
         foreach ($slaves as $slave) {
             $this->slaves[] = new ConfigProvider($slave);
         }
     }
 
-    function getSalvesConfig(): array
+    public function getSalvesConfig(): array
     {
         return $this->slaves;
     }

@@ -17,14 +17,15 @@ class Disable implements \Weline\Framework\Console\CommandInterface
 
     public function __construct(
         Printing $printing
-    ) {
+    )
+    {
         $this->printing = $printing;
     }
 
     /**
      * @inheritDoc
      */
-    public function execute(array $args = [])
+    public function execute(array $args = [], array $data = [])
     {
         Env::getInstance()->setConfig('php-cs', false);
         $this->printing->success(__('成功禁用php-cs代码美化工具：' . Env::getInstance()->getConfig('php-cs')));
@@ -33,7 +34,7 @@ class Disable implements \Weline\Framework\Console\CommandInterface
     /**
      * @inheritDoc
      */
-    public function getTip(): string
+    public function tip(): string
     {
         return '禁用php-cs-fixer代码美化工具';
     }

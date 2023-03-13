@@ -75,8 +75,8 @@ ${functionList}
 
         // 仅监听被监听的函数
         /**@var PluginsManager $pluginsManager */
-        $pluginsManager               = ObjectManager::getInstance(PluginsManager::class);
-        $type_plugin                  = $pluginsManager->getClassPluginInstanceList($class);
+        $pluginsManager = ObjectManager::getInstance(PluginsManager::class);
+        $type_plugin    = $pluginsManager->getClassPluginInstanceList($class);
 
         $plugin_listen_type_methods   = $type_plugin['listen_methods'] ?? [];
         $plugin_listen_type_methods[] = '__construct';
@@ -151,7 +151,7 @@ ${functionList}
                 $func_tpl          = $construct_func_tpl;
             }
             $functionList[$method->name] = '    ' . str_replace(
-                [
+                    [
                         '${methodName}',
                         '${returntype}',
                         '${arguments}',
@@ -159,7 +159,7 @@ ${functionList}
                         '${func_doc}',
                         '${construct_content}',
                     ],
-                [
+                    [
                         $method->name,
                         $methodReturnType,
                         $args_tpl,
@@ -167,8 +167,8 @@ ${functionList}
                         $method->getDocComment(),
                         $construct_content,
                     ],
-                $func_tpl
-            );
+                    $func_tpl
+                );
         }
         // 如果没有初始化函数 自行加上
 //        if (! array_key_exists('__construct', $functionList)) {
@@ -219,7 +219,8 @@ ${functionList}
      */
     public static function extractParameterType(
         \ReflectionParameter $parameter
-    ): ?string {
+    ): ?string
+    {
         /** @var string|null $typeName */
         $typeName = null;
         if ($parameter->hasType()) {

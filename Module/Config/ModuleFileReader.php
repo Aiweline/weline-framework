@@ -17,19 +17,29 @@ use Weline\Framework\System\File\Scan;
 
 class ModuleFileReader extends Scan
 {
-    public function read(string $module_name, string $dir=''): array
+    public function read(string $module_name, string $dir = ''): array
     {
-        $base_path = Env::getInstance()->getModuleInfo($module_name)['base_path']??'';
+        $base_path = Env::getInstance()->getModuleInfo($module_name)['base_path'] ?? '';
         if ($base_path) {
-            return $this->scanDirTree($base_path.$dir);
-        }else{
+            return $this->scanDirTree($base_path . $dir);
+        } else {
             # 如果没有模块可能是第一次安装模块
             # app 内部的模块
-            $base_path = APP_PATH.str_replace('_', DS, $module_name).DS;
-            $app_data = $this->scanDirTree($base_path.$dir);
+            $base_path = APP_PATH . str_replace('_', DS, $module_name) . DS;
+            $app_data  = $this->scanDirTree($base_path . $dir);
             # vendor 内部的模块
-            $vendor_data = $this->scanDirTree(VENDOR_PATH.Register::convertToComposerName($module_name).DS.$dir);
+            $vendor_data = $this->scanDirTree(VENDOR_PATH . Register::convertToComposerName($module_name) . DS . $dir);
             return array_merge($app_data, $vendor_data);
         }
+    }
+
+    public function readClass(string $base_path, string $dir = ''): array
+    {
+        $files   = [];
+        $explode = explode(DS, $base_path);
+        array_pop($explode);
+        array_pop($explode);
+        array_pop($explode);
+        return $this->globFile($base_path . $dir, $files, '.php', implode(DS, $explode) . DS, '', true, true);
     }
 }

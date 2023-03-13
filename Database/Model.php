@@ -36,19 +36,31 @@ abstract class Model extends AbstractModel implements ModelInterface
      * @DateTime: 2022/7/3 8:49
      * 参数区：
      *
-     * @param string $main_field
-     * @param string $parent_id_field
-     * @param string $order_field
-     * @param string $order_sort
+     * @param string     $main_field      主要字段
+     * @param string     $parent_id_field 父级字段
+     * @param string|int $parent_id_value 父级字段值【用于判别顶层数据】
+     * @param string     $order_field     排序字段
+     * @param string     $order_sort      排序方式
      *
      * @return array
      */
-    public function getTree(string $main_field='',string $parent_id_field='parent_id',string $order_field='position',string $order_sort='ASC'): array
+    public function getTree(
+        string     $main_field = '',
+        string     $parent_id_field = 'parent_id',
+        string|int $parent_id_value = 0,
+        string     $order_field = 'position',
+        string     $order_sort = 'ASC'
+    ): array
     {
-        $main_field = $main_field?:$this::fields_ID;
-        $top_menus = $this->clearData()->where($parent_id_field, 0)->order($order_field, $order_sort)->select()->fetch()->getItems();
+        $main_field = $main_field ?: $this::fields_ID;
+        $top_menus  = $this->clearData()
+                           ->where($parent_id_field, $parent_id_value)
+                           ->order($order_field, $order_sort)
+                           ->select()
+                           ->fetch()
+                           ->getItems();
         foreach ($top_menus as &$top_menu) {
-            $top_menu = $this->getSubs($top_menu,$main_field,$parent_id_field,$order_field,$order_sort);
+            $top_menu = $this->getSubs($top_menu, $main_field, $parent_id_field, $order_field, $order_sort);
         }
         return $top_menus;
     }
@@ -60,7 +72,7 @@ abstract class Model extends AbstractModel implements ModelInterface
      * @EMAIL aiweline@qq.com
      * @DateTime: 2022/2/20 23:18
      * 参数区：
-     * @return \Weline\Backend\Model\Menu[]
+     * @return \Weline\Framework\Database\Model[]
      */
     public function getSub(): array
     {
@@ -68,29 +80,41 @@ abstract class Model extends AbstractModel implements ModelInterface
     }
 
     /**
-     * @DESC          # 方法描述
+     * @DESC          # 获取子节点
      *
      * @AUTH    秋枫雁飞
      * @EMAIL aiweline@qq.com
      * @DateTime: 2022/7/3 8:57
      * 参数区：
      *
-     * @param Model  $model
-     * @param string $main_field
-     * @param string $parent_id_field
-     * @param string $order_field
-     * @param string $order_sort
+     * @param Model  $model           模型
+     * @param string $main_field      主要字段
+     * @param string $parent_id_field 父级字段
+     * @param string $order_field     排序字段
+     * @param string $order_sort      排序方式
      *
      * @return Model
      */
-    public function getSubs(Model &$model,string $main_field='',string $parent_id_field='parent_id',string $order_field='position',string $order_sort='ASC'): Model
+    public function getSubs(
+        Model  &$model,
+        string $main_field = '',
+        string $parent_id_field = 'parent_id',
+        string $order_field = 'position',
+        string $order_sort = 'ASC'
+    ): Model
     {
-        $main_field = $main_field?:$this::fields_ID;
-        if ($subs = $this->clearData()->where($parent_id_field, $model->getData($main_field))->order($order_field, $order_sort)->select()->fetch()->getItems()) {
+        $main_field = $main_field ?: $this::fields_ID;
+        if ($subs = $this->clear()
+                         ->where($parent_id_field, $model->getData($main_field))
+                         ->order($order_field, $order_sort)
+                         ->select()
+                         ->fetch()
+                         ->getItems()
+        ) {
             foreach ($subs as &$sub) {
-                $has_sub_menu = $this->clearData()->where($parent_id_field, $sub->getData($main_field))->find()->fetch();
+                $has_sub_menu = $this->clear()->where($parent_id_field, $sub->getData($main_field))->find()->fetch();
                 if ($has_sub_menu->getData($main_field)) {
-                    $sub = $this->getSubs($sub);
+                    $sub = $this->getSubs($sub,$main_field,$parent_id_field,$order_field,$order_sort);
                 }
             }
             $model = $model->setData('sub', $subs);

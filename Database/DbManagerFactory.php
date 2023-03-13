@@ -9,7 +9,6 @@
 
 namespace Weline\Framework\Database;
 
-
 /**
  * 文件信息
  * DESC:   | 数据库管理
@@ -19,6 +18,6 @@ namespace Weline\Framework\Database;
  * 网站：   https://bbs.aiweline.com
  * Email：  aiweline@qq.com
  */
-class DbManagerFactory extends  DbManager
+class DbManagerFactory extends DbManager
 {
 }

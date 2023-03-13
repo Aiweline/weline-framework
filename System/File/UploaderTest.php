@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /*
@@ -15,7 +16,6 @@ use Weline\Framework\UnitTest\TestCore;
 
 class UploaderTest extends TestCore
 {
-
     public function testCheckFilename()
     {
         /**@var Uploader $uploader */

@@ -20,14 +20,15 @@ class Set implements \Weline\Framework\Console\CommandInterface
 
     public function __construct(
         Printing $printing
-    ) {
+    )
+    {
         $this->printing = $printing;
     }
 
     /**
      * @inheritDoc
      */
-    public function execute(array $args = [])
+    public function execute(array $args = [], array $data = [])
     {
         if (!isset($args[1])) {
             $this->printing->error(__('请指定设置类型:'));
@@ -76,7 +77,7 @@ class Set implements \Weline\Framework\Console\CommandInterface
     /**
      * @inheritDoc
      */
-    public function getTip(): string
+    public function tip(): string
     {
         return '设置静态文件状态';
     }

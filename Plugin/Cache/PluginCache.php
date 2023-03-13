@@ -29,6 +29,6 @@ class PluginCache extends \Weline\Framework\Cache\CacheFactory
 {
     public function __construct(string $identity = 'framework_plugin')
     {
-        parent::__construct($identity, '插件缓存', true, );
+        parent::__construct($identity, '插件缓存', true);
     }
 }

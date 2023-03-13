@@ -15,6 +15,7 @@ use Weline\Framework\App\Env;
 use Weline\Framework\App\Exception;
 use Weline\Framework\DataObject\DataObject;
 use Weline\Framework\Exception\Core;
+use Weline\Framework\Http\Cookie;
 use Weline\Framework\Http\Request;
 use Weline\Framework\Manager\ObjectManager;
 use Weline\Framework\System\Security\Encrypt;
@@ -137,7 +138,7 @@ trait TraitTemplate
     public function fetchTagSourceFile(string $type, string $source)
     {
         $source    = trim($source);
-        $cache_key = $type . '_' . $source;
+        $cache_key = $type . '_' . $source.Cookie::getLangLocal();
         $data      = '';
         switch ($type) {
             case DataInterface::dir_type_TEMPLATE:
@@ -186,18 +187,16 @@ trait TraitTemplate
      *
      * @param string $type
      * @param string $source
+     * @param bool   $rand_version
      *
      * @return bool|string|void
-     * @throws Core
+     * @throws Exception
      */
-    public function fetchTagSource(string $type, string $source)
+    public function fetchTagSource(string $type, string $source, bool $rand_version_with_system = true)
     {
         $source    = trim($source);
         $source    = trim($source, DS);
-        $cache_key = $type . '_' . $source;
-        if (PROD && $data = $this->viewCache->get($cache_key)) {
-            return $data;
-        }
+        $cache_key = $type . '_' . $source.Cookie::getLangLocal();
         switch ($type) {
             case DataInterface::dir_type_STATICS:
                 list($t_f, $module_name) = $this->processModuleSourceFilePath($type, $source);
@@ -218,7 +217,12 @@ trait TraitTemplate
                 break;
             case DataInterface::dir_type_BASE:
             case DataInterface::dir_type_TEMPLATE:
+            case DataInterface::dir_type_BLOCKS:
             default:
+                $data = $this->viewCache->get($cache_key);
+                if (PROD &&$data&& is_file($data)) {
+                    return $data;
+                }
                 list($t_f, $module_name) = $this->processModuleSourceFilePath($type, $source);
                 $data = $this->getFetchFile($t_f, $module_name);
                 break;
@@ -226,7 +230,7 @@ trait TraitTemplate
         $data = str_replace('\\', '/', $data);
         $data = str_replace('//', '/', $data);
         # 是否静态文件添加
-        if ($type === 'statics' && Env::getInstance()->getConfig('static_file_rand_version')) {
+        if ($rand_version_with_system and ($type === 'statics' && Env::getInstance()->getConfig('static_file_rand_version'))) {
             $version = random_int(10000, 100000);
             $data    .= '?v=' . $version;
         }
@@ -325,7 +329,9 @@ trait TraitTemplate
      */
     protected function fetchFile(string $filename): mixed
     {
-        if ($cache_filename = $this->viewCache->get($filename)) {
+        $cache_key = $filename.Cookie::getLangLocal();
+        $cache_filename = $this->viewCache->get($cache_key);
+        if ($cache_filename&&is_file($cache_filename)) {
             return $cache_filename;
         }
         /*---------观察者模式 检测文件是否被继承-----------*/
@@ -335,7 +341,7 @@ trait TraitTemplate
             ['object' => $this, 'data' => $fileData]
         );
         $event_filename = $fileData->getData('filename');
-        $this->viewCache->set($filename, $event_filename);
+        $this->viewCache->set($cache_key, $event_filename);
         return $event_filename;
     }
 }

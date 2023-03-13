@@ -36,7 +36,8 @@ class Scanner
     public function __construct(
         Scan $scan,
         Data $data
-    ) {
+    )
+    {
         $this->scan = $scan;
         $this->data = $data;
     }
