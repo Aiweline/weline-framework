@@ -20,7 +20,6 @@ abstract class Model extends AbstractModel implements ModelInterface
     {
         $cache_key = $this->getTable() . '_columns';
         if ($columns = $this->_cache->get($cache_key)) {
-            p($columns);
             return $columns;
         }
         $columns = $this->query("SHOW FULL COLUMNS FROM {$this->getTable()} ")->fetchOrigin();

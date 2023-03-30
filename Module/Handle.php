@@ -397,6 +397,7 @@ class Handle implements HandleInterface, RegisterInterface
             if (DEV) {
                 $this->printer->setup($module->getName() . '：更新路由...', '开发');
             }
+
             $this->helper->registerModuleRouter($this->modules, $module->getBasePath(), $module->getName(), $module->getRouter());
             if (DEV) {
                 $this->printer->setup($module->getName() . '：更新路由完成...', '开发');

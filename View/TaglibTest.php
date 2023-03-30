@@ -16,11 +16,21 @@ use Weline\Framework\UnitTest\TestCore;
 
 class TaglibTest extends TestCore
 {
+    private Taglib $taglib;
+    function setUp(): void
+    {
+        parent::setUp();
+        $this->taglib = ObjectManager::getInstance(Taglib::class);
+    }
+
     public function testVarParser()
     {
-        /**@var Taglib $taglib */
-        $taglib    = ObjectManager::getInstance(Taglib::class);
-        $parse_str = $taglib->varParser('Request.param.c_id');
-        p($parse_str);
+        $parse_str = $this->taglib->varParser('Request.param.c_id');
+        self::assertTrue($parse_str==="(\$Request['param']['c_id']??'') ",'解析变量');
+    }
+    public function testVarParserEmptyString()
+    {
+        $parse_str = $this->taglib->varParser('Request.param.c_id');
+        self::assertTrue($parse_str==="(\$Request['param']['c_id']??'') ",'解析变量');
     }
 }

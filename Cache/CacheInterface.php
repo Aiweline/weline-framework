@@ -39,7 +39,7 @@ interface CacheInterface
      * 1 : 开启
      * 参数区：
      *
-     * @return int
+     * @return bool
      */
     public function getStatus(): bool;
 
@@ -49,7 +49,7 @@ interface CacheInterface
      * 1 : 开启
      * 参数区：
      *
-     * @param int $status
+     * @param bool $status
      *
      * @return CacheInterface
      */
@@ -60,80 +60,80 @@ interface CacheInterface
      *
      * 参数区：
      *
-     * @param $key
+     * @param string $key
      *
      * @return mixed
      */
-    public function buildKey($key): mixed;
+    public function buildKey(string $key): mixed;
 
     /**
      * @DESC         |生成关于请求的缓存
      *
      * 参数区：
      *
-     * @param $key
+     * @param string $key
      *
      * @return mixed
      */
-    public function buildWithRequestKey($key): mixed;
+    public function buildWithRequestKey(string $key): mixed;
 
     /**
      * @DESC         |使用指定键从缓存中检索值。
      *
      * 参数区：
      *
-     * @param $key
+     * @param string $key
      *
      * @return mixed
      */
-    public function get($key): mixed;
+    public function get(string $key): mixed;
 
     /**
      * @DESC         |检查缓存中是否存在指定的键。
      *
      * 参数区：
      *
-     * @param $key
+     * @param string $key
      *
      * @return mixed
      */
-    public function exists($key): mixed;
+    public function exists(string $key): mixed;
 
     /**
      * @DESC         |使用指定的键从缓存中检索多个值。
      *
      * 参数区：
      *
-     * @param $keys
+     * @param array $keys
      *
      * @return mixed
      */
-    public function getMulti($keys): mixed;
+    public function getMulti(array $keys): mixed;
 
     /**
      * @DESC         |将键标识的值存储到缓存中。
      *
      * 参数区：
      *
-     * @param     $key
-     * @param     $value
-     * @param int $duration
+     * @param string $key      键
+     * @param mixed  $value    值
+     * @param int    $duration 秒
      *
      * @return mixed
      */
-    public function set($key, $value, int $duration = 1800): mixed;
+    public function set(string $key, mixed $value, int $duration = 1800): mixed;
 
     /**
      * @DESC         |在缓存中存储多个项目。每个项包含一个由键标识的值。
      *
      * 参数区：
      *
-     * @param     $items
-     * @param int $duration
+     * @param array $items
+     * @param int   $duration
      *
      * @return mixed
      */
-    public function setMulti($items, int $duration = 1800): mixed;
+    public function setMulti(array $items, int $duration = 1800): mixed;
 
     /**
      * @DESC         |如果缓存不包含该键，则将由键标识的值存储到缓存中。
@@ -141,13 +141,13 @@ interface CacheInterface
      *
      * 参数区：
      *
-     * @param     $key
-     * @param     $value
-     * @param int $duration
+     * @param string $key
+     * @param mixed  $value
+     * @param int    $duration
      *
      * @return mixed
      */
-    public function add($key, $value, int $duration = 1800): mixed;
+    public function add(string $key, mixed $value, int $duration = 1800): mixed;
 
     /**
      * @DESC         |在缓存中存储多个项目。每个项包含一个由键标识的值。
@@ -167,11 +167,11 @@ interface CacheInterface
      *
      * 参数区：
      *
-     * @param $key
+     * @param string $key
      *
      * @return mixed
      */
-    public function delete($key): mixed;
+    public function delete(string $key): mixed;
 
     /**
      * @DESC         |从缓存中删除所有值。（刷新缓存文件）

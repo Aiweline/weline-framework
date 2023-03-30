@@ -52,7 +52,7 @@ class Taglib
     public function checkFilter(string $name, string $filter = '|', $default = '\'\''): array
     {
         if (str_contains($name, PHP_EOL)) {
-            $name = str_replace(array("\r\n", "\r", "\n", "\t",' '), '', $name);
+            $name = str_replace(array("\r\n", "\r", "\n", "\t", ' '), '', $name);
         }
         if (str_contains($name, $filter)) {
             $name_arr = explode('|', $name);
@@ -108,7 +108,7 @@ class Taglib
 //                if (PROD) {
 //                    $name_str .= '(';
 //                }
-                $name_str .= '(';
+                $name_str  .= '(';
                 $has_piece = true;
             }
             foreach ($pieces as $key => $piece) {
@@ -328,14 +328,14 @@ class Taglib
                         case '@tag()':
                             $content_arr = explode('|', $tag_data[1]);
                             $name        = $this->varParser($this->checkVar($content_arr[0]));
-                            return "<?php if(isset($name) && !empty({$name}))echo '" . $template->tmp_replace(trim($content_arr[1] ?? '')) . "'?>";
+                            return "<?php if(!empty({$name}))echo '" . $template->tmp_replace(trim($content_arr[1] ?? '')) . "'?>";
                         case 'tag-start':
                             if (!isset($attributes['name'])) {
                                 $template_html = htmlentities($tag_data[0]);
                                 throw new TemplateException(__("empty标签需要设置name属性:[$template_html]例如：%1", htmlentities('<empty name="catalogs"><li>没有数据</li></empty>')));
                             }
                             $name = $this->varParser($this->checkVar($attributes['name']));
-                            return '<?php if(' . $name . ' && !empty(' . $name . ')): ?>';
+                            return '<?php if(!empty(' . $name . ') ): ?>';
                         case 'tag-end':
                             return '<?php endif; ?>';
                         default:
@@ -539,7 +539,7 @@ class Taglib
                                 $result .= "<?=\$this->getUrl(";
                                 break;
                             case 'tag-end':
-                                $result .= ")?>";
+                                $result .= ')?>';
                                 break;
                             default:
                                 $data   = str_replace(' ', '', $tag_data[1]);
@@ -571,7 +571,7 @@ class Taglib
                                 $result .= "<?=\$this->getApi(";
                                 break;
                             case 'tag-end':
-                                $result .= ")?>";
+                                $result .= ')?>';
                                 break;
                             default:
                                 $data   = str_replace(' ', '', $tag_data[1]);
@@ -598,7 +598,7 @@ class Taglib
                             case 'tag-start':
                                 return "<?=\$this->getBackendUrl(";
                             case 'tag-end':
-                                return ")?>";
+                                return ')?>';
                             default:
                                 $data = str_replace(' ', '', $tag_data[1]);
                                 if (str_starts_with($data, '"') || str_starts_with($data, "'")) {
@@ -627,7 +627,7 @@ class Taglib
                             case 'tag-start':
                                 return "<?=\$this->getBackendUrl(";
                             case 'tag-end':
-                                return ")?>";
+                                return ')?>';
                             default:
                                 $data = str_replace(' ', '', $tag_data[1]);
                                 if (str_starts_with($data, '"') || str_starts_with($data, "'")) {
@@ -656,7 +656,7 @@ class Taglib
                             case 'tag-start':
                                 return "<?=\$this->getBackendApi(";
                             case 'tag-end':
-                                return ")?>";
+                                return ')?>';
                             default:
                                 $data = str_replace(' ', '', $tag_data[1]);
                                 if (str_starts_with($data, '"') || str_starts_with($data, "'")) {
@@ -688,7 +688,7 @@ class Taglib
                                 $str_var = $this->varParser($this->checkVar(array_shift($str_arr)));
                                 $str_len = intval(array_shift($str_arr));
 
-                                return "<?php if({$str_var}&&$str_len>0 && strlen({$str_var})>{$str_len}){
+                                return "<?php if(!empty({$str_var})&&$str_len>0 && strlen({$str_var})>{$str_len}){
                                     echo mb_substr({$str_var},0,{$str_len},'UTF8').'...';
                                 }else{
                                 echo {$str_var};
@@ -724,7 +724,7 @@ class Taglib
     public function tagReplace(Template &$template, string &$content, string &$fileName = ''): array|string
     {
         # 替换{{key}}标签
-        preg_match_all("/\{\{([\s\S]*?)\}\}/", $content, $matches, PREG_SET_ORDER);
+        preg_match_all('/\{\{([\s\S]*?)\}\}/', $content, $matches, PREG_SET_ORDER);
         foreach ($matches as $key => $value) {
             $content = str_replace($value[0], "<?={$this->varParser(trim($value[1]))}??'';?>", $content);
         }

@@ -86,11 +86,11 @@ abstract class CacheDriverAbstract implements \Weline\Framework\Cache\CacheDrive
      *
      * 参数区：
      *
-     * @param $keys
+     * @param array $keys
      *
      * @return array
      */
-    public function getMulti($keys): array
+    public function getMulti(array $keys): array
     {
         if (!$this->status) {
             return [];
@@ -108,12 +108,12 @@ abstract class CacheDriverAbstract implements \Weline\Framework\Cache\CacheDrive
      *
      * 参数区：
      *
-     * @param     $items
-     * @param int $duration
+     * @param array $items
+     * @param int   $duration
      *
      * @return array
      */
-    public function setMulti($items, int $duration = 1800): array
+    public function setMulti(array $items, int $duration = 1800): array
     {
         if (!$this->status) {
             return [];
@@ -159,11 +159,11 @@ abstract class CacheDriverAbstract implements \Weline\Framework\Cache\CacheDrive
      *
      * 参数区：
      *
-     * @param $key
+     * @param string $key
      *
      * @return string
      */
-    public function buildKey($key): string
+    public function buildKey(string $key): string
     {
         if (!is_string($key)) {
             // 不是字符串，json_encode转成字符串
@@ -177,12 +177,11 @@ abstract class CacheDriverAbstract implements \Weline\Framework\Cache\CacheDrive
      *
      * 参数区：
      *
-     * @param $key              [基础键]
-     * @param $attach_variables [变量键：协助变化缓存，默认使用（page,pageSize）] 【示例：['page','pageSize']】
+     * @param string $key [基础键]
      *
      * @return string
      */
-    public function buildWithRequestKey($key, array $attach_variables = []): string
+    public function buildWithRequestKey(string $key): string
     {
         if (!is_string($key)) {
             // 不是字符串，json_encode转成字符串

@@ -40,6 +40,6 @@ class ModuleFileReader extends Scan
         array_pop($explode);
         array_pop($explode);
         array_pop($explode);
-        return $this->globFile($base_path . $dir, $files, '.php', implode(DS, $explode) . DS, '', true, true);
+        return $this->globFile($base_path . $dir, $files, '.php', implode(DS, $explode) . DS, '', true, true,$base_path);
     }
 }

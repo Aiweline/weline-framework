@@ -528,7 +528,7 @@ abstract class AbstractModel extends DataObject
             $this->force_check_flag = $data;
             if ($sequence) {
                 $this->force_check_fields[] = $sequence;
-            } else {
+            } else if (empty($this->force_check_fields)) {
                 $this->force_check_fields[] = $this->_primary_key;
             }
         }
@@ -543,10 +543,11 @@ abstract class AbstractModel extends DataObject
                 }
             }
         }
+
         // 保存前
         $this->save_before();
         // save之前事件
-        $this->getEvenManager()->dispatch($this->processTable() . '_model_save_before', ['model' => $this]);
+        $this->getEvenManager()->dispatch($this->getTable() . '_model_save_before', ['model' => $this]);
         $this->getQuery()->beginTransaction();
         try {
             if ($this->getId()) {
@@ -1147,7 +1148,7 @@ abstract class AbstractModel extends DataObject
     public function getModelData(string $field = ''): array|string
     {
         if (empty($this->_model_fields_data) && $data = $this->getData()) {
-            $need_fill_fields = [];
+//            $need_fill_fields = [];
             foreach ($this->getModelFields() as $key => $val) {
                 if (isset($data[$val])) {
                     $field_data = $data[$val];
@@ -1209,6 +1210,30 @@ abstract class AbstractModel extends DataObject
         } else {
             $this->_model_fields_data[$key] = $value;
             $this->setData($key, $value);
+        }
+        return $this;
+    }
+
+    /**
+     * @DESC          # 设置模型数据
+     *
+     * @AUTH    秋枫雁飞
+     * @EMAIL aiweline@qq.com
+     * @DateTime: 2021/11/16 17:09
+     * 参数区：
+     *
+     * @param array|string $key
+     *
+     * @return AbstractModel
+     */
+    public function unsetModelData(array|string $key): static
+    {
+        if (is_array($key)) {
+            foreach ($key as $item) {
+                unset($this->_model_fields_data[$item]);
+            }
+        } else {
+            unset($this->_model_fields_data[$key]);
         }
         return $this;
     }
@@ -1497,19 +1522,19 @@ PAGINATION;
     private function checkUpdateOrInsert(): mixed
     {
         if ($this->unique_data) {
-            $check_result = $this->getQuery()->where($this->unique_data)->find()->fetch();
+            $check_result = $this->getQuery()->where($this->unique_data)->find()->fetchOrigin()[0]??[];
         } else {
             $check_result = [];
         }
+
         # 存在更新
         if (isset($check_result[$this->_primary_key])) {
-            $this->setId($check_result[$this->_primary_key]);
+            if (!$this->getId()) $this->setId($check_result[$this->_primary_key]);
             $data = $this->getModelData();
             unset($data[$this->_primary_key]);
             $save_result = $this->getQuery()->where($this->unique_data)
                                 ->update($data)
                                 ->fetch();
-//            p($save_result->getLastSql());
         } else {
             $save_result = $this->getQuery()
                                 ->insert($this->getModelData())

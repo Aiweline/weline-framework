@@ -86,7 +86,7 @@ class Install extends \Weline\Framework\Console\CommandAbstract
         $db_config = array_intersect_key($db_config, $db_keys);
             $db_config['type'] ?? $db_config['type'] = 'mysql';
             $db_config['hostport'] ?? $db_config['hostport'] = '3306';
-            $db_config['prefix'] ?? $db_config['prefix'] = 'm_';
+            $db_config['prefix'] ?? $db_config['prefix'] = 'w_';
             $db_config['charset'] ?? $db_config['charset'] = 'utf8';
             $db_config['collate'] ?? $db_config['collate'] = 'utf8_general_ci';
         foreach ($db_keys as $db_key => $v) {

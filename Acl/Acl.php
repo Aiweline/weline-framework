@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Weline\Framework\Acl;
 
+use Weline\Framework\App\Exception;
 use Weline\Framework\Attribute\RouterAttributeInterface;
 use Weline\Framework\DataObject\DataObject;
 use Weline\Framework\Event\EventsManager;
@@ -34,13 +35,16 @@ use Weline\Framework\Manager\ObjectManager;
     public function __construct(string $source_id, string $source_name, string $icon, string $document, string $parent_source = '', string $rewrite =
     '')
     {
+        if ($source_id === $parent_source) {
+            throw new Exception(__('source_id与parent_source不能相同！'));
+        }
         parent::__construct([
-                                'source_id'     => $source_id,
-                                'source_name'   => __($source_name),
-                                'icon'          => $icon,
-                                'document'      => __($document),
+                                'source_id' => $source_id,
+                                'source_name' => __($source_name),
+                                'icon' => $icon,
+                                'document' => __($document),
                                 'parent_source' => $parent_source,
-                                'rewrite'       => $rewrite,
+                                'rewrite' => $rewrite,
                             ]);
     }
 

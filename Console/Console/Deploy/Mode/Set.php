@@ -36,6 +36,15 @@ class Set extends CommandAbstract
     {
         array_shift($args);
         $param = array_shift($args);
+        // 如果当前是线上环境，应当提醒开发者切换到其他模式的风险
+        if ($param !== 'prod' && (Env::getInstance()->getConfig('deploy') === 'prod')) {
+            $this->printer->setup(__('当前部署模式为prod(生产模式)，请谨慎操作！你确认要切换到 %1 模式么？', (string)$param));
+            $input = $this->system->input();
+            if (strtolower(chop($input)) !== 'y') {
+                $this->printer->setup(__('已为您取消操作！'));
+                return;
+            }
+        }
         $this->printer->note('清理缓存...');
         /**@var $cacheManagerConsole \Weline\CacheManager\Console\Cache\Clear */
         $cacheManagerConsole = ObjectManager::getInstance(\Weline\CacheManager\Console\Cache\Clear::class);
@@ -63,7 +72,6 @@ class Set extends CommandAbstract
             default:
                 $this->printer->error(' ╮(๑•́ ₃•̀๑)╭  ：错误的部署模式：' . $param);
                 $this->printer->note('(￢_￢) ->：允许的部署模式：dev/prod');
-
                 return;
         }
         if (Env::getInstance()->setConfig('deploy', $param)) {

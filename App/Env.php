@@ -331,7 +331,10 @@ class Env extends DataObject
      */
     public function getDbConfig(): array
     {
-        return isset($this->config['db']) ? $this->config['db'] : [];
+        if (DEV || DEBUG) {
+            return $this->config['debug_db'] ?? [];
+        }
+        return $this->config['db'] ?? [];
     }
 
     /**

@@ -78,7 +78,7 @@ class Data extends AbstractHelper
             $api_dir = $path . Handle::api_DIR . DS;
             if (is_dir($api_dir)) {
                 $api_classs = [];
-                $this->scan->globFile($api_dir . '*', $api_classs, '.php', $path, $module['namespace_path'] . '\\', true, true);
+                $this->scan->globFile($api_dir . '*', $api_classs, '.php', $path, $module['namespace_path'] . '\\', true, true,$module['base_path']);
                 foreach ($api_classs as $api_class) {
                     if (!class_exists($api_class)) {
                         continue;
@@ -159,9 +159,10 @@ class Data extends AbstractHelper
 
             # PC 路由
             $pc_dir = $path . Handle::pc_DIR . DS;
+
             if (is_dir($pc_dir)) {
                 $pc_classs = [];
-                $this->scan->globFile($pc_dir . '*', $pc_classs, '.php', $path, $module['namespace_path'] . '\\', true, true);
+                $this->scan->globFile($pc_dir . '*', $pc_classs, '.php', $path, $module['namespace_path'] . '\\', true, true,$module['base_path']);
                 foreach ($pc_classs as $pc_class) {
                     if (!class_exists($pc_class)) {
                         continue;

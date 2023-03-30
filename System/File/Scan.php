@@ -10,6 +10,7 @@
 namespace Weline\Framework\System\File;
 
 use Symfony\Component\Finder\Finder;
+use Weline\Framework\App\Exception;
 use Weline\Framework\Register\RegisterInterface;
 use Weline\Framework\System\File\Data\File;
 
@@ -154,27 +155,61 @@ class Scan
         string $remove_path = '',
         string $replace_path = '',
         bool $remove_ext = false,
-        bool $class_path = false
+        bool $class_path = false,
+        string &$composer_dir = ''
     )
     {
         foreach (glob($pattern_dir) as $file) {
             if (is_dir($file)) {
-                $this->globFile($file . DS . '*', $files, $ext, $remove_path, $replace_path, $remove_ext, $class_path);
+                $this->globFile($file . DS . '*', $files, $ext, $remove_path, $replace_path, $remove_ext, $class_path, $composer_dir);
             }
             if (str_ends_with($file, $ext)) {
+                $file_ = $file;
                 if ($remove_path) {
-                    $file = str_replace($remove_path, $replace_path, $file);
+                    $file_ = str_replace($remove_path, $replace_path, $file_);
                 }
                 if ($remove_ext) {
-                    $file = str_replace($ext, '', $file);
-                    $file = str_replace(strtoupper($ext), '', $file);
+                    $file_ = str_replace($ext, '', $file_);
+                    $file_ = str_replace(strtoupper($ext), '', $file_);
                 }
                 if ($class_path) {
-                    $file = str_replace(DS, '\\', $file);
+                    $file_ = str_replace('/', '\\', $file_);
+                    if(!class_exists($file_)){
+                        $file_ = $this->getClassNameFromFile($file, $composer_dir);
+                    }
                 }
-                $files[] = $file;
+                $files[] = $file_;
             }
         }
         return $files;
+    }
+
+    function getClassNameFromFile($filePath, $composerPath = '')
+    {
+        $directory = dirname($filePath);
+        if(empty($composerPath)){
+            $composerPath = $directory;
+        }
+
+        while (!is_file($composerPath . DS . 'composer.json') && $composerPath !== '') {
+            $composerPath = dirname($composerPath);
+        }
+
+        if ($composerPath === '') {
+            throw new Exception(__('无法找到composer.json！加载文件：%1',$filePath));
+        }
+
+        $composer = json_decode(file_get_contents($composerPath . DS .  'composer.json'), true);
+
+        $autoloads = $composer['autoload']['psr-4'] ?? [];
+
+        foreach ($autoloads as $namespace => $path) {
+            if (strpos($directory, $path) === 0) {
+                $class = str_replace('/', '\\', substr($directory, strlen($composerPath.$path))) . '\\' . basename($filePath, '.php');
+                return $namespace . $class;
+            }
+        }
+
+        throw new Exception(__('无法在自动加载器中加载类！加载文件：%1',$filePath));
     }
 }

@@ -46,11 +46,11 @@ class File extends CacheDriverAbstract
      *
      * 参数区：
      *
-     * @param $key
+     * @param string $key
      *
      * @return bool|mixed
      */
-    public function get($key): mixed
+    public function get(string $key): mixed
     {
         if (!$this->status) {
             return false;
@@ -74,11 +74,11 @@ class File extends CacheDriverAbstract
      *
      * 参数区：
      *
-     * @param $key
+     * @param string $key
      *
      * @return bool
      */
-    public function exists($key): bool
+    public function exists(string $key): bool
     {
         if (!$this->status) {
             return false;
@@ -97,13 +97,13 @@ class File extends CacheDriverAbstract
      *
      * 参数区：
      *
-     * @param     $key
-     * @param     $value
-     * @param int $duration
+     * @param string $key
+     * @param mixed  $value
+     * @param int    $duration
      *
      * @return bool
      */
-    public function set($key, $value, int $duration = 1800): bool
+    public function set(string $key, mixed $value, int $duration = 1800): bool
     {
         if (!$this->status) {
             return false;
@@ -136,13 +136,13 @@ class File extends CacheDriverAbstract
      *
      * 参数区：
      *
-     * @param     $key
-     * @param     $value
-     * @param int $duration
+     * @param string $key
+     * @param mixed  $value
+     * @param int    $duration
      *
      * @return bool
      */
-    public function add($key, $value, int $duration = 1800): bool
+    public function add(string $key, mixed $value, int $duration = 1800): bool
     {
         if (!$this->status) {
             return false;
@@ -160,11 +160,11 @@ class File extends CacheDriverAbstract
      *
      * 参数区：
      *
-     * @param $key
+     * @param string $key
      *
      * @return bool
      */
-    public function delete($key): bool
+    public function delete(string $key): bool
     {
         $key = $this->buildKey($key);
 

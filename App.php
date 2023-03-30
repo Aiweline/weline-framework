@@ -114,9 +114,17 @@ class App
         }
         // 调试模式
         if (!defined('DEBUG')) {
-            define('DEBUG', false);
+            if (!empty($_GET['debug'])) {
+                define('DEBUG', true);
+            } else {
+                define('DEBUG', false);
+            }
         }
-        // 调试模式
+        if (DEBUG) {
+            $_GET['debug'] = 1;
+        }
+
+        // 系统UMASK
         if (!defined('SYSTEM_UMASK')) {
             define('SYSTEM_UMASK', 0022);
         }
@@ -149,6 +157,13 @@ class App
         };
         //报告错误
         DEBUG ? error_reporting(E_ALL) : error_reporting(0);
+
+        // 检测debug数据库
+        if (DEV || DEBUG) {
+            if (!isset($config['debug_db'])) {
+                throw new Exception(__('请设置debug数据库！'));
+            }
+        }
 
         // 错误报告
         if (DEV || CLI) {

@@ -74,6 +74,7 @@ class Upgrade implements \Weline\Framework\Console\CommandInterface
         $i += 1;
         $this->printer->warning($i . '、generated生成目录代码code清理...', '系统');
         $this->system->exec('rm -rf ' . Env::path_framework_generated_code);
+        $this->system->exec('mkdir  ' . Env::path_framework_generated_code);
         $i += 1;
         // 扫描代码
         $this->printer->note($i . '、清理模板缓存', '系统');

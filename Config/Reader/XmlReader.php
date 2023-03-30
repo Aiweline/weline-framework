@@ -35,7 +35,7 @@ class XmlReader extends ModuleFileReader
                 $path = 'module.xml'
     )
     {
-        parent::__construct($scanner, 'etc' . DS . $path);
+        parent::__construct($scanner,  $path);
         $this->parser = $parser;
     }
 

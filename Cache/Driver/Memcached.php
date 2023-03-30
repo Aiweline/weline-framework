@@ -61,12 +61,12 @@ class Memcached extends CacheDriverAbstract
     }
 
 
-    public function get($key): mixed
+    public function get(string $key): mixed
     {
         return $this->connection->getData($key);
     }
 
-    public function exists($key): mixed
+    public function exists(string $key): mixed
     {
         if ($this->connection->getData($key)) {
             return true;
@@ -74,7 +74,7 @@ class Memcached extends CacheDriverAbstract
         return false;
     }
 
-    public function set($key, $value, int $duration = 1800): mixed
+    public function set(string $key, mixed $value, int $duration = 1800): mixed
     {
         if (!$this->status) {
             return false;
@@ -83,7 +83,7 @@ class Memcached extends CacheDriverAbstract
         return $this;
     }
 
-    public function add($key, $value, int $duration = 1800): mixed
+    public function add(string $key, mixed $value, int $duration = 1800): mixed
     {
         if (!$this->status) {
             return false;
@@ -93,7 +93,7 @@ class Memcached extends CacheDriverAbstract
     }
 
 
-    public function delete($key): mixed
+    public function delete(string $key): mixed
     {
         $this->connection->getMemcached()->delete($key);
         return true;
