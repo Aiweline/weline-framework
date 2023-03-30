@@ -26,7 +26,7 @@ class XmlReader extends \Weline\Framework\Config\Reader\XmlReader
         EventCache $eventCache,
         Scanner    $scanner,
         Parser     $parser,
-                   $path = 'event.xml'
+                   $path = 'etc'.DS.'event.xml'
     )
     {
         parent::__construct($scanner, $parser, $path);

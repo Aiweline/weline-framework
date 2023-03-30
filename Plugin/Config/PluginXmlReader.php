@@ -26,7 +26,7 @@ class PluginXmlReader extends \Weline\Framework\Config\Reader\XmlReader
         PluginCache $pluginCache,
         Scanner     $scanner,
         Parser      $parser,
-                    $path = 'plugin.xml'
+                    $path = 'etc'.DS.'plugin.xml'
     )
     {
         parent::__construct($scanner, $parser, $path);
