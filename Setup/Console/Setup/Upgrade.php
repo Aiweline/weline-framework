@@ -17,6 +17,7 @@ use Weline\Framework\App\Env;
 use Weline\Framework\App\System;
 use Weline\Framework\Event\EventsManager;
 use Weline\Framework\Manager\ObjectManager;
+use Weline\Framework\Module\Dependency\Sort;
 use Weline\Framework\Module\Handle;
 use Weline\Framework\Module\Helper\Data;
 use Weline\Framework\Module\Model\Module;
@@ -100,21 +101,25 @@ class Upgrade implements \Weline\Framework\Console\CommandInterface
         }
         // 过滤可以用的modules
         $modules = Env::getInstance()->getModuleList(true);
+        /**@var Sort $sort */
+        $sort                = ObjectManager::getInstance(Sort::class);
+        $module_dependencies = $sort->dependenciesSort($modules);
+        Env::write(Env::path_MODULE_DEPENDENCIES_FILE, '<?php return ' . var_export($module_dependencies, true) . ';?>');
         /**@var Handle $module_handle*/
         $module_handle = ObjectManager::getInstance(Handle::class);
         // 安装Setup信息
         $this->printer->note(__('2)安装Setup信息'));
-        foreach ($modules as $module_name => $module) {
+        foreach ($module_dependencies as $module_name => $module) {
             $module_handle->setupInstall(new Module($module));
         }
         // 注册模型数据库信息
         $this->printer->note(__('3)注册模型数据库信息'));
-        foreach ($modules as $module_name => $module) {
+        foreach ($module_dependencies as $module_name => $module) {
             $module_handle->setupModel(new Module($module));
         }
         // 注册路由信息
         $this->printer->note(__('3)注册路由信息'));
-        foreach ($modules as $module_name => $module) {
+        foreach ($module_dependencies as $module_name => $module) {
             $module_handle->registerRoute(new Module($module));
         }
         $this->printer->note('模块更新完毕！');
@@ -122,6 +127,7 @@ class Upgrade implements \Weline\Framework\Console\CommandInterface
         $this->printer->note($i . '、收集模块信息', '系统');
         # 加载module中的助手函数
         $modules                = Env::getInstance()->getActiveModules();
+        $modules = $sort->dependenciesSort($modules);
         $function_files_content = '';
         foreach ($modules as $module) {
             $global_file_pattern = $module['base_path'] . 'Global' . DS . '*.php';
