@@ -78,17 +78,17 @@ class Handle implements HandleInterface, RegisterInterface
      * @param Compress    $compress
      */
     public function __construct(
-        Data        $helper,
-        Printing    $printer,
-        System      $system,
-        Compress    $compress
+        Data     $helper,
+        Printing $printer,
+        System   $system,
+        Compress $compress
     )
     {
-        $this->modules      = Env::getInstance()->getModuleList();
-        $this->helper       = $helper;
-        $this->system       = $system;
-        $this->printer      = $printer;
-        $this->compress     = $compress;
+        $this->modules  = Env::getInstance()->getModuleList();
+        $this->helper   = $helper;
+        $this->system   = $system;
+        $this->printer  = $printer;
+        $this->compress = $compress;
     }
 
     /**
@@ -151,7 +151,9 @@ class Handle implements HandleInterface, RegisterInterface
      * @throws Exception
      * @throws \ReflectionException
      */
-    public function register(string $type, string $module_name, array|string $param, string $version = '', string $description = ''): mixed
+    public function register(string $type, string $module_name, array|string $param, string $version = '', string $description = '',array
+    $dependencies=[])
+    : mixed
     {
         if (DEV) {
             $this->printer->error($module_name . '：处理...', '开发');
@@ -213,9 +215,8 @@ class Handle implements HandleInterface, RegisterInterface
                ->setBasePath($param['base_path'])
                ->setPath($param['dir_path'])
                ->setVersion($version ?: '1.0.0')
-               ->setDescription($description ?: '');
-
-
+               ->setDescription($description ?: '')
+               ->setDependencies($dependencies);
         // 已经存在模块则更新
         if ($this->helper->isInstalled($this->modules, $module->getName())) {
             if ($this->helper->isDisabled($this->modules, $module->getName())) {

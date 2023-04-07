@@ -48,7 +48,7 @@ class Register implements RegisterDataInterface
                 $module_name_dir = array_pop($appPathArray);
                 $vendor_dir      = array_pop($appPathArray);
                 // 安装数据
-                $install_params = [$type, $module_name, ['dir_path' => $vendor_dir . DS . $module_name_dir . DS, 'base_path' => $param . DS, 'module_name' => $module_name], $version, $description];
+                $install_params = [$type, $module_name, ['dir_path' => $vendor_dir . DS . $module_name_dir . DS, 'base_path' => $param . DS, 'module_name' => $module_name], $version, $description,$dependencies];
                 break;
             // 路由注册
             case self::ROUTER:

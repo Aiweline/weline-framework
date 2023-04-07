@@ -90,17 +90,15 @@ class Upgrade implements \Weline\Framework\Console\CommandInterface
         // 注册模块
         $all_modules = [];
         // 扫描代码
-        list($vendor, $dependencies) = $this->scanner->scanAppModules();
+        $modules = $this->scanner->scanModules();
         // 注册模组
         $this->printer->note(__('1)注册模组'));
-        foreach ($dependencies as $module_name => $module_data) {
-            $register = $module_data['register'] ?? '';
+        foreach ($modules as  $register) {
             if (is_file($register)) {
                 require $register;
-            }else{
-                unset($dependencies[$module_name]);
             }
         }
+        // 过滤可以用的modules
         $modules = Env::getInstance()->getModuleList(true);
         /**@var Handle $module_handle*/
         $module_handle = ObjectManager::getInstance(Handle::class);

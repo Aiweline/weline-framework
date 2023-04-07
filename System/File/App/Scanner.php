@@ -54,6 +54,7 @@ class Scanner extends Scan
     {
         # 合并
         $modules = $this->scanModules();
+        return $modules;
         # 解析模组
         $modules = $this->parseModules($modules);
         # 依赖排序

@@ -25,6 +25,7 @@ class Module extends DataObject
     public const base_path      = 'base_path';
     public const namespace_path = 'namespace_path';
     public const path           = 'path';
+    public const dependencies   = 'dependencies';
 
 
     public function setPosition(string $position): self
@@ -194,5 +195,24 @@ class Module extends DataObject
     public function getModuleFile(string $filename): string
     {
         return BP . $this->getBasePath() . $filename;
+    }
+
+    /**
+     * @return string
+     */
+    public function getDependencies(): string
+    {
+        return $this->getData(self::dependencies);
+    }
+
+    /**
+     * @param array $dependencies
+     *
+     * @return Module
+     */
+    public function setDependencies(array $dependencies): static
+    {
+        $this->setData(self::dependencies, $dependencies);
+        return $this;
     }
 }
