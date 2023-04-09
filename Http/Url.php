@@ -150,7 +150,7 @@ class Url implements UrlInterface
         return false;
     }
 
-    public function url_origin($s, $use_forwarded_host = false): string
+    public function getUrlOrigin($s, $use_forwarded_host = false): string
     {
         $ssl      = (!empty($s['HTTPS']) && $s['HTTPS'] == 'on');
         $sp       = strtolower($s['SERVER_PROTOCOL']);
@@ -162,13 +162,13 @@ class Url implements UrlInterface
         return $protocol . '://' . $host;
     }
 
-    public function full_url($s, $use_forwarded_host = false): string
+    public function getFullUrl($s, $use_forwarded_host = false): string
     {
         return $this->url_origin($s, $use_forwarded_host) . $s['REQUEST_URI'] . '?' . $this->request->getGet();
     }
 
-    public function current_url(): string
+    public function getCurrentUrl(): string
     {
-        return $this->url_origin($_SERVER, false) . $_SERVER['REQUEST_URI'] . '?' . $this->request->getGet();
+        return $this->getUrlOrigin($_SERVER, false) . $_SERVER['REQUEST_URI'] . '?' . http_build_query($this->request->getGet());
     }
 }
