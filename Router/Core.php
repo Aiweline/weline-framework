@@ -274,10 +274,16 @@ class Core
         }
         if (!is_file($filename)) {
             # 检测vendor目录的组件文件
-            $filename = VENDOR_PATH . trim($url, DS);
-            $filename = str_replace('/', DS, $filename);
+            $filename = VENDOR_PATH. trim($url, DS);
+            if(!is_file($filename)){
+                # 检测vendor目录的组件文件
+                $split_array = explode('/', $url);
+                $module = array_shift($split_array).'_'.array_shift($split_array);
+                $base_path = Env::getInstance()->getModuleInfo($module)['base_path']??'';
+                $filename = $base_path . trim(implode('/', $split_array), DS);
+                $filename = str_replace('/', DS, $filename);
+            }
         }
-
         if (is_file($filename)) {
             $filename_arr = explode('.', $filename);
             $file_ext     = end($filename_arr);
