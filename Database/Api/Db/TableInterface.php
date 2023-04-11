@@ -63,7 +63,9 @@ interface TableInterface
 
     public const index_type_MULTI = 'MULTI';//-- 创建组合索引
 
-    public const index_type_KEY = 'KEY';//--用KEY创建普通索引
+    public const index_type_KEY     = 'KEY';  //--用KEY创建普通索引
+    public const index_method_HASH  = 'HASH'; //--索引方法-HASH
+    public const index_method_BTREE = 'BTREE';//--索引方法-BTREE
 
     public const table_TABLE         = 'table';
     public const table_COMMENT       = 'comment';

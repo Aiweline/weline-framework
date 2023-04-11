@@ -55,6 +55,9 @@ class Create extends TableAbstract implements CreateInterface
         $comment      = $comment ? "COMMENT '{$comment}'" : '';
         $index_method = $index_method ? "USING {$index_method}" : '';
         $type         = strtoupper($type);
+        if(is_array($column)){
+            $column = implode('`,`', $column);
+        }
         switch ($type) {
             case self::index_type_DEFAULT:
                 $this->indexes[] = "INDEX `{$name}`(`{$column}`) {$index_method} {$comment}" . PHP_EOL;
@@ -73,7 +76,7 @@ class Create extends TableAbstract implements CreateInterface
 
                 break;
             case self::index_type_KEY:
-                $this->indexes[] = "KEY IDX `{$name}`(`{$column}`) {$index_method} {$comment}" . PHP_EOL;
+                $this->indexes[] = "KEY `{$name}`(`{$column}`) {$index_method} {$comment}" . PHP_EOL;
 
                 break;
             case self::index_type_MULTI:
