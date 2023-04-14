@@ -523,16 +523,14 @@ abstract class AbstractModel extends DataObject
     {
         if (is_object($data)) {
             $data = $data->getModelData();
-        }
-        if (is_bool($data)) {
+        }elseif (is_bool($data)) {
             $this->force_check_flag = $data;
             if ($sequence) {
                 $this->force_check_fields[] = $sequence;
             } else if (empty($this->force_check_fields)) {
                 $this->force_check_fields[] = $this->_primary_key;
             }
-        }
-        if (is_array($data)) {
+        }elseif (is_array($data)) {
             $this->setModelData($data);
         }
         # 有要检测更新的字段
@@ -552,10 +550,10 @@ abstract class AbstractModel extends DataObject
         try {
             if ($this->getId()) {
                 # 暂时解决主键已经存在且是字符串，无法新增的问题，强制检测主键是否存在
-                if (!is_numeric($this->getId())) {
-                    $this->unique_data[$this->_primary_key] = $this->getId();
-                    $this->force_check_flag                 = true;
-                }
+//                if (!is_numeric($this->getId())) {
+//                    $this->unique_data[$this->_primary_key] = $this->getId();
+//                    $this->force_check_flag                 = true;
+//                }
                 # 是否强制检查
                 if ($this->force_check_flag) {
                     $save_result = $this->checkUpdateOrInsert();
