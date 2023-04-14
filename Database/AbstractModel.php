@@ -557,18 +557,18 @@ abstract class AbstractModel extends DataObject
                 # 是否强制检查
                 if ($this->force_check_flag) {
                     $save_result = $this->checkUpdateOrInsert();
-//                    if ($this->unique_data) {
-//                        $save_result = $this->checkUpdateOrInsert();
-//                    } else {
-//                        $save_result = $this->getQuery()
-//                                            ->insert($this->getModelData(), $this->getModelFields(true, $this->remove_force_check_field))
-//                                            ->fetch();
-//                    }
                 } else {
-                    $save_result = $this->getQuery()
+                    /*$save_result = $this->getQuery()
                                         ->where($this->_primary_key, $this->getId())
                                         ->update($this->getModelData())
-                                        ->fetch();
+                                        ->fetch();*/
+                    if ($this->unique_data) {
+                        $save_result = $this->checkUpdateOrInsert();
+                    } else {
+                        $save_result = $this->getQuery()
+                                            ->insert($this->getModelData())
+                                            ->fetch();
+                    }
                 }
             } else {
                 $insert_data = $this->getModelData();
