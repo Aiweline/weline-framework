@@ -523,14 +523,14 @@ abstract class AbstractModel extends DataObject
     {
         if (is_object($data)) {
             $data = $data->getModelData();
-        }elseif (is_bool($data)) {
+        } elseif (is_bool($data)) {
             $this->force_check_flag = $data;
             if ($sequence) {
                 $this->force_check_fields[] = $sequence;
             } else if (empty($this->force_check_fields)) {
                 $this->force_check_fields[] = $this->_primary_key;
             }
-        }elseif (is_array($data)) {
+        } elseif (is_array($data)) {
             $this->setModelData($data);
         }
         # 有要检测更新的字段
@@ -566,7 +566,7 @@ abstract class AbstractModel extends DataObject
                         $save_result = $this->checkUpdateOrInsert();
                     } else {
                         $save_result = $this->getQuery()
-                                            ->insert($this->getModelData())
+                                            ->insert($this->getModelData(), [$this->_primary_key])
                                             ->fetch();
                     }
                 }
@@ -1520,7 +1520,7 @@ PAGINATION;
     private function checkUpdateOrInsert(): mixed
     {
         if ($this->unique_data) {
-            $check_result = $this->getQuery()->where($this->unique_data)->find()->fetchOrigin()[0]??[];
+            $check_result = $this->getQuery()->where($this->unique_data)->find()->fetchOrigin()[0] ?? [];
         } else {
             $check_result = [];
         }
