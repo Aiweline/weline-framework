@@ -21,12 +21,12 @@ use Weline\Framework\View\Exception\TemplateException;
 
 class Taglib
 {
-    public const operators_symbol = [
+    public const operators_symbols = [
         # 比较
         '>',
         '<',
-        '===',
         '!==',
+        '===',
         '==',
         '!=',
         '<>',
@@ -84,6 +84,11 @@ class Taglib
         list($name, $default) = $this->checkFilter($name);
         # 去除空白以及空格
         $name  = $this->checkVar($name);
+        foreach (self::operators_symbols as $operators_symbol) {
+            $name = str_replace($operators_symbol, " $operators_symbol ", $name);
+            $name = str_replace("$operators_symbol =", " $operators_symbol= ", $name);
+            $name = str_replace("$operators_symbol >", " $operators_symbol> ", $name);
+        }
         $names = explode(' ', $name);
         # 就近原则操作符
 //        $near = [];
