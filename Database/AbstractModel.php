@@ -548,47 +548,15 @@ abstract class AbstractModel extends DataObject
         $this->getEvenManager()->dispatch($this->getTable() . '_model_save_before', ['model' => $this]);
         $this->getQuery()->beginTransaction();
         try {
-            if ($this->getId()) {
-                # 暂时解决主键已经存在且是字符串，无法新增的问题，强制检测主键是否存在
-//                if (!is_numeric($this->getId())) {
-//                    $this->unique_data[$this->_primary_key] = $this->getId();
-//                    $this->force_check_flag                 = true;
-//                }
-                # 是否强制检查
-                if ($this->force_check_flag) {
-                    $save_result = $this->checkUpdateOrInsert();
-                } else {
-                    /*$save_result = $this->getQuery()
-                                        ->where($this->_primary_key, $this->getId())
-                                        ->update($this->getModelData())
-                                        ->fetch();*/
-                    if ($this->unique_data) {
-                        $save_result = $this->checkUpdateOrInsert();
-                    } else {
-                        $save_result = $this->getQuery()
-                                            ->insert($this->getModelData(), [$this->_primary_key])
-                                            ->fetch();
-                    }
-                }
-            } else {
+            if ($this->force_check_flag) {
+                $this->unique_data[$this->_primary_key] = $this->getId();
+                $save_result = $this->checkUpdateOrInsert();
+            }else{
                 $insert_data = $this->getModelData();
-                # 是否强制检查
-                if ($this->force_check_flag) {
-                    $save_result = $this->checkUpdateOrInsert();
-//                    if ($this->unique_data) {
-//                        $save_result = $this->checkUpdateOrInsert();
-//                    } else {
-//                        $save_result = $this->getQuery()
-//                                            ->insert($this->getModelData(), $this->getModelFields())
-//                                            ->fetch();
-//                    }
-                } else {
-                    unset($insert_data[$this->_primary_key]);
-                    $save_result = $this->getQuery()->insert($insert_data)->fetch();
-                }
-                if (!$this->getId()) {
-                    $this->setData($this->_primary_key, $save_result);
-                }
+                $save_result = $this->getQuery()->clearQuery()->insert($insert_data)->fetch();
+            }
+            if (!$this->getId()) {
+                $this->setData($this->_primary_key, $save_result);
             }
             $this->getQuery()->commit();
         } catch (\Exception $exception) {
