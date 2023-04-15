@@ -523,6 +523,7 @@ abstract class AbstractModel extends DataObject
     {
         if (is_object($data)) {
             $data = $data->getModelData();
+            $this->setModelData($data);
         } elseif (is_bool($data)) {
             $this->force_check_flag = $data;
             if ($sequence) {
@@ -550,10 +551,12 @@ abstract class AbstractModel extends DataObject
         try {
             if ($this->force_check_flag) {
                 $this->unique_data[$this->_primary_key] = $this->getId();
-                $save_result = $this->checkUpdateOrInsert();
-            }else{
-                $insert_data = $this->getModelData();
-                $save_result = $this->getQuery()->clearQuery()->insert($insert_data)->fetch();
+//                $save_result                            = $this->checkUpdateOrInsert();
+
+                $unique_fields = array_keys($this->unique_data);
+                $save_result = $this->getQuery()->clearQuery()->insert($this->getModelData(),$unique_fields)->fetch();
+            } else {
+                $save_result = $this->getQuery()->clearQuery()->insert($this->getModelData())->fetch();
             }
             if (!$this->getId()) {
                 $this->setData($this->_primary_key, $save_result);
