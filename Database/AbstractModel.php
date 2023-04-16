@@ -81,6 +81,8 @@ abstract class AbstractModel extends DataObject
     public string $_suffix = '';
     public string $_primary_key = '';
     public string $_primary_key_default = 'id';
+    /*联合主键*/
+    public array $_unit_primary_keys = [];
     public array $_fields = [];
     # 装载join模型时字段数据，用于字段冲突
     public array $_join_model_fields = [];
@@ -549,12 +551,21 @@ abstract class AbstractModel extends DataObject
         $this->getEvenManager()->dispatch($this->getTable() . '_model_save_before', ['model' => $this]);
         $this->getQuery()->beginTransaction();
         try {
+            if ($id = $this->getId()) {
+                $this->unique_data[$this->_primary_key] = $id;
+                foreach ($this->_unit_primary_keys as $unit_primary_key) {
+                    $this->unique_data[$unit_primary_key] = $this->getData($unit_primary_key);
+                }
+            }
             if ($this->force_check_flag) {
-                $this->unique_data[$this->_primary_key] = $this->getId();
-//                $save_result                            = $this->checkUpdateOrInsert();
+                $save_result                            = $this->checkUpdateOrInsert();
+//                $unique_fields                          = array_keys($this->unique_data);
 
-                $unique_fields = array_keys($this->unique_data);
-                $save_result = $this->getQuery()->clearQuery()->insert($this->getModelData(),$unique_fields)->fetch();
+//                $this->_unit_primary_keys = array_merge($this->_unit_primary_keys, $unique_fields);
+//                if ($this::class === 'Weline\Eav\Model\EavAttribute') {
+//                    p($this->getQuery()->clearQuery()->insert($this->getModelData(), $this->_unit_primary_keys)->getLastSql());
+//                }
+//                $save_result = $this->getQuery()->clearQuery()->insert($this->getModelData(), $this->_unit_primary_keys)->fetch();
             } else {
                 $save_result = $this->getQuery()->clearQuery()->insert($this->getModelData())->fetch();
             }
