@@ -83,7 +83,7 @@ class Taglib
         # 处理过滤器
         list($name, $default) = $this->checkFilter($name);
         # 去除空白以及空格
-        $name  = $this->checkVar($name);
+        $name = $this->checkVar($name);
         foreach (self::operators_symbols as $operators_symbol) {
             $name = str_replace($operators_symbol, " $operators_symbol ", $name);
             $name = str_replace("$operators_symbol =", " $operators_symbol= ", $name);
@@ -217,6 +217,9 @@ class Taglib
                 'tag'      => 1,
                 'callback' =>
                     function ($tag_key, $config, $tag_data, $attributes) {
+                        if ($attributes) {
+                            return $tag_data[0];
+                        }
                         switch ($tag_key) {
                             case '@tag{}':
                             case '@tag()':
