@@ -558,13 +558,7 @@ abstract class AbstractModel extends DataObject
                 }
             }
             if ($this->force_check_flag) {
-                $save_result                            = $this->checkUpdateOrInsert();
-//                $unique_fields                          = array_keys($this->unique_data);
-
-//                $this->_unit_primary_keys = array_merge($this->_unit_primary_keys, $unique_fields);
-//                if ($this::class === 'Weline\Eav\Model\EavAttribute') {
-//                    p($this->getQuery()->clearQuery()->insert($this->getModelData(), $this->_unit_primary_keys)->getLastSql());
-//                }
+                $save_result = $this->checkUpdateOrInsert();
 //                $save_result = $this->getQuery()->clearQuery()->insert($this->getModelData(), $this->_unit_primary_keys)->fetch();
             } else {
                 $save_result = $this->getQuery()->clearQuery()->insert($this->getModelData())->fetch();
@@ -1516,9 +1510,11 @@ PAGINATION;
                                 ->update($data)
                                 ->fetch();
         } else {
-            $save_result = $this->getQuery()
-                                ->insert($this->getModelData())
-                                ->fetch();
+            $unique_fields            = array_keys($this->unique_data);
+            $this->_unit_primary_keys = array_merge($this->_unit_primary_keys, $unique_fields);
+            $save_result              = $this->getQuery()
+                                             ->insert($this->getModelData(), $this->_unit_primary_keys)
+                                             ->fetch();
         }
         return $save_result;
     }
