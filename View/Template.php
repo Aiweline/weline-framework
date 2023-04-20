@@ -25,6 +25,7 @@ use Weline\Framework\Session\Session;
 use Weline\Framework\Ui\FormKey;
 use Weline\Framework\View\Cache\ViewCache;
 use Weline\Framework\View\Data\DataInterface;
+use Weline\I18n\Model\I18n;
 
 class Template extends DataObject
 {
@@ -132,6 +133,7 @@ class Template extends DataObject
                 $this->getData('title') ?? $this->setData('title', $this->request->getModuleName());
             $this->setData('req', $this->request->getParams());
             $this->setData('env', Env::getInstance()->getConfig());
+            $this->setData('local', ['code' => Cookie::getLangLocal(), 'lang' => Cookie::getLang()]);
         }
 
             $this->theme ?? $this->theme = Env::getInstance()->getConfig('theme', Env::default_theme_DATA);
@@ -312,7 +314,7 @@ class Template extends DataObject
                 $com_str_len       = strlen($com_pad_file_name);
                 $com_str_pad_all   = str_pad('', $com_str_len, '=', STR_PAD_BOTH);
                 $com_str_pad_file  = str_pad($com_pad_file_name, $com_str_len, '=', STR_PAD_BOTH);
-                $repContent        = "<!--" . PHP_EOL . "$tpl_str_pad_all " . PHP_EOL . $tpl_str_pad_file . PHP_EOL . $tpl_str_pad_all . PHP_EOL . ' -->'
+                $repContent        = '<!--' . PHP_EOL . "$tpl_str_pad_all " . PHP_EOL . $tpl_str_pad_file . PHP_EOL . $tpl_str_pad_all . PHP_EOL . ' -->'
                     . PHP_EOL . $repContent . PHP_EOL
                     . '<!--' . PHP_EOL . $com_str_pad_all . PHP_EOL . $com_str_pad_file . PHP_EOL . $com_str_pad_all . PHP_EOL . '-->';
             }
@@ -332,10 +334,10 @@ class Template extends DataObject
      * @return bool|void
      * @throws \Exception
      */
-    public function fetch(string $fileName,array $data=[])
+    public function fetch(string $fileName, array $data = [])
     {
         /** Get output buffer. */
-        return $this->fetchHtml($fileName,$data);
+        return $this->fetchHtml($fileName, $data);
     }
 
     /**
