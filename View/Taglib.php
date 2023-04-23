@@ -84,10 +84,18 @@ class Taglib
         list($name, $default) = $this->checkFilter($name);
         # 去除空白以及空格
         $name = $this->checkVar($name);
+        # 单双引号包含的字符串不解析
+        $exclude_names = w_get_string_between_quotes($name);
+        foreach ($exclude_names as $key=>$exclude_name) {
+            $name = str_replace($exclude_name, 'w_var_str'.$key, $name);
+        }
         foreach (self::operators_symbols as $operators_symbol) {
             $name = str_replace($operators_symbol, " $operators_symbol ", $name);
             $name = str_replace("$operators_symbol =", " $operators_symbol= ", $name);
             $name = str_replace("$operators_symbol >", " $operators_symbol> ", $name);
+        }
+        foreach ($exclude_names as $key=>$exclude_name) {
+            $name = str_replace('w_var_str'.$key, $exclude_name, $name);
         }
         $names = explode(' ', $name);
         # 就近原则操作符

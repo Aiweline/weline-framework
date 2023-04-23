@@ -28,6 +28,15 @@ class TaglibTest extends TestCore
         $parse_str = $this->taglib->varParser('Request.param.c_id');
         self::assertTrue($parse_str==="(\$Request['param']['c_id']??'') ",'解析变量');
     }
+    public function testTagIf()
+    {
+        $template = new Template();
+//        $content = '@if{req.type==="progress-select-entity"=>"active"}';
+        $content = "@if{req.type==='progress-select-entity'=>'active'}";
+        $this->taglib->tagReplace($template, $content);
+        dd($content);
+        self::assertTrue($parse_str==="(\$Request['param']['c_id']??'') ",'解析变量');
+    }
     public function testVarParserEmptyString()
     {
         $parse_str = $this->taglib->varParser('Request.param.c_id');

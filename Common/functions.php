@@ -207,3 +207,10 @@ if (!function_exists('framework_view_process_block')) {
         return $result;
     }
 }
+if (!function_exists('w_get_string_between_quotes')) {
+    function w_get_string_between_quotes($string) {
+        preg_match('/(?<=")[^"\\\\]*(?:\\\\.[^"\\\\]*)*(?=")/', $string, $matches);
+        preg_match("/(?<=')[^'\\\\]*(?:\\\\.[^'\\\\]*)*(?=')/", $string, $matches);
+        return $matches;
+    }
+}

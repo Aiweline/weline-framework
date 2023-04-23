@@ -13,6 +13,7 @@ namespace Weline\Framework\Database\Connection;
 
 use PDO;
 use PDOStatement;
+use Weline\Framework\App\Exception;
 use Weline\Framework\Database\AbstractModel;
 use Weline\Framework\Database\Api\Connection\QueryInterface;
 use Weline\Framework\Database\Exception\DbException;

@@ -130,7 +130,7 @@ class Template extends DataObject
             if (empty($this->view_dir)) {
                 $this->view_dir = $this->request->getRouterData('module_path') . DataInterface::dir . DS;
             }
-                $this->getData('title') ?? $this->setData('title', $this->request->getModuleName());
+            $this->getData('title') ?? $this->setData('title', $this->request->getModuleName());
             $this->setData('req', $this->request->getParams());
             $this->setData('env', Env::getInstance()->getConfig());
             $this->setData('local', ['code' => Cookie::getLangLocal(), 'lang' => Cookie::getLang()]);
@@ -314,7 +314,7 @@ class Template extends DataObject
                 $com_str_len       = strlen($com_pad_file_name);
                 $com_str_pad_all   = str_pad('', $com_str_len, '=', STR_PAD_BOTH);
                 $com_str_pad_file  = str_pad($com_pad_file_name, $com_str_len, '=', STR_PAD_BOTH);
-                $repContent        = '<!--' . PHP_EOL . "$tpl_str_pad_all " . PHP_EOL . $tpl_str_pad_file . PHP_EOL . $tpl_str_pad_all . PHP_EOL . ' -->'
+                $repContent        = "<!--" . PHP_EOL . "$tpl_str_pad_all " . PHP_EOL . $tpl_str_pad_file . PHP_EOL . $tpl_str_pad_all . PHP_EOL . ' -->'
                     . PHP_EOL . $repContent . PHP_EOL
                     . '<!--' . PHP_EOL . $com_str_pad_all . PHP_EOL . $com_str_pad_file . PHP_EOL . $com_str_pad_all . PHP_EOL . '-->';
             }
