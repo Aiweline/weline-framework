@@ -208,9 +208,30 @@ if (!function_exists('framework_view_process_block')) {
     }
 }
 if (!function_exists('w_get_string_between_quotes')) {
-    function w_get_string_between_quotes($string) {
-        preg_match('/(?<=")[^"\\\\]*(?:\\\\.[^"\\\\]*)*(?=")/', $string, $matches);
-        preg_match("/(?<=')[^'\\\\]*(?:\\\\.[^'\\\\]*)*(?=')/", $string, $matches);
-        return $matches;
+    /**
+     * @DESC          # 读取引号之间的内容
+     *
+     * @AUTH    秋枫雁飞
+     * @EMAIL aiweline@qq.com
+     * @DateTime: 2023/4/24 0:20
+     * 参数区：
+     *
+     * @param $string
+     *
+     * @return array
+     */
+    function w_get_string_between_quotes($string): array
+    {
+        $matches_double_quote = [];
+        preg_match('/(?<=")[^"\\\\]*(?:\\\\.[^"\\\\]*)*(?=")/', $string, $matches_double_quote);
+        foreach ($matches_double_quote as &$item) {
+            $item = addslashes($item);
+        }
+        $matches_single_quote = [];
+        preg_match("/(?<=')[^'\\\\]*(?:\\\\.[^'\\\\]*)*(?=')/", $string, $matches_single_quote);
+        foreach ($matches_single_quote as &$item) {
+            $item = addslashes($item);
+        }
+        return array_merge($matches_double_quote, $matches_single_quote);
     }
 }
