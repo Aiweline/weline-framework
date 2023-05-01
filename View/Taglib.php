@@ -69,7 +69,7 @@ class Taglib
             return $name;
         }
         # 有字母的，且不是字符串，不存在特殊字符内的，可以加$
-        $special = ['null'];
+        $special = ['null', 'and', 'or'];
         if (preg_match('/^[a-zA-Z]/', $name)) {
             if (!in_array($name, $special) and !str_starts_with($name, '"') and !str_starts_with($name, "'")) {
                 $name = $name ? '$' . $name : $name;
@@ -89,16 +89,16 @@ class Taglib
         $name = str_replace(' ', '', $name);
         # 单双引号包含的字符串不解析
         $exclude_names = w_get_string_between_quotes($name);
-        foreach ($exclude_names as $key=>$exclude_name) {
-            $name = str_replace($exclude_name, 'w_var_str'.$key, $name);
+        foreach ($exclude_names as $key => $exclude_name) {
+            $name = str_replace($exclude_name, 'w_var_str' . $key, $name);
         }
         foreach (self::operators_symbols as $operators_symbol) {
             $name = str_replace($operators_symbol, " $operators_symbol ", $name);
             $name = str_replace("$operators_symbol =", " $operators_symbol= ", $name);
             $name = str_replace("$operators_symbol >", " $operators_symbol> ", $name);
         }
-        foreach ($exclude_names as $key=>$exclude_name) {
-            $name = str_replace('w_var_str'.$key, $exclude_name, $name);
+        foreach ($exclude_names as $key => $exclude_name) {
+            $name = str_replace('w_var_str' . $key, $exclude_name, $name);
         }
         $names = explode(' ', $name);
         # 就近原则操作符
@@ -140,20 +140,7 @@ class Taglib
                 $name_str .= $piece;
                 unset($pieces[$key]);
             }
-//            if($has_piece) {
-//                $name_str .= ")??{$default}";
-//            }
-//            if (DEV) {
-//                if ($default === '\'\'') {
-//                    $name_str = $name_str . ' ';
-//                } else {
-//                    $name_str = $has_piece ? "({$name_str}?:{$default}) " : $name_str . ' ';
-//                }
-//            } else {
-//                $name_str = $has_piece ? "{$name_str}??{$default}) " : $name_str . ' ';
-//            }
             $name_str = $has_piece ? "{$name_str}??{$default}) " : $name_str . ' ';
-//            $name_str = $default ? "({$name_str}?? {$default}) " : ($has_piece ? "({$name_str}??'') " : $name_str . ' ');
         }
 
         return $name_str;
@@ -362,45 +349,57 @@ class Taglib
                     }
                 }
             ],
-            'elseif'      => [
-                'attr'                      => ['condition' => 1],
-                'tag-self-close-with-attrs' => 1,
-                'callback'                  =>
-                    function ($tag_key, $config, $tag_data, $attributes) {
-                        $result = '';
-                        switch ($tag_key) {
-                            // @if{$a === 1=><li><var>$a</var></li>|$a===2=><li><var>$a</var></li>}
-                            case '@tag{}':
-                            case '@tag()':
+            'has'         => [
+                'tag-start' => 1,
+                'tag-end'   => 1,
+                'callback'  => function ($tag_key, $config, $tag_data, $attributes) use ($template) {
+                    switch ($tag_key) {
+                        // @empty{$name|<li>空的</li>}
+                        case '@tag{}':
+                        case '@tag()':
+                            $content_arr = explode('|', $tag_data[1]);
+                            foreach ($content_arr as $key => $item) {
+                                $content_arr[$key] = explode('=>', $item);
+                            }
+                            if (1 === count($content_arr)) {
+                                $name   = $this->varParser($content_arr[0][0]);
+                                $result = "<?php if(!empty({$name})):echo {$content_arr[0][1]};endif;?>";
+                            } else {
+                                foreach ($content_arr as $key => $data) {
+                                    if (0 === $key) {
+                                        $name   = $this->varParser($data[0]);
+                                        $result = "<?php if(!empty($name)):echo " . $data[1] . ';';
+                                    } else {
+                                        if (count($data) > 1) {
+                                            $name   = $this->varParser($data[0]);
+                                            $result .= " elseif(!empty($name)):echo " . $data[1] . ';';
+                                        } else {
+                                            $result .= ' else: echo ' . $data[0] . ';';
+                                        }
+                                    }
+                                    if (end($content_arr) === $data) {
+                                        $result .= ' endif;?>';
+                                    }
+                                }
+                            }
+                            return $result;
+//                            $content_arr = explode('|', $tag_data[1]);
+//                            $name        = $this->varParser($this->checkVar($content_arr[0]));
+                        /*                            return "<?php if(!empty({$name}))echo '" . $template->tmp_replace(trim($content_arr[1] ?? '')) . "'?>";*/
+                        case 'tag-start':
+                            if (!isset($attributes['name'])) {
                                 $template_html = htmlentities($tag_data[0]);
-                                throw new TemplateException(__("elseif没有@elseif()和@elseif{}用法:[{$template_html}]。示例：%1", htmlentities('<if condition="$a>$b"><var>a</var><elseif condition="$b>$a"/><var>b</var><else/><var>a</var><var>b</var></if>')));
-                            case 'tag-self-close-with-attrs':
-                                $condition = $this->varParser($this->checkVar($attributes['condition']));
-                                $result    = "<?php elseif({$condition}):?>";
-                                break;
-                            default:
-                        }
-                        return $result;
-                    }],
-            'else'        => [
-                'tag-self-close' => 1,
-                'callback'       =>
-                    function ($tag_key, $config, $tag_data, $attributes) {
-                        $result = '';
-                        switch ($tag_key) {
-                            // @if{$a === 1=><li><var>$a</var></li>|$a===2=><li><var>$a</var></li>}
-                            case '@tag{}':
-                            case '@tag()':
-                                $template_html = htmlentities($tag_data[0]);
-                                throw new TemplateException(__("elseif没有@elseif()和@elseif{}用法:[{$template_html}]。示例：%1", htmlentities('<if condition="$a>$b"><var>a</var><elseif condition="$b>$a"/><var>b</var><else/><var>a</var><var>b</var></if>')));
-                            // <else/>
-                            case 'tag-self-close':
-                                $result = '<?php else:?>';
-                                break;
-                            default:
-                        }
-                        return $result;
-                    }],
+                                throw new TemplateException(__("empty标签需要设置name属性:[$template_html]例如：%1", htmlentities('<empty name="catalogs"><li>没有数据</li></empty>')));
+                            }
+                            $name = $this->varParser($this->checkVar($attributes['name']));
+                            return '<?php if(!empty(' . $name . ') ): ?>';
+                        case 'tag-end':
+                            return '<?php endif; ?>';
+                        default:
+                            return '';
+                    }
+                }
+            ],
             'block'       => [
                 'doc'                       => '@block{Weline\Admin\Block\Demo|Weline_Admin::block/demo.phtml}或者@block(Weline\Admin\Block\Demo|Weline_Admin::block/demo.phtml)或者' . htmlentities('<block class="Weline\Admin\Block\Demo" template="Weline_Admin::block/demo.phtml"/>') . '或者' . htmlentities('<block>Weline\Admin\Block\Demo|Weline_Admin::block/demo.phtml</block>'),
                 'tag'                       => 1,
@@ -745,7 +744,7 @@ class Taglib
         # 替换{{key}}标签
         preg_match_all('/\{\{([\s\S]*?)\}\}/', $content, $matches, PREG_SET_ORDER);
         foreach ($matches as $key => $value) {
-            $content = str_replace($value[0], "<?={$this->varParser(trim($value[1]))}??'';?>", $content);
+            $content = str_replace($value[0], "<?={$this->varParser(trim($value[1]))};?>", $content);
         }
         # 非开发环境清除所有注释
         if (PROD) {
