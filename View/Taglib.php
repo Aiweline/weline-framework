@@ -86,17 +86,29 @@ class Taglib
         # 去除空白以及空格
         $name = $this->checkVar($name);
         # 处理转行变量
-        $name = str_replace(' ', '', $name);
+//        $name = str_replace('    ', '', $name);
+        $name = preg_replace('/ {4,}/', '', $name);
         # 单双引号包含的字符串不解析
         $exclude_names = w_get_string_between_quotes($name);
         foreach ($exclude_names as $key => $exclude_name) {
             $name = str_replace($exclude_name, 'w_var_str' . $key, $name);
         }
-        foreach (self::operators_symbols as $operators_symbol) {
-            $name = str_replace($operators_symbol, " $operators_symbol ", $name);
-            $name = str_replace("$operators_symbol =", " $operators_symbol= ", $name);
-            $name = str_replace("$operators_symbol >", " $operators_symbol> ", $name);
-        }
+//        foreach (self::operators_symbols as $operators_symbol) {
+//            $name = str_replace($operators_symbol, " $operators_symbol ", $name);
+//            $name = str_replace("$operators_symbol =", " $operators_symbol= ", $name);
+//            $name = str_replace("$operators_symbol >", " $operators_symbol> ", $name);
+//            $name = preg_replace('/([\+\-\*\/%=&\^\|]+\s*)/', ' $1 ', $name);
+//            d($name);
+//        }
+//        $string = $name;
+//        $pattern = '/(?<![\$\.\+\-\*\/%=&\^\|!><])\s*((?<![\+\-\*\/%=&\^\|\!><])([\+\-\*\/%=&\^\|]{2,}|[\+\-\*\/%=&\^\|!><]=|\|\||&&|->|\?\?|::|\?\.)(?![\+\-\*\/%=&\^\|\!\?\.\w])|\+\+|\-\-)(?!\s*\d|\s|\.\s|\$\w|\w)/';
+//        $newString = preg_replace($pattern, ' $1 ', $string);
+//        $pattern = '/\s*([><=!]+|&&|\|\||[()])\s*/';
+        $pattern = '/(?<![\-\>()\s])\s*([><=!]+|&&|\|\|)\s*(?![()\s])/';
+        $name = preg_replace($pattern, ' $1 ', $name);
+
+//        $name = $newString;
+//        d($name);
         foreach ($exclude_names as $key => $exclude_name) {
             $name = str_replace('w_var_str' . $key, $exclude_name, $name);
         }

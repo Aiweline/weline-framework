@@ -32,10 +32,25 @@ class TaglibTest extends TestCore
     {
         $template = new Template();
 //        $content = '@if{req.type==="progress-select-entity"=>"active"}';
-        $content = "@if{req.type==='progress-select-entity'=>'active'}";
-        $this->taglib->tagReplace($template, $content);
-        dd($content);
-        self::assertTrue($parse_str==="(\$Request['param']['c_id']??'') ",'解析变量');
+//        $content = "@if{req.type==='progress-select-entity'=>'active'}";
+//        $content = "@if{type==='progress-select-entity'=>'active'}";
+        $content = "@if{country.is_active.r!==1 and a==1 =>1|0}";
+        d($content);
+        $parse_str = $this->taglib->tagReplace($template, $content);
+        d($parse_str);
+        self::assertTrue($parse_str==="<?php if((\$country['is_active']['r']??'') !== 1 and \$a == 1  ):echo 1; else: echo 0; endif;?>",'解析变量');
+    }
+    public function testArrow()
+    {
+        $template = new Template();
+//        $content = '@if{req.type==="progress-select-entity"=>"active"}';
+//        $content = "@if{req.type==='progress-select-entity'=>'active'}";
+//        $content = "@if{type==='progress-select-entity'=>'active'}";
+        $content = "@if{country->is_active() =>1|0}";
+        d($content);
+        $parse_str = $this->taglib->tagReplace($template, $content);
+        d($parse_str);
+        self::assertTrue($parse_str==="<?php if(\$country->is_active()  ):echo 1; else: echo 0; endif;?>",'解析变量');
     }
     public function testVarParserEmptyString()
     {
