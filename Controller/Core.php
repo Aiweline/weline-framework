@@ -26,7 +26,7 @@ class Core implements Data\DataInterface
 
     protected function noRouter()
     {
-        $this->getRequest()->getResponse()->noRouter();
+        $this->request->getResponse()->noRouter();
     }
 
 
