@@ -65,6 +65,7 @@ class Taglib
     public function checkVar(string $name): string
     {
         if (str_starts_with($name, '$')) {
+//            return '('.$name.'??"")';
             return $name;
         }
         # 有字母的，且不是字符串，不存在特殊字符内的，可以加$
@@ -84,6 +85,8 @@ class Taglib
         list($name, $default) = $this->checkFilter($name);
         # 去除空白以及空格
         $name = $this->checkVar($name);
+        # 处理转行变量
+        $name = str_replace(' ', '', $name);
         # 单双引号包含的字符串不解析
         $exclude_names = w_get_string_between_quotes($name);
         foreach ($exclude_names as $key=>$exclude_name) {
