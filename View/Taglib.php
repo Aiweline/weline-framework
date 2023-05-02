@@ -69,7 +69,7 @@ class Taglib
             return $name;
         }
         # 有字母的，且不是字符串，不存在特殊字符内的，可以加$
-        $special = ['null', 'and', 'or'];
+        $special = ['null', 'and', 'or','xor'];
         if (preg_match('/^[a-zA-Z]/', $name)) {
             if (!in_array($name, $special) and !str_starts_with($name, '"') and !str_starts_with($name, "'")) {
                 $name = $name ? '$' . $name : $name;
@@ -113,18 +113,6 @@ class Taglib
             $name = str_replace('w_var_str' . $key, $exclude_name, $name);
         }
         $names = explode(' ', $name);
-        # 就近原则操作符
-//        $near = [];
-//        foreach (self::operators_symbol as $symbol) {
-//            if ($position = strpos($name, $symbol)) {
-//                $near[$position] = $symbol;
-//            }
-//        }
-//        # 数组排序
-//        $names = [];
-//        foreach ($near as $symbol){
-//            $names = array_merge($names,explode($symbol, $name));
-//        }
         foreach ($names as $name_key => $var) {
             # 排除字符串
             if (!str_contains($var, '"') && !str_contains($var, '\'')) {
@@ -311,6 +299,45 @@ class Taglib
                     return $result;
                 }
             ],
+            'elseif'      => [
+                'attr'                      => ['condition' => 1],
+                'tag-self-close-with-attrs' => 1,
+                'callback'                  =>
+                    function ($tag_key, $config, $tag_data, $attributes) {
+                        $result = '';
+                        switch ($tag_key) {
+                            // @if{$a === 1=><li><var>$a</var></li>|$a===2=><li><var>$a</var></li>}
+                            case '@tag{}':
+                            case '@tag()':
+                                $template_html = htmlentities($tag_data[0]);
+                                throw new TemplateException(__("elseif没有@elseif()和@elseif{}用法:[{$template_html}]。示例：%1", htmlentities('<if condition="$a>$b"><var>a</var><elseif condition="$b>$a"/><var>b</var><else/><var>a</var><var>b</var></if>')));
+                            case 'tag-self-close-with-attrs':
+                                $condition = $this->varParser($this->checkVar($attributes['condition']));
+                                $result    = "<?php elseif({$condition}):?>";
+                                break;
+                            default:
+                        }
+                        return $result;
+                    }],
+            'else'        => [
+                'tag-self-close' => 1,
+                'callback'       =>
+                    function ($tag_key, $config, $tag_data, $attributes) {
+                        $result = '';
+                        switch ($tag_key) {
+                            // @if{$a === 1=><li><var>$a</var></li>|$a===2=><li><var>$a</var></li>}
+                            case '@tag{}':
+                            case '@tag()':
+                                $template_html = htmlentities($tag_data[0]);
+                                throw new TemplateException(__("elseif没有@elseif()和@elseif{}用法:[{$template_html}]。示例：%1", htmlentities('<if condition="$a>$b"><var>a</var><elseif condition="$b>$a"/><var>b</var><else/><var>a</var><var>b</var></if>')));
+                            // <else/>
+                            case 'tag-self-close':
+                                $result = '<?php else:?>';
+                                break;
+                            default:
+                        }
+                        return $result;
+                    }],
             'empty'       => [
                 'tag-start' => 1,
                 'tag-end'   => 1,
