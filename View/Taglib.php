@@ -237,6 +237,32 @@ class Taglib
                         }
                     }
             ],
+            'count'          => [
+                'tag'      => 1,
+                'callback' =>
+                    function ($tag_key, $config, $tag_data, $attributes) {
+                        if ($attributes) {
+                            return $tag_data[0];
+                        }
+                        switch ($tag_key) {
+                            case '@tag{}':
+                            case '@tag()':
+                                $var_name = $tag_data[1];
+                                if (!str_starts_with($var_name, '$')) {
+                                    $var_name .= '$' . $var_name;
+                                }
+                                $var_name = $this->varParser($var_name);
+                                return "<?=isset($var_name)?count({$var_name}):0?>";
+                            default:
+                                $var_name = $tag_data[2];
+                                if (!str_starts_with($var_name, '$')) {
+                                    $var_name = '$' . $var_name;
+                                }
+                                $var_name = $this->varParser($var_name);
+                                return "<?=isset($var_name)?count({$var_name}):0?>";
+                        }
+                    }
+            ],
             'if'          => [
                 'tag-start' => 1,
                 'tag-end'   => 1,
