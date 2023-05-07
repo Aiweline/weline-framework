@@ -113,18 +113,6 @@ class App
         if (!defined('APP_ETC_PATH')) {
             define('APP_ETC_PATH', BP . 'app' . DS . 'etc' . DS);
         }
-        // 调试模式
-        if (!defined('DEBUG')) {
-            if (!empty($_GET['debug']) || (Cookie::get('w_debug') === 1)) {
-                define('DEBUG', true);
-            } else {
-                define('DEBUG', false);
-            }
-        }
-        if (DEBUG) {
-            $_GET['debug'] = 1;
-            setcookie('w_debug', 1, 0, '/', '', false, false);
-        }
 
         // 系统UMASK
         if (!defined('SYSTEM_UMASK')) {
@@ -139,6 +127,30 @@ class App
         $env_filename = APP_PATH . 'etc/env.php';
         if (is_file($env_filename)) {
             $config = require $env_filename;
+        }
+        // 调试模式
+        if (!defined('DEBUG')) {
+            if (isset($config['debug_key'])) {
+                if ((!empty($_GET['debug']) && ($_GET['debug'] === $config['debug_key'])) || (Cookie::get('w_debug') === '1')) {
+                    define('DEBUG', true);
+                } else {
+                    define('DEBUG', false);
+                }
+            } else {
+                define('DEBUG', false);
+            }
+        }
+        if (isset($config['debug_key'])) {
+            if (!empty($_GET['debug']) && ($_GET['debug'] === $config['debug_key'])) {
+                setcookie('w_debug', '1', 0, '/', '', false, false);
+                setcookie('w_debug', '1', 0, '/' . $config['admin'], '', false, false);
+            } else {
+                define('DEBUG', false);
+            }
+        }
+        if (isset($_GET['debug']) && ($_GET['debug'] === '0')) {
+            setcookie('w_debug', '', 0, '/', '', false, false);
+            setcookie('w_debug', '', 0, '/' . $config['admin'], '', false, false);
         }
         // 助手函数
         $handle_functions = APP_ETC_PATH . 'functions.php';
