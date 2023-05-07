@@ -14,6 +14,7 @@ use Weline\Framework\App\Env;
 use Weline\Framework\App\Exception;
 use Weline\Framework\App\Helper;
 use Weline\Framework\Cache\CacheFactory;
+use Weline\Framework\Http\Cookie;
 use Weline\Framework\Manager\Cache\ObjectCache;
 use Weline\Framework\Manager\ObjectManager;
 
@@ -114,7 +115,7 @@ class App
         }
         // 调试模式
         if (!defined('DEBUG')) {
-            if (!empty($_GET['debug'])) {
+            if (!empty($_GET['debug']) || (Cookie::get('w_debug') === 1)) {
                 define('DEBUG', true);
             } else {
                 define('DEBUG', false);
@@ -122,6 +123,7 @@ class App
         }
         if (DEBUG) {
             $_GET['debug'] = 1;
+            setcookie('w_debug', 1, 0, '/', '', false, false);
         }
 
         // 系统UMASK
