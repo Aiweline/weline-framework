@@ -127,9 +127,6 @@ class Url implements UrlInterface
         if (empty($url)) {
             $url = $this->request->getBaseUrl();
         }
-        if (DEBUG) {
-            $params['debug'] = 1;
-        }
         if ($params) {
             if ($merge_params) {
                 $url .= '?' . http_build_query(array_merge($this->request->getGet(), $params));
