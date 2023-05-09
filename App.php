@@ -140,18 +140,16 @@ class App
                 define('DEBUG', false);
             }
         }
-        if (isset($config['debug_key'])) {
-            if (!empty($_GET['debug']) && ($_GET['debug'] === $config['debug_key'])) {
+        if (isset($config['debug_key']) && isset($_GET['debug'])) {
+            if ($_GET['debug'] === $config['debug_key']) {
                 setcookie('w_debug', '1', 0, '/', '', false, false);
                 setcookie('w_debug', '1', 0, '/' . $config['admin'], '', false, false);
-            } else {
-                define('DEBUG', false);
+            }elseif ($_GET['debug'] === '0') {
+                setcookie('w_debug', '', 0, '/', '', false, false);
+                setcookie('w_debug', '', 0, '/' . $config['admin'], '', false, false);
             }
         }
-        if (isset($_GET['debug']) && ($_GET['debug'] === '0')) {
-            setcookie('w_debug', '', 0, '/', '', false, false);
-            setcookie('w_debug', '', 0, '/' . $config['admin'], '', false, false);
-        }
+
         // 助手函数
         $handle_functions = APP_ETC_PATH . 'functions.php';
         if (is_file($handle_functions)) {
