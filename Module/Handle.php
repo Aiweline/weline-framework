@@ -198,9 +198,6 @@ class Handle implements HandleInterface, RegisterInterface
                 $env = $this->getEnv($module_name, $env);
             }
         }
-//        if ('Weline_Frontend' === $module->getName()) {
-//            p($env['router']);
-//        }
         if (empty($env)) {
             $env = $this->getEnv($module_name, $env);
         }                                          // 如果文件不存在则读取模块名字作为router
@@ -217,7 +214,7 @@ class Handle implements HandleInterface, RegisterInterface
                ->setVersion($version ?: '1.0.0')
                ->setDescription($description ?: '')
                ->setDependencies($dependencies);
-        // 已经存在模块则更新
+        // 已经存在模块则更新 FIXME 解决刷新时会自动解禁模组问题
         if ($this->helper->isInstalled($this->modules, $module->getName())) {
             if ($this->helper->isDisabled($this->modules, $module->getName())) {
                 $module->setStatus(false);
@@ -403,7 +400,7 @@ class Handle implements HandleInterface, RegisterInterface
             if (DEV) {
                 $this->printer->setup($module->getName() . '：更新路由完成...', '开发');
             }
-            $this->printer->success(str_pad($module->getName(), 45) . __('已更新！'));
+            $this->printer->success(str_pad($module->getName(), 45) . __('已更新！'),__('路由更新：'));
         }
         return $module;
     }

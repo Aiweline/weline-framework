@@ -394,7 +394,7 @@ class Data extends AbstractHelper
      */
     public function isDisabled(array &$modules, string $name): bool
     {
-        if ($this->isInstalled($modules, $name) && isset($modules[$name]['status']) && $modules[$name]['status']) {
+        if ($this->isInstalled($modules, $name) && !empty($modules[$name]['status'])) {
             return false;
         }
 

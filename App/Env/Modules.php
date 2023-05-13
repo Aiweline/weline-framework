@@ -24,7 +24,7 @@ class Modules
      *
      * @return array
      */
-    public function getList(bool $only_active = true)
+    public function getList(bool $only_active = false)
     {
         if ($only_active) {
             if ($this->active_modules) {

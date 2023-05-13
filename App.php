@@ -140,13 +140,34 @@ class App
                 define('DEBUG', false);
             }
         }
-        if (isset($config['debug_key']) && isset($_GET['debug'])) {
+        if (isset($_GET['debug']) && isset($config['debug_key'])) {
             if ($_GET['debug'] === $config['debug_key']) {
                 setcookie('w_debug', '1', 0, '/', '', false, false);
                 setcookie('w_debug', '1', 0, '/' . $config['admin'], '', false, false);
-            }elseif ($_GET['debug'] === '0') {
+            } elseif ($_GET['debug'] === '0') {
                 setcookie('w_debug', '', 0, '/', '', false, false);
                 setcookie('w_debug', '', 0, '/' . $config['admin'], '', false, false);
+            }
+        }
+        // 沙盒模式
+        if (!defined('SANDBOX')) {
+            if (isset($config['sandbox_key'])) {
+                if ((!empty($_GET['sandbox']) && ($_GET['sandbox'] === $config['sandbox_key'])) || (Cookie::get('w_sandbox') === '1')) {
+                    define('SANDBOX', true);
+                } else {
+                    define('SANDBOX', false);
+                }
+            } else {
+                define('SANDBOX', false);
+            }
+        }
+        if (isset($config['sandbox_key']) && isset($_GET['sandbox'])) {
+            if ($_GET['sandbox'] === $config['sandbox_key']) {
+                setcookie('w_sandbox', '1', 0, '/', '', false, false);
+                setcookie('w_sandbox', '1', 0, '/' . $config['admin'], '', false, false);
+            } elseif ($_GET['sandbox'] === '0') {
+                setcookie('w_sandbox', '', 0, '/', '', false, false);
+                setcookie('w_sandbox', '', 0, '/' . $config['admin'], '', false, false);
             }
         }
 
@@ -173,7 +194,7 @@ class App
         // 检测debug数据库
         if (DEV || DEBUG) {
             if (!isset($config['sandbox_db'])) {
-                throw new Exception(__('请设置debug数据库！'));
+                throw new Exception(__('请设置沙盒数据库！'));
             }
         }
 
