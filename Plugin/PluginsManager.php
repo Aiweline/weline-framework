@@ -63,7 +63,6 @@ class PluginsManager
             $this->plugins = $plugins;
             return $this->plugins;
         }
-
         if (empty($this->plugins)) {
             // 合并相同类的拦截器
             foreach ($this->reader->read() as $module_and_file => $pluginInstances) {

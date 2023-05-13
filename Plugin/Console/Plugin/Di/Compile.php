@@ -73,6 +73,7 @@ class Compile implements \Weline\Framework\Console\CommandInterface
         /**@var Clear $clear */
         $clear = ObjectManager::getInstance(Clear::class);
         $clear->execute();
+        $this->pluginsManager->scanPlugins(false);
         $generator    = $this->pluginsManager->generatorInterceptor('', false);
         $printer_list = [];
         foreach ($generator::getClassProxyMap() as $key => $item) {

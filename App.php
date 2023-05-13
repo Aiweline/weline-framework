@@ -172,7 +172,7 @@ class App
 
         // 检测debug数据库
         if (DEV || DEBUG) {
-            if (!isset($config['debug_db'])) {
+            if (!isset($config['sandbox_db'])) {
                 throw new Exception(__('请设置debug数据库！'));
             }
         }

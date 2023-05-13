@@ -35,7 +35,7 @@ class Modules
             }
             foreach ($this->modules as $module) {
                 if ($module['status']) {
-                    $this->active_modules[] = $module['name'];
+                    $this->active_modules[$module['name']] = $module;
                 }
             }
             return $this->active_modules;
@@ -52,8 +52,8 @@ class Modules
             $file->close();
         }
         $modules_data = include $modules_file;
-
-        return is_array($modules_data) ? $modules_data : [];
+        $this->modules = is_array($modules_data) ? $modules_data : [];
+        return $this->modules;
     }
 
 }
