@@ -14,6 +14,9 @@ use Weline\Framework\System\File\Io\File;
 
 class Modules
 {
+    private array $modules = [];
+    private array $active_modules = [];
+
     /**
      * @DESC         |获取已经安装的模块列表
      *
@@ -21,8 +24,25 @@ class Modules
      *
      * @return array
      */
-    public function getList()
+    public function getList(bool $only_active = true)
     {
+        if ($only_active) {
+            if ($this->active_modules) {
+                return $this->active_modules;
+            }
+            if (!$this->modules) {
+                $this->getList(false);
+            }
+            foreach ($this->modules as $module) {
+                if ($module['status']) {
+                    $this->active_modules[] = $module['name'];
+                }
+            }
+            return $this->active_modules;
+        }
+        if ($this->modules) {
+            return $this->modules;
+        }
         $modules_file = Env::path_MODULES_FILE;
         if (!is_file($modules_file)) {
             $file = new File();
@@ -35,4 +55,5 @@ class Modules
 
         return is_array($modules_data) ? $modules_data : [];
     }
+
 }
