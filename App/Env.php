@@ -332,7 +332,7 @@ class Env extends DataObject
     public function getDbConfig(): array
     {
         if (DEV || DEBUG) {
-            return $this->config['debug_db'] ?? [];
+            return $this->config['sandbox_db'] ?? [];
         }
         return $this->config['db'] ?? [];
     }
@@ -356,9 +356,9 @@ class Env extends DataObject
         return $this->module_list;
     }
 
-    public function getActiveModules(): array
+    public function getActiveModules(bool $reget = false): array
     {
-        if ($this->active_module_list) {
+        if (!$reget && $this->active_module_list) {
             return $this->active_module_list;
         }
         $modules        = $this->getModuleList();
