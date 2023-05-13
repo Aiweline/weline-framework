@@ -83,10 +83,6 @@ class Upgrade extends CommandAbstract
             }
         }
         $i += 1;
-        $this->printer->warning($i . '、generated生成目录代码code清理...', '系统');
-        $this->system->exec('rm -rf ' . Env::path_framework_generated_code);
-        $this->system->exec('mkdir  ' . Env::path_framework_generated_code);
-        $i += 1;
         // 扫描代码
         $this->printer->note($i . '、清理模板缓存', '系统');
         $modules = Env::getInstance()->getModuleList();
@@ -125,6 +121,7 @@ class Upgrade extends CommandAbstract
         foreach ($modules as $module_name => $module) {
             $module_handle->setupModel(new Module($module));
         }
+
         // 注册路由信息
         $this->printer->note(__('3)注册路由信息'));
         foreach ($modules as $module_name => $module) {
@@ -154,6 +151,7 @@ class Upgrade extends CommandAbstract
         /**@var $cacheManagerConsole \Weline\CacheManager\Console\Cache\Clear */
         $cacheManagerConsole = ObjectManager::getInstance(\Weline\Framework\Event\Console\Event\Cache\Clear::class);
         $cacheManagerConsole->execute();
+
         $i += 1;
         $this->printer->note($i . '、插件编译...');
         /**@var $cacheManagerConsole \Weline\CacheManager\Console\Cache\Clear */

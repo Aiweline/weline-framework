@@ -17,6 +17,7 @@ use Weline\Framework\Manager\ObjectManager;
 use Weline\Framework\Output\Cli\Printing;
 use Weline\Framework\Plugin\Console\Plugin\Cache\Clear;
 use Weline\Framework\Plugin\PluginsManager;
+use Weline\Framework\System\File\App\Scanner as AppScanner;
 
 class Compile implements \Weline\Framework\Console\CommandInterface
 {
@@ -53,7 +54,21 @@ class Compile implements \Weline\Framework\Console\CommandInterface
     {
         $this->printing->printing(__('编译开始...'));
         $this->printing->printing(__('清除旧编译内容...'));
-        $this->system->exec('rm ' . Env::path_framework_generated_code . ' -rf');
+        if (!is_dir(Env::path_framework_generated_code)) {
+            mkdir(Env::path_framework_generated_code, 755, true);
+        } else {
+            // 扫描目录子目录
+            $this->printing->printing('编译目录扫描...', '系统');
+            $files = scandir(Env::path_framework_generated_code);
+            foreach ($files as $file) {
+                if ($file != '.' && $file != '..') {
+                    $real_file = Env::path_framework_generated_code.DS.$file;
+                    if (is_dir($real_file)) {
+                        $this->system->exec('rm -rf ' . $real_file);
+                    }
+                }
+            }
+        }
         $this->printing->printing(__('清除编译缓存...'));
         /**@var Clear $clear */
         $clear = ObjectManager::getInstance(Clear::class);
