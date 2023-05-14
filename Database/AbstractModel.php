@@ -90,6 +90,9 @@ abstract class AbstractModel extends DataObject
     private array $_bind_model_fields = [];
     private array $_model_fields_data = [];
 
+    # 强制装载内容
+    public array $_force_join_models = []; // 强制联合模型
+
     private bool $force_check_flag = false;
     private array $force_check_fields = [];
     private bool $remove_force_check_field = false;
@@ -703,6 +706,10 @@ abstract class AbstractModel extends DataObject
         $this->clearDataObject();
         $this->setFetchData([]);
         $this->getQuery()->clear();
+        // 检测强制联合模型
+        foreach ($this->_force_join_models as $joinData){
+            $this->joinModel(...$joinData);
+        }
         return $this;
     }
 
@@ -1414,6 +1421,13 @@ PAGINATION;
 
     public function joinModel(AbstractModel|string $model, string $alias = '', $condition = '', $type = 'LEFT', string $fields = '*'): AbstractModel
     {
+        // init方法调用的join常驻
+        $trace = debug_backtrace();
+        $caller = $trace[1];
+        if ($caller['function']==='__init') {
+            $this->_force_join_models[is_string($model)?:$model::class] = func_get_args();
+        }
+        // 查询处理
         $query = $this->getQuery();
         if (is_string($model)) {
             /**@var Model $model */
@@ -1421,6 +1435,7 @@ PAGINATION;
             $model->bindQuery($query);
             $model->alias($alias);
         }
+
         # 自动设置条件
         $model_table = $model->getTable();
         if (empty($condition)) {
@@ -1429,6 +1444,7 @@ PAGINATION;
         if (empty($this->_join_model_fields)) {
             $this->_join_model_fields = $this->getModelFields();
         }
+
         if ($fields === '*') {
             $model_fields = '';
             foreach ($model->getModelFields() as $modelField) {
