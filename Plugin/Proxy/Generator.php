@@ -9,9 +9,11 @@
 
 namespace Weline\Framework\Plugin\Proxy;
 
+use mysql_xdevapi\Exception;
 use Weline\Framework\App\Env;
 use Weline\Framework\Manager\ObjectManager;
 use Weline\Framework\Plugin\PluginsManager;
+use function PHPUnit\Framework\throwException;
 
 class Generator
 {
@@ -118,11 +120,16 @@ ${functionList}
             }
             $args_tpl   = implode(',' . PHP_EOL . '        ', $args);
             $params_tpl = implode(',' . PHP_EOL . '        ', $parameters);
-
+            if ($method->isStatic()) {
+                throw new \Exception(__('静态函数尚不支持代理：%1', $method->getFileName()) . '[' . $method->getStartLine() . ']' . $method->getStartLine() .
+                                     ':' .
+                                     $method->getEndLine());
+            }
+            $method_modifier = ($method->isPublic() ? 'public' : ($method->isPrivate() ? 'private' : 'protected'));
             // 方法模板
             $func_tpl           = '
     ${func_doc}
-    public function ${methodName}(
+    ' . $method_modifier . ' function ${methodName}(
         ${arguments}
     )${returntype}
     {
@@ -224,20 +231,7 @@ ${functionList}
         /** @var string|null $typeName */
         $typeName = null;
         if ($parameter->hasType()) {
-            if ($parameter->isArray()) {
-                $typeName = 'array';
-            } elseif ($parameter->getClass()) {
-                $className = ltrim($parameter->getClass()->getName(), '\\');
-                $typeName  = $className ? '\\' . $className : '';
-            } elseif (is_callable($parameter)) {
-                $typeName = 'callable';
-            } else {
-                $typeName = $parameter->getType()->getName();
-            }
-
-            if ($parameter->allowsNull()) {
-                $typeName = '?' . $typeName;
-            }
+            $typeName = $parameter->getType()->getName();
         }
 
         return $typeName;
