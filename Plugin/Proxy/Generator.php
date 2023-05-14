@@ -60,7 +60,7 @@ ${functionList}
         return $proxyClass;
     }
 
-    #[\JetBrains\PhpStorm\ArrayShape(['name' => "string", 'body' => "string|string[]", 'file' => "string"])] private static function genProxyClass(string $class): array
+    #[\JetBrains\PhpStorm\ArrayShape(['name' => 'string', 'body' => 'string|string[]', 'file' => 'string'])] private static function genProxyClass(string $class): array
     {
         try {
             $classRef = new \ReflectionClass($class);
@@ -229,7 +229,7 @@ ${functionList}
             } elseif ($parameter->getClass()) {
                 $className = ltrim($parameter->getClass()->getName(), '\\');
                 $typeName  = $className ? '\\' . $className : '';
-            } elseif ($parameter->isCallable()) {
+            } elseif (is_callable($parameter)) {
                 $typeName = 'callable';
             } else {
                 $typeName = $parameter->getType()->getName();
