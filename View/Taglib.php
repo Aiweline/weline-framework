@@ -454,7 +454,7 @@ class Taglib
                         case 'tag-start':
                             if (!isset($attributes['name'])) {
                                 $template_html = htmlentities($tag_data[0]);
-                                throw new TemplateException(__("empty标签需要设置name属性:[$template_html]例如：%1", htmlentities('<empty name="catalogs"><li>没有数据</li></empty>')));
+                                throw new TemplateException(__("has标签需要设置name属性:[$template_html]例如：%1", htmlentities('<has name="catalogs"><li>有数据</li><else/>没数据</has>')));
                             }
                             $name = $this->varParser($this->checkVar($attributes['name']));
                             return '<?php if(!empty(' . $name . ') ): ?>';
