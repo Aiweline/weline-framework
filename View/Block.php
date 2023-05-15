@@ -146,7 +146,7 @@ class Block extends Template implements BlockInterface
             if (empty($action_param_arr) || (count($action_param_arr) != 2) || !isset($action_param_arr[1])) {
                 throw new \Weline\Framework\App\Exception(__('错误的%1参数格式，正确格式应该是:%2', [$attribute_param_key, $this->doc()]));
             }
-            $action_param_name      = $action_param_arr[0];
+            $action_param_name      = trim($action_param_arr[0]);
             $action_param_value_arr = explode('.', $action_param_arr[1]);
             $first_var              = trim(array_shift($action_param_value_arr));
             if (empty($vars[$first_var])) {
@@ -163,6 +163,6 @@ class Block extends Template implements BlockInterface
             }
             $action_params[$action_param_name] = $action_param_name_var;
         }
-        return array($action_params, $action_param_value_arr);
+        return $action_params;
     }
 }
