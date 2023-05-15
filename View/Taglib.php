@@ -498,9 +498,20 @@ class Taglib
                             case 'tag-self-close-with-attrs':
                                 if (!isset($attributes['class']) || !$attributes['class']) {
                                     $template_html = htmlentities($tag_data[0]);
-                                    throw new TemplateException(__("block标签语法使用错误:[{$template_html}]：未指定block类。示例：%1", htmlentities("<block class='Weline\Demo\Block\Demo' template='Weline_Demo::templates/demo.phtml' />")));
+                                    throw new TemplateException(__("block标签语法使用错误:[{$template_html}]：未指定block类。示例：%1", htmlentities("<block class='Weline\Demo\Block\Demo' template='Weline_Demo::templates/demo.phtml' vars='item|pageSize|page'/>")));
                                 }
-                                $result = '<?php echo framework_view_process_block(' . w_var_export($attributes, true) . ');?>';
+                                // 变量导入
+                                $vars_string = '[';
+                                if(isset($attributes['vars'])){
+                                    $vars =  explode('|', $attributes['vars']);
+                                    foreach ($vars as $key=>$var) {
+                                        $var_name = trim($var);
+                                        $var = '$'.$var_name;
+                                        $vars_string .="'$var_name'=>&$var,";
+                                    }
+                                }
+                                $vars_string.=']';
+                                $result = '<?php echo framework_view_process_block(' . w_var_export($attributes, true) . ',$vars='.$vars_string.');?>';
                                 break;
                             default:
                         }
