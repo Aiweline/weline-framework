@@ -161,7 +161,7 @@ if (!function_exists('framework_view_process_block')) {
      * @throws ReflectionException
      * @throws \Weline\Framework\App\Exception
      */
-    function framework_view_process_block(array $data): string
+    function framework_view_process_block(array $data, $vars = []): string
     {
         if (!isset($data['class'])) {
             $data['class'] = $data[0] ?? '';
@@ -184,7 +184,7 @@ if (!function_exists('framework_view_process_block')) {
                 }
             }
         }
-
+        $params['vars'] = $vars;
         if (isset($params['cache']) && $cache_time = intval($params['cache'])) {
             /**@var CacheInterface $cache */
             $cache = ObjectManager::getInstance(ViewCache::class)->create();
