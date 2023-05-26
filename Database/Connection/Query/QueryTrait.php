@@ -150,6 +150,23 @@ trait QueryTrait
         }
         # 处理 Where 条件
         $wheres = '';
+        // 如果有联合主键，把条件按照联合主键的顺序依次添加到sql语句中，提升查询速度
+        if (!empty($this->_unit_primary_keys)) {
+            $sort_primary_keys_wheres = [];
+            foreach ($this->wheres as $where_key=>$where) {
+                $where_field = $where[0];
+                if (str_contains($where_field, '.')) {
+                    $where_field_arr = explode('.', $where_field);
+                    $where_field     = array_pop($where_field_arr);
+                }
+                if (in_array($where_field, $this->_unit_primary_keys)) {
+                    $sort_primary_keys_wheres[array_search($where_field, $this->_unit_primary_keys)] = $where;
+                    unset($this->wheres[$where_key]);
+                }
+            }
+            sort($sort_primary_keys_wheres);
+            $this->wheres = $sort_primary_keys_wheres+$this->wheres;
+        }
         if ($this->wheres) {
             $wheres .= ' WHERE ';
             $logic  = 'AND ';

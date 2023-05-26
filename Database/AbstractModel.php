@@ -370,22 +370,28 @@ abstract class AbstractModel extends DataObject
      */
     public function getQuery(bool $keep_condition = true): QueryInterface
     {
+        $query = null;
         # 如果绑定了查询
         if ($this->_bind_query) {
             if (!$keep_condition) {
                 $this->_bind_query->clearQuery();
             }
-            return $this->_bind_query->table($this->getOriginTableName())->identity($this->_primary_key);
-        }
-        if ($this->current_query) {
-            if (!$keep_condition) {
-                $this->current_query->clearQuery();
+            $query = $this->_bind_query->table($this->getOriginTableName())->identity($this->_primary_key);
+        } else {
+            if ($this->current_query) {
+                if (!$keep_condition) {
+                    $this->current_query->clearQuery();
+                }
+                $query = $this->current_query->table($this->getOriginTableName())->identity($this->_primary_key);
+            } else {
+                # 区分是否保持查询
+                $this->current_query = $this->getConnection()->getQuery()->clearQuery()->table($this->getOriginTableName())->identity($this->_primary_key);
+                $query               = $this->current_query;
             }
-            return $this->current_query->table($this->getOriginTableName())->identity($this->_primary_key);
         }
-        # 区分是否保持查询
-        $this->current_query = $this->getConnection()->getQuery()->clearQuery()->table($this->getOriginTableName())->identity($this->_primary_key);
-        return $this->current_query;
+        // 联合主键索引对where条件进行排序提升查询速度
+        $query->_unit_primary_keys = [$this->_primary_key] + $this->_unit_primary_keys;
+        return $query;
     }
 
     /**
@@ -707,7 +713,7 @@ abstract class AbstractModel extends DataObject
         $this->setFetchData([]);
         $this->getQuery()->clear();
         // 检测强制联合模型
-        foreach ($this->_force_join_models as $joinData){
+        foreach ($this->_force_join_models as $joinData) {
             $this->joinModel(...$joinData);
         }
         return $this;
@@ -1415,17 +1421,18 @@ PAGINATION;
 
     public function bindQuery(QueryInterface &$query): static
     {
-        $this->_bind_query = $query;
+        $query->_unit_primary_keys = $query->_unit_primary_keys + $this->_unit_primary_keys;
+        $this->_bind_query         = $query;
         return $this;
     }
 
     public function joinModel(AbstractModel|string $model, string $alias = '', $condition = '', $type = 'LEFT', string $fields = '*'): AbstractModel
     {
         // init方法调用的join常驻
-        $trace = debug_backtrace();
+        $trace  = debug_backtrace();
         $caller = $trace[1];
-        if ($caller['function']==='__init') {
-            $this->_force_join_models[is_string($model)?:$model::class] = func_get_args();
+        if ($caller['function'] === '__init') {
+            $this->_force_join_models[is_string($model) ?: $model::class] = func_get_args();
         }
         // 查询处理
         $query = $this->getQuery();
