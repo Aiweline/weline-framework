@@ -27,8 +27,11 @@ use function DeepCopy\deep_copy;
 abstract class Query implements QueryInterface
 {
     use QueryTrait;
+
     // 联合主键 设置联合主键可以提升查询效率
-    public array $_unit_primary_keys=[];
+    public array $_unit_primary_keys = [];
+    // 联合索引最左原则，提升查询效率
+    public array $_index_sort_keys = [];
 
     public string $identity_field = 'id';
     public string $table = '';

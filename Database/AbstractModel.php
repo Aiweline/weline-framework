@@ -81,8 +81,10 @@ abstract class AbstractModel extends DataObject
     public string $_suffix = '';
     public string $_primary_key = '';
     public string $_primary_key_default = 'id';
-    /*联合主键*/
+    /*联合主键排序*/
     public array $_unit_primary_keys = [];
+    /*索引字段排序*/
+    public array $_index_sort_keys = [];
     public array $_fields = [];
     # 装载join模型时字段数据，用于字段冲突
     public array $_join_model_fields = [];
@@ -390,7 +392,7 @@ abstract class AbstractModel extends DataObject
             }
         }
         // 联合主键索引对where条件进行排序提升查询速度
-        $query->_unit_primary_keys = [$this->_primary_key] + $this->_unit_primary_keys;
+        $query->_index_sort_keys = [$this->_primary_key] + $this->_unit_primary_keys + $this->_index_sort_keys;
         return $query;
     }
 
@@ -1421,8 +1423,8 @@ PAGINATION;
 
     public function bindQuery(QueryInterface &$query): static
     {
-        $query->_unit_primary_keys = $query->_unit_primary_keys + $this->_unit_primary_keys;
-        $this->_bind_query         = $query;
+        $query->_index_sort_keys = $query->_index_sort_keys + $this->_unit_primary_keys + $this->_index_sort_keys;
+        $this->_bind_query       = $query;
         return $this;
     }
 

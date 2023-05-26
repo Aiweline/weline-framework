@@ -17,8 +17,9 @@ use Weline\Framework\Manager\ObjectManager;
 
 class Query extends \Weline\Framework\UnitTest\TestCore
 {
-    private  DbManager $DbManager;
-    function setUp():void
+    private DbManager $DbManager;
+
+    function setUp(): void
     {
         $this->DbManager = ObjectManager::getInstance(DbManager::class);
     }
@@ -38,12 +39,12 @@ class Query extends \Weline\Framework\UnitTest\TestCore
         // 创建一张测试表test_unit_primary_keys_sort_where
         $query->query("create table IF NOT EXISTS $table (id int unsigned not null auto_increment, name varchar(32) not null,age varchar(255) not null, PRIMARY KEY (id,name))");
 
-        $query->_unit_primary_keys=['id','name'];
+        $query->_index_sort_keys = ['id', 'name'];
 
-        $sql = $query->table($table)->where('name','tt')->where('id',1)->find()->getLastSql();
-        $this->assertEquals($query->wheres, array(['id','=',1,'AND'],['name','=','tt','AND']),'(单表)testUnitPrimayKeysSortWhere:测试主键和联合主键（索引排序）对查询条件的排序优化查询速度');
-        $sql = $query->table($table)->where('main_table.name','tt')->where('main_table.id',1)->find()->getLastSql();
-        $this->assertEquals($query->wheres, array(['main_table.id','=',1,'AND'],['main_table.name','=','tt','AND']),'（混合表）testUnitPrimayKeysSortWhere:测试主键和联合主键（索引排序）对查询条件的排序优化查询速度');
+        $sql = $query->table($table)->where('name', 'tt')->where('id', 1)->find()->getLastSql();
+        $this->assertEquals(array(['id', '=', 1, 'AND'], ['name', '=', 'tt', 'AND']), $query->wheres , '(单表)testUnitPrimayKeysSortWhere:测试主键和联合主键（索引排序）对查询条件的排序优化查询速度');
+        $sql = $query->table($table)->where('main_table.name', 'tt')->where('main_table.id', 1)->find()->getLastSql();
+        $this->assertEquals(array(['main_table.id', '=', 1, 'AND'], ['main_table.name', '=', 'tt', 'AND']), $query->wheres, '（混合表）testUnitPrimayKeysSortWhere:测试主键和联合主键（索引排序）对查询条件的排序优化查询速度');
         $query->query("drop table $table");
     }
 }
