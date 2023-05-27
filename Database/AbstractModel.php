@@ -392,7 +392,7 @@ abstract class AbstractModel extends DataObject
             }
         }
         // 联合主键索引对where条件进行排序提升查询速度
-        $query->_index_sort_keys = [$this->_primary_key] + $this->_unit_primary_keys + $this->_index_sort_keys;
+        $query->_index_sort_keys = array_unique([$this->_primary_key] + $this->_unit_primary_keys + $this->_index_sort_keys);
         return $query;
     }
 
@@ -540,13 +540,13 @@ abstract class AbstractModel extends DataObject
         } elseif (is_bool($data)) {
             $this->force_check_flag = $data;
             if ($sequence) {
-                if(is_array($sequence)){
+                if (is_array($sequence)) {
                     $this->force_check_fields = $sequence;
-                }else{
-                    $this->force_check_fields[] = $sequence;
+                } else {
+                    $this->force_check_fields = [$sequence => $sequence];
                 }
             } else if (empty($this->force_check_fields)) {
-                $this->force_check_fields = $this->_unit_primary_keys+[$this->_primary_key];
+                $this->force_check_fields = array_unique($this->_unit_primary_keys + [$this->_primary_key]);
             }
         } elseif (is_array($data)) {
             $this->setModelData($data);
@@ -559,17 +559,18 @@ abstract class AbstractModel extends DataObject
                 }
             }
         }
-
         // 保存前
         $this->save_before();
         // save之前事件
         $this->getEvenManager()->dispatch($this->getTable() . '_model_save_before', ['model' => $this]);
         $this->getQuery()->beginTransaction();
         try {
-            if ($id = $this->getId()) {
-                $this->unique_data[$this->_primary_key] = $id;
+            // 如果强制检测更新，但是没有任何条件则使用联合主键的方式进行条件装配
+            if ($this->force_check_flag&&empty($this->unique_data)) {
                 foreach ($this->_unit_primary_keys as $unit_primary_key) {
-                    $this->unique_data[$unit_primary_key] = $this->getData($unit_primary_key);
+                    if($this->getData($unit_primary_key)){
+                        $this->unique_data[$unit_primary_key] = $this->getData($unit_primary_key);
+                    }
                 }
             }
             if ($this->force_check_flag) {
@@ -627,7 +628,7 @@ abstract class AbstractModel extends DataObject
                 $this->force_check_fields = $check_field;
             }
         } else {
-            $this->force_check_fields = $this->_unit_primary_keys+[$this->_primary_key];
+            $this->force_check_fields = $this->_unit_primary_keys + [$this->_primary_key];
         }
         return $this;
     }
@@ -708,6 +709,7 @@ abstract class AbstractModel extends DataObject
     {
         $this->items   = [];
         $this->_fields = [];
+        $this->_data   = [];
         if ($with_query) {
             $this->_bind_query = null;
             $this->clearQuery();
@@ -1427,7 +1429,7 @@ PAGINATION;
 
     public function bindQuery(QueryInterface &$query): static
     {
-        $query->_index_sort_keys = $query->_index_sort_keys + $this->_unit_primary_keys + $this->_index_sort_keys;
+        $query->_index_sort_keys = array_unique($query->_index_sort_keys + $this->_unit_primary_keys + $this->_index_sort_keys);
         $this->_bind_query       = $query;
         return $this;
     }
@@ -1527,23 +1529,24 @@ PAGINATION;
         if ($this->unique_data) {
             $check_result = $this->getQuery()->where($this->unique_data)->find()->fetchOrigin()[0] ?? [];
         } else {
-            $check_result = [];
+            $check_result = $this->unique_data;
         }
-
         # 存在更新
         if (isset($check_result[$this->_primary_key])) {
-            if (!$this->getId()) $this->setId($check_result[$this->_primary_key]);
-            $data = $this->getModelData();
-            unset($data[$this->_primary_key]);
+            if (!$this->getId()) {
+                $this->setId($check_result[$this->_primary_key]);
+            }
+            $data        = $this->getModelData();
             $save_result = $this->getQuery()->where($this->unique_data)
                                 ->update($data)
                                 ->fetch();
         } else {
             $unique_fields            = array_keys($this->unique_data);
-            $this->_unit_primary_keys = array_merge($this->_unit_primary_keys, $unique_fields);
+            $this->_unit_primary_keys = array_unique(array_merge($this->_unit_primary_keys, $unique_fields));
             $save_result              = $this->getQuery()
                                              ->insert($this->getModelData(), $this->_unit_primary_keys)
                                              ->fetch();
+            $this->setId($save_result);
         }
         return $save_result;
     }
