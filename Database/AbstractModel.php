@@ -532,7 +532,7 @@ abstract class AbstractModel extends DataObject
      * @return bool
      * @throws NUll
      */
-    public function save(array|bool|AbstractModel $data = [], string $sequence = null): bool
+    public function save(array|bool|AbstractModel $data = [], string|array $sequence = null): bool
     {
         if (is_object($data)) {
             $data = $data->getModelData();
@@ -540,9 +540,13 @@ abstract class AbstractModel extends DataObject
         } elseif (is_bool($data)) {
             $this->force_check_flag = $data;
             if ($sequence) {
-                $this->force_check_fields[] = $sequence;
+                if(is_array($sequence)){
+                    $this->force_check_fields = $sequence;
+                }else{
+                    $this->force_check_fields[] = $sequence;
+                }
             } else if (empty($this->force_check_fields)) {
-                $this->force_check_fields[] = $this->_primary_key;
+                $this->force_check_fields = $this->_unit_primary_keys+[$this->_primary_key];
             }
         } elseif (is_array($data)) {
             $this->setModelData($data);
@@ -623,7 +627,7 @@ abstract class AbstractModel extends DataObject
                 $this->force_check_fields = $check_field;
             }
         } else {
-            $this->force_check_fields[$this->_primary_key] = $this->_primary_key;
+            $this->force_check_fields = $this->_unit_primary_keys+[$this->_primary_key];
         }
         return $this;
     }
