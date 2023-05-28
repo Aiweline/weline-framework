@@ -22,6 +22,7 @@ class Block extends Template implements BlockInterface
     public ?CacheInterface $_cache = null;
     protected string $_template = '';
     protected bool $is_init = false;
+    protected array $action_params = [];
 
     public function __construct(array $data = [])
     {
@@ -92,7 +93,7 @@ class Block extends Template implements BlockInterface
      * @return bool|void
      * @throws \Exception
      */
-    public function fetchHtml(string $fileName, array $dictionary = []):string
+    public function fetchHtml(string $fileName, array $dictionary = []): string
     {
         $comFileName = $this->fetchTagSource('blocks', $fileName);
         ob_start();
@@ -126,7 +127,7 @@ class Block extends Template implements BlockInterface
 
     /**
      * @DESC          # 获取vars中指定名称的变量系列值 示例：从<block vars='attribute,env' action-params={code:attribute.code,title:env.title}
-    />中获得参数action-params=['code'=>$attribute['code'],'title'=>$env['title']]
+     * />中获得参数action-params=['code'=>$attribute['code'],'title'=>$env['title']]
      *
      * @AUTH    秋枫雁飞
      * @EMAIL aiweline@qq.com
@@ -137,7 +138,14 @@ class Block extends Template implements BlockInterface
      */
     protected function getParseVarsParams(string $attribute_param_key): array
     {
-        $vars                       = $this->getData('vars');
+        if ($action_params = $this->action_params) {
+            return $action_params;
+        }
+        $vars                = $this->getData('vars');
+        $attribute_param_key = $this->getData($attribute_param_key);
+        if (empty($vars) || empty($attribute_param_key)) {
+            return [];
+        }
         $action_params_template     = trim($this->getData($attribute_param_key), '{}');
         $action_params_template_arr = explode(',', $action_params_template);
         $action_params              = [];
