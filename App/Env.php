@@ -331,7 +331,7 @@ class Env extends DataObject
      */
     public function getDbConfig(): array
     {
-        if (DEV || DEBUG) {
+        if (SANDBOX) {
             return $this->config['sandbox_db'] ?? [];
         }
         return $this->config['db'] ?? [];

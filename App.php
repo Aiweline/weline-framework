@@ -192,7 +192,7 @@ class App
         DEBUG ? error_reporting(E_ALL) : error_reporting(0);
 
         // 检测debug数据库
-        if (DEV || DEBUG) {
+        if (SANDBOX) {
             if (!isset($config['sandbox_db'])) {
                 throw new Exception(__('请设置沙盒数据库！'));
             }
