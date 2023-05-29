@@ -157,13 +157,13 @@ class Block extends Template implements BlockInterface
             $action_param_name      = trim($action_param_arr[0]);
             $action_param_value_arr = explode('.', $action_param_arr[1]);
             $first_var              = trim(array_shift($action_param_value_arr));
-            if (empty($vars[$first_var])) {
+            if (!isset($vars[$first_var])) {
                 throw new \Weline\Framework\App\Exception(__('参数链%1没有%2参数，确保参数调用链正常！正确格式应该是:%3', [$action_param_arr[1], $first_var,
                                                                                                                          $this->doc()]));
             }
             $action_param_name_var = $vars[$first_var];
             foreach ($action_param_value_arr as $action_param) {
-                if (empty($action_param_name_var[$action_param])) {
+                if (!isset($action_param_name_var[$action_param])) {
                     throw new \Weline\Framework\App\Exception(__('参数链%1没有%2参数，确保参数调用链正常！正确格式应该是:%3', [$action_param_arr[1], $action_param,
                                                                                                                              $this->doc()]));
                 }
