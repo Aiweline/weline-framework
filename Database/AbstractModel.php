@@ -532,7 +532,7 @@ abstract class AbstractModel extends DataObject
      * @return bool
      * @throws NUll
      */
-    public function save(array|bool|AbstractModel $data = [], string|array $sequence = null): bool
+    public function save(array|bool|AbstractModel $data = [], string|array $sequence = null): bool|int
     {
         if (is_object($data)) {
             $data = $data->getModelData();
