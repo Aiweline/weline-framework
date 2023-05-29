@@ -142,11 +142,11 @@ class Block extends Template implements BlockInterface
             return $action_params;
         }
         $vars                = $this->getData('vars');
-        $attribute_param_key = $this->getData($attribute_param_key);
-        if (empty($vars) || empty($attribute_param_key)) {
+        $attribute_param_keys = $this->getData($attribute_param_key);
+        if (empty($vars) || empty($attribute_param_keys)) {
             return [];
         }
-        $action_params_template     = trim($this->getData($attribute_param_key), '{}');
+        $action_params_template     = trim($attribute_param_keys, '{}');
         $action_params_template_arr = explode(',', $action_params_template);
         $action_params              = [];
         foreach ($action_params_template_arr as $action_param) {
