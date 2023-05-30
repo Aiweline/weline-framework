@@ -174,9 +174,9 @@ class Scan
                 }
                 if ($class_path) {
                     $file_ = str_replace('/', '\\', $file_);
-                    if(!class_exists($file_)){
+                    /*if(!class_exists($file_)){
                         $file_ = $this->getClassNameFromFile($file, $composer_dir);
-                    }
+                    }*/
                 }
                 $files[] = $file_;
             }
