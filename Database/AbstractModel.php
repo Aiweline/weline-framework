@@ -566,9 +566,9 @@ abstract class AbstractModel extends DataObject
         $this->getQuery()->beginTransaction();
         try {
             // 如果强制检测更新，但是没有任何条件则使用联合主键的方式进行条件装配
-            if ($this->force_check_flag&&empty($this->unique_data)) {
+            if ($this->force_check_flag && empty($this->unique_data)) {
                 foreach ($this->_unit_primary_keys as $unit_primary_key) {
-                    if($this->getData($unit_primary_key)){
+                    if ($this->getData($unit_primary_key)) {
                         $this->unique_data[$unit_primary_key] = $this->getData($unit_primary_key);
                     }
                 }
@@ -1001,6 +1001,29 @@ abstract class AbstractModel extends DataObject
         }
         parent::setData($key, $value);
         $this->set_data_after($key, $value);
+        return $this;
+    }
+
+    /**
+     * @DESC          # 设置模型字段数据
+     *
+     * @AUTH    秋枫雁飞
+     * @EMAIL aiweline@qq.com
+     * @DateTime: 2023/5/31 20:27
+     * 参数区：
+     *
+     * @param array $data
+     *
+     * @return $this
+     */
+    public function setModelFieldsData(array $data): static
+    {
+        $modelFields = $this->getModelFields();
+        foreach ($data as $key => $value) {
+            if (isset($modelFields[$key])) {
+                $this->setData($key, $value);
+            }
+        }
         return $this;
     }
 
