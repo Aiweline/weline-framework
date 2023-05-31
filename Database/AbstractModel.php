@@ -586,7 +586,7 @@ abstract class AbstractModel extends DataObject
         } catch (\Exception $exception) {
             $this->getQuery()->rollBack();
             $msg = __('保存数据出错! ');
-            $msg .= __('消息: %1', $exception->getMessage()) . PHP_EOL . __('预编译SQL: %1', $this->getQuery()->getPrepareSql()) . PHP_EOL . __('执行SQL: %1', $this->getQuery()->getLastSql());
+            $msg .= __('消息: %1', $exception->getMessage()) . PHP_EOL . __('预编译SQL: %1', $this->getQuery()->getPrepareSql(false)) . PHP_EOL . __('执行SQL: %1', $this->getQuery()->getLastSql());
             throw new ModelException($msg);
         }
 
@@ -1020,7 +1020,7 @@ abstract class AbstractModel extends DataObject
     {
         $modelFields = $this->getModelFields();
         foreach ($data as $key => $value) {
-            if (isset($modelFields[$key])) {
+            if (in_array($key, $modelFields)) {
                 $this->setData($key, $value);
             }
         }
