@@ -1406,7 +1406,7 @@ PAGELISTHTML;
         $form_url                 = $queryUrl . $query_flag . $query;
         $this->pagination['html'] = <<<PAGINATION
 <nav aria-label='...'>
-                            <ul class='pagination {$pagination_style}'>
+                            <ul class='pagination {$pagination_style} d-flex gap-2'>
                                 <li class='page-item'>
                                     <a class='page-link'
                                        href='{$firstPageUrl}'>{$firstPageName}</a>
@@ -1429,7 +1429,7 @@ PAGELISTHTML;
                                     <a class='page-link'
                                        href='#'>{$total_page}</a>
                                 </li>
-                                <li class='page-item'>
+                                <li class='page-item d-flex gap-2'>
                                       <form action="{$form_url}" method="get" class="btn-group">
                                         <input type="text" class="page-link" name="page" placeholder="{$please_input_page_number}">
                                         <button type="submit" class="btn btn-primary page-link">{$turn_to_page}</button>
