@@ -46,7 +46,7 @@ class ModelManager
             throw new Exception(__('$type允许的值不在：%1 中', "'setup','upgrade','install'"));
         }
         $modelSetup       = ObjectManager::getInstance(ModelSetup::class);
-        $model_files_data = array_reverse($this->moduleReader->readClass($module->getBasePath(), 'Model'));
+        $model_files_data = array_reverse($this->moduleReader->readClass($module, 'Model'));
         foreach ($model_files_data as $key => $model_class) {
             if (PROD) {
                 $this->printing->printing($model_class);

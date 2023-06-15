@@ -95,11 +95,14 @@ class Upgrade implements \Weline\Framework\Console\CommandInterface
                 require $register;
             }
         }
+
         // 重新可以用的modules
-        $modules = Env::getInstance()->getActiveModules();
+        $modules = Env::getInstance()->getActiveModules(true);
+
         /**@var Sort $sort */
         $sort                = ObjectManager::getInstance(Sort::class);
         $module_dependencies = $sort->dependenciesSort($modules);
+
         Env::write(Env::path_MODULE_DEPENDENCIES_FILE, '<?php return ' . w_var_export($module_dependencies, true) . ';?>');
         /**@var Handle $module_handle*/
         $module_handle = ObjectManager::getInstance(Handle::class);

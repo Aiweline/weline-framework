@@ -361,7 +361,7 @@ class Env extends DataObject
         if (!$reget && $this->active_module_list) {
             return $this->active_module_list;
         }
-        $modules        = $this->getModuleList();
+        $modules        = $this->getModuleList($reget);
         $active_modules = [];
         foreach ($modules as $module) {
             if ($module['status']) {

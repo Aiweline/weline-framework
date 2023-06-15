@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Weline\Framework\Module\Config;
 
 use Weline\Framework\App\Env;
+use Weline\Framework\Module\Model\Module;
 use Weline\Framework\Register\Register;
 use Weline\Framework\System\File\Scan;
 
@@ -33,13 +34,10 @@ class ModuleFileReader extends Scan
         }
     }
 
-    public function readClass(string $base_path, string $dir = ''): array
+    public function readClass(Module $module, string $dir = ''): array
     {
         $files   = [];
-        $explode = explode(DS, $base_path);
-        array_pop($explode);
-        array_pop($explode);
-        array_pop($explode);
-        return $this->globFile($base_path . $dir, $files, '.php', implode(DS, $explode) . DS, '', true, true,$base_path);
+        $base_path = $module->getBasePath();
+        return $this->globFile($base_path . $dir, $files, '.php', $base_path, $module->getNamespacePath().'\\', true, true,$base_path);
     }
 }
