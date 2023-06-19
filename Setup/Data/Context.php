@@ -10,6 +10,7 @@
 namespace Weline\Framework\Setup\Data;
 
 use Weline\Framework\App\Env;
+use Weline\Framework\Module\Model\Module;
 use Weline\Framework\Output\Cli\Printing;
 
 class Context
@@ -38,6 +39,11 @@ class Context
         $this->module_description = $module_description;
         $this->modules            = Env::getInstance()->getModuleList();
         $this->printer            = new Printing();
+    }
+
+    public function getModule(): Module
+    {
+        return new Module(Env::getInstance()->getModuleByName($this->module_name));
     }
 
     public function getModuleName()
