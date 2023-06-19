@@ -1550,7 +1550,7 @@ PAGINATION;
     private function checkUpdateOrInsert(): mixed
     {
         if ($this->unique_data) {
-            $check_result = $this->getQuery()->where($this->unique_data)->find()->fetchOrigin()[0] ?? [];
+            $check_result = $this->getQuery()->where($this->unique_data)->find()->fetchOrigin() ?? [];
         } else {
             $check_result = $this->unique_data;
         }
