@@ -366,6 +366,9 @@ abstract class Query implements QueryInterface
     {
         $this->PDOStatement->execute($this->bound_values);
         $origin_data = $this->PDOStatement->fetchAll(PDO::FETCH_ASSOC);
+        if($this->fetch_type==='find'){
+            $origin_data = $origin_data[0]??'';
+        }
         $this->clearQuery();
         return $origin_data;
     }
