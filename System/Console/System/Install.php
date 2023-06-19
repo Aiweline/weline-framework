@@ -72,6 +72,15 @@ class Install extends \Weline\Framework\Console\CommandAbstract
                 }
                 $args_config['db'][$kv_arr[0]] = $kv_arr[1];
             }
+            // 数据库配置
+            if (is_int(strpos($arg, '--sandbox_db-'))) {
+                $kv_arr = explode('=', str_replace('--sandbox_db-', '', $arg));
+                if (count($kv_arr) !== 2) {
+                    $this->printer->error('错误的参数格式：' . $arg);
+                    exit();
+                }
+                $args_config['sandbox_db'][$kv_arr[0]] = $kv_arr[1];
+            }
         }
         array_shift($args);
         $db_keys = DataInterface::db_keys;
@@ -82,13 +91,20 @@ class Install extends \Weline\Framework\Console\CommandAbstract
             }
             exit();
         }
+        if (!isset($args_config['sandbox_db'])) {
+            $this->printer->error('沙盒数据库配置为空！示例：bin/m system:install --sandbox_db-type=mysql', '系统');
+            foreach ($db_keys as $key => $item) {
+                $this->printer->warning('--sandbox_db-' . $key . '=' . ($item ? $item : 'null'), '沙盒数据库');
+            }
+            exit();
+        }
         $db_config = $args_config['db'] ?? [];
         $db_config = array_intersect_key($db_config, $db_keys);
             $db_config['type'] ?? $db_config['type'] = 'mysql';
             $db_config['hostport'] ?? $db_config['hostport'] = '3306';
             $db_config['prefix'] ?? $db_config['prefix'] = 'w_';
-            $db_config['charset'] ?? $db_config['charset'] = 'utf8';
-            $db_config['collate'] ?? $db_config['collate'] = 'utf8_general_ci';
+            $db_config['charset'] ?? $db_config['charset'] = 'utf8mb4';
+            $db_config['collate'] ?? $db_config['collate'] = 'utf8mb4_general_ci';
         foreach ($db_keys as $db_key => $v) {
             if (!isset($db_config[$db_key])) {
                 $this->printer->error('数据库' . $db_key . '配置不能为空！示例：bin/m system:install --db-' . $db_key . '=demo', '系统');
@@ -98,11 +114,27 @@ class Install extends \Weline\Framework\Console\CommandAbstract
         foreach ($db_config as $key => $item) {
             echo $this->printer->colorize(str_pad($key, 8, ' ', STR_PAD_LEFT), $this->printer::WARNING) . '=>' . $this->printer->colorize($item, $this->printer::NOTE) . "\r\n";
         }
+        $sandbox_db_config = $args_config['sandbox_db'] ?? [];
+        $sandbox_db_config = array_intersect_key($sandbox_db_config, $db_keys);
+            $sandbox_db_config['type'] ?? $sandbox_db_config['type'] = 'mysql';
+            $sandbox_db_config['hostport'] ?? $sandbox_db_config['hostport'] = '3306';
+            $sandbox_db_config['prefix'] ?? $sandbox_db_config['prefix'] = 'w_';
+            $sandbox_db_config['charset'] ?? $sandbox_db_config['charset'] = 'utf8mb4';
+            $sandbox_db_config['collate'] ?? $sandbox_db_config['collate'] = 'utf8mb4_general_ci';
+        foreach ($db_keys as $db_key => $v) {
+            if (!isset($sandbox_db_config[$db_key])) {
+                $this->printer->error('数据库' . $db_key . '配置不能为空！示例：bin/m system:install --sandbox_db-' . $db_key . '=demo', '系统');
+                exit();
+            }
+        }
+        foreach ($db_config as $key => $item) {
+            echo $this->printer->colorize(str_pad($key, 8, ' ', STR_PAD_LEFT), $this->printer::WARNING) . '=>' . $this->printer->colorize($item, $this->printer::NOTE) . "\r\n";
+        }
         $this->printer->success('参数检测通过！', 'OK');
         $this->printer->note('第三步：配置安装...', '系统');
-        $this->runner->installDb($db_config);
+        $this->runner->installDb(['db' => $db_config,'sandbox_db' => $sandbox_db_config]);
         $this->printer->note('第四步：数据安装...', '系统');
-        $this->runner->systemInstall();
+//        $this->runner->systemInstall();
         $this->printer->note('第五步：系统命令更新...', '系统');
         $this->runner->systemCommands();
         $this->printer->note('第六步：系统初始化...', '系统');
