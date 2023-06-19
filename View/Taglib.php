@@ -477,7 +477,19 @@ class Taglib
                             case 'tag':
                                 $data   = explode('|', $tag_data[2]);
                                 $data   = array_merge($data, $attributes);
-                                $result = '<?php echo framework_view_process_block(' . w_var_export($data, true) . ');?>';
+                                /*                                $result = '<?php echo framework_view_process_block(' . w_var_export($data, true) . ');?>';*/
+                                // 变量导入
+                                $vars_string = '[';
+                                if(isset($attributes['vars'])){
+                                    $vars =  explode('|', $attributes['vars']);
+                                    foreach ($vars as $key=>$var) {
+                                        $var_name = trim($var);
+                                        $var = '$'.$var_name;
+                                        $vars_string .="'$var_name'=>&$var,";
+                                    }
+                                }
+                                $vars_string.=']';
+                                $result = '<?php echo framework_view_process_block(' . w_var_export($data, true) . ',$vars='.$vars_string.');?>';
                                 break;
                             // @block{Weline\Admin\Block\Demo|Weline_Admin::block/demo.phtml}
                             case '@tag{}':
