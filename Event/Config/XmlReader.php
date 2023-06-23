@@ -26,7 +26,7 @@ class XmlReader extends \Weline\Framework\Config\Reader\XmlReader
         EventCache $eventCache,
         Scanner    $scanner,
         Parser     $parser,
-                   $path = 'etc'.DS.'event.xml'
+                   $path = 'etc' . DS . 'event.xml'
     )
     {
         parent::__construct($scanner, $parser, $path);
@@ -83,6 +83,7 @@ class XmlReader extends \Weline\Framework\Config\Reader\XmlReader
                         if (!isset($event['_value']['observer']['_attribute']['instance'])) {
                             throw new Core(__($module_and_file . '观察者Observer没有设置instance属性：<observer name="observerName" instance="instanceClass" disabled="false" shared="true"/>'));
                         }
+                        $event['_value']['observer']['_attribute']['sort']      = $event['_value']['observer']['_attribute']['sort'] ?? 10000;
                         $module_event_observers[$event['_attribute']['name']][] = $event['_value']['observer']['_attribute'];
                     }
                 }
@@ -99,6 +100,7 @@ class XmlReader extends \Weline\Framework\Config\Reader\XmlReader
                 if (!isset($config['config']['_value']['event']['_value']['observer']['_attribute']['instance'])) {
                     throw new Core(__($module_and_file . '观察者Observer没有设置instance属性：<observer name="observerName" instance="instanceClass" disabled="false" shared="true"/>'));
                 }
+                $config['config']['_value']['event']['_value']['observer']['_attribute']['sort'] = $config['config']['_value']['event']['_value']['observer']['_attribute']['sort']?? 10000;
                 $module_event_observers[$config['config']['_value']['event']['_attribute']['name']][] = $config['config']['_value']['event']['_value']['observer']['_attribute'];
             }
             $event_observers_list[$module_and_file] = $module_event_observers;

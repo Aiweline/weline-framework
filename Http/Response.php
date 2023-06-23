@@ -11,15 +11,10 @@ namespace Weline\Framework\Http;
 
 
 use Weline\Framework\DataObject\DataObject;
-use Weline\Framework\Event\EventsManager;
 use Weline\Framework\Manager\ObjectManager;
 
 class Response implements ResponseInterface
 {
-    function getEvenManager():EventsManager
-    {
-        return ObjectManager::getInstance(EventsManager::class);
-    }
     private Response $instance;
 
     private array $headers = [];
@@ -52,11 +47,11 @@ class Response implements ResponseInterface
         /**@var DataObject $dataObject */
         $dataObject = ObjectManager::getInstance(DataObject::class);
         $dataObject->setData($data);
-        if (is_int(strpos($this->getRequest()->getContentType(), 'application/json'))) {
+        if (str_contains($this->getRequest()->getContentType(), 'application/json')) {
             header('Content-type: application/json');
             echo $dataObject->toJson();
         }
-        if (is_int(strpos($this->getRequest()->getContentType(), 'text/xml'))) {
+        if (str_contains($this->getRequest()->getContentType(), 'text/xml')) {
             header('Content-type: text/xml');
             echo $dataObject->toXml();
         } else {
@@ -75,14 +70,10 @@ class Response implements ResponseInterface
      */
     public function noRouter(): void
     {
-        $this->getEvenManager()->dispatch('Weline_Framework_http_response_no_router_before');
         http_response_code(404);
         @header('http/2.0 404 not found');
         @header('status: 404 not found');
-        if(is_file(BP . 'pub/errors/404.php')){
-            exit(include BP . 'pub/errors/404.php');
-        }
-        exit();
+        exit(include BP . '/404.html');
     }
 
     public function responseHttpCode($code = 200): void

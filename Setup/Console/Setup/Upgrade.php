@@ -13,16 +13,9 @@ declare(strict_types=1);
 
 namespace Weline\Framework\Setup\Console\Setup;
 
-use \Weline\Framework\App\Env;
-use \Weline\Framework\App\System;
-use \Weline\Framework\Event\EventsManager;
-use \Weline\Framework\Manager\ObjectManager;
-use \Weline\Framework\Module\Dependency\Sort;
-use \Weline\Framework\Module\Handle;
-use \Weline\Framework\Module\Helper\Data;
-use \Weline\Framework\Module\Model\Module;
-use \Weline\Framework\Output\Cli\Printing;
-use \Weline\Framework\System\File\App\Scanner as AppScanner;
+
+use Weline\Framework\Manager\ObjectManager;
+use Weline\Framework\Output\Printing;
 
 class Upgrade implements \Weline\Framework\Console\CommandInterface
 {

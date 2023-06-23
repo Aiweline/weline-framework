@@ -62,7 +62,8 @@ ${functionList}
         return $proxyClass;
     }
 
-    #[\JetBrains\PhpStorm\ArrayShape(['name' => 'string', 'body' => 'string|string[]', 'file' => 'string'])] private static function genProxyClass(string $class): array
+    #[\JetBrains\PhpStorm\ArrayShape(['name' => 'string', 'body' => 'string|string[]', 'file' => 'string'])] 
+    private static function genProxyClass(string $class): array
     {
         try {
             $classRef = new \ReflectionClass($class);
@@ -108,7 +109,6 @@ ${functionList}
             foreach ($method->getParameters() as $parameter) {
                 // 处理默认值
                 $parameter_value = null;
-
                 try {
                     $parameter_value = $parameter->getDefaultValue();
                     $parameter_value = '=' . var_export($parameter_value, true);
