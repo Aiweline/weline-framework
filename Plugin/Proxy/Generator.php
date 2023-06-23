@@ -232,6 +232,9 @@ ${functionList}
         $typeName = null;
         if ($parameter->hasType()) {
             $typeName = $parameter->getType()->getName();
+            if(class_exists($typeName)){
+                $typeName = '\\'.$typeName;
+            }
         }
 
         return $typeName;
