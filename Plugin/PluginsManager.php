@@ -83,6 +83,10 @@ class PluginsManager
         //）
         // 反射所有插件类方法
         foreach ($this->plugins as $type => $type_plugins) {
+            // 插件类排序 二维数组根据sort字段排序
+            usort($type_plugins, function ($a, $b) {
+                return strnatcasecmp($a['sort'], $b['sort']);
+            } );            
             $plugin_listen_methods = [];
 
             try {
