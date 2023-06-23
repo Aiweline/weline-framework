@@ -83,6 +83,17 @@ class Upgrade extends CommandAbstract
             }
         }
         $i += 1;
+        $this->printer->note($i . '、事件清理...');
+        /**@var $cacheManagerConsole \Weline\CacheManager\Console\Cache\Clear */
+        $cacheManagerConsole = ObjectManager::getInstance(\Weline\Framework\Event\Console\Event\Cache\Clear::class);
+        $cacheManagerConsole->execute();
+
+        $i += 1;
+        $this->printer->note($i . '、插件编译...');
+        /**@var $cacheManagerConsole \Weline\CacheManager\Console\Cache\Clear */
+        $cacheManagerConsole = ObjectManager::getInstance(\Weline\Framework\Plugin\Console\Plugin\Di\Compile::class);
+        $cacheManagerConsole->execute();
+        $i += 1;
         // 扫描代码
         $this->printer->note($i . '、清理模板缓存', '系统');
         $modules = Env::getInstance()->getModuleList();
@@ -146,17 +157,6 @@ class Upgrade extends CommandAbstract
         $this->printer->warning(Env::path_FUNCTIONS_FILE);
         file_put_contents(Env::path_FUNCTIONS_FILE, $function_files_content);
 
-        $i += 1;
-        $this->printer->note($i . '、事件清理...');
-        /**@var $cacheManagerConsole \Weline\CacheManager\Console\Cache\Clear */
-        $cacheManagerConsole = ObjectManager::getInstance(\Weline\Framework\Event\Console\Event\Cache\Clear::class);
-        $cacheManagerConsole->execute();
-
-        $i += 1;
-        $this->printer->note($i . '、插件编译...');
-        /**@var $cacheManagerConsole \Weline\CacheManager\Console\Cache\Clear */
-        $cacheManagerConsole = ObjectManager::getInstance(\Weline\Framework\Plugin\Console\Plugin\Di\Compile::class);
-        $cacheManagerConsole->execute();
         $i += 1;
 
         // 清理其他
