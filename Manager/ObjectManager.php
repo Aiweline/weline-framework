@@ -137,7 +137,7 @@ class ObjectManager implements ManagerInterface
         self::$reflections[$class] = $refClass;
 //        p($refClass->getAttributes());
         $new_object           = $refClass->newInstanceArgs($arguments);
-        $new_object->filename = $refClass->getFileName();
+//        $new_object->filename = $refClass->getFileName();
         /*$classAttrs = $refClass->getAttributes();
         foreach ($classAttrs as $key => $classAttr) {
             $value = $classAttr->getName();
