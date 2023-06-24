@@ -10,7 +10,7 @@
 namespace Weline\Framework\Module\Helper;
 
 use Weline\Framework\System\File\Scan;
-use Weline\Framework\Module\Data\DirectoryInterface;
+use Weline\Framework\Module\Api\Data\DirectoryInterface;
 
 /**
  * 文件信息

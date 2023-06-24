@@ -11,13 +11,13 @@ namespace Weline\Framework\Module;
 
 use Composer\Composer;
 use Weline\Framework\Database\Model\ModelManager;
+use Weline\Framework\Module\Dependency\Checker;
 use Weline\Framework\Module\Model\Module;
 use Weline\Framework\Register\RegisterInterface;
 use Weline\Framework\System\File\Compress;
 use Weline\Framework\App\Env;
 use Weline\Framework\App\Exception;
 use Weline\Framework\App\System;
-use Weline\Framework\Console\ConsoleException;
 use Weline\Framework\Helper\HandleInterface;
 use Weline\Framework\Manager\ObjectManager;
 use Weline\Framework\Module\Helper\Data;
@@ -96,7 +96,7 @@ class Handle implements HandleInterface, RegisterInterface
      *
      * 参数区：
      *
-     * @param string $module- >getName()
+     * @param string $module - >getName()
      *
      * @throws \Weline\Framework\App\Exception
      */
@@ -151,10 +151,16 @@ class Handle implements HandleInterface, RegisterInterface
      * @throws Exception
      * @throws \ReflectionException
      */
-    public function register(string $type, string $module_name, array|string $param, string $version = '', string $description = '',array
-    $dependencies=[])
-    : mixed
+    public function register(string $type, string $module_name, array|string $param, string $version = '', string $description = '', array $dependencies = []): mixed
     {
+        // 检测依赖
+
+        foreach ($dependencies as $dependency) {
+            if (!Checker::hasDependency($dependency)) {
+                throw new Exception(__('%1 模组所需依赖尚 %2 未安装！请先安装模块后继续执行，或者删除此依赖。', [$module_name, $dependency]));
+            }
+        }
+
         if (DEV) {
             $this->printer->error($module_name . '：处理...', '开发');
         }
@@ -214,7 +220,7 @@ class Handle implements HandleInterface, RegisterInterface
                ->setVersion($version ?: '1.0.0')
                ->setDescription($description ?: '')
                ->setDependencies($dependencies);
-        // 已经存在模块则更新 FIXME 解决刷新时会自动解禁模组问题
+        // 已经存在模块则更新
         if ($this->helper->isInstalled($this->modules, $module->getName())) {
             if ($this->helper->isDisabled($this->modules, $module->getName())) {
                 $module->setStatus(false);
@@ -355,6 +361,7 @@ class Handle implements HandleInterface, RegisterInterface
                         }
                     }
                 }
+                $this->modules[$module->getName()] = $module->getData();
                 $this->printer->success(str_pad($module->getName(), 45) . __('已更新！'));
             }
         } else {
@@ -400,7 +407,7 @@ class Handle implements HandleInterface, RegisterInterface
             if (DEV) {
                 $this->printer->setup($module->getName() . '：更新路由完成...', '开发');
             }
-            $this->printer->success(str_pad($module->getName(), 45) . __('已更新！'),__('路由更新：'));
+            $this->printer->success(str_pad($module->getName(), 45) . __('已更新！'), __('路由更新：'));
         }
         return $module;
     }

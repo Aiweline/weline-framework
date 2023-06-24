@@ -10,8 +10,6 @@
 namespace Weline\Framework\System\File\App;
 
 use Weline\Framework\App\Env;
-use Weline\Framework\Manager\ObjectManager;
-use Weline\Framework\Module\Dependency\Sort;
 use Weline\Framework\Register\Register;
 use Weline\Framework\System\File\Scan;
 use Weline\Framework\Register\RegisterInterface;
@@ -27,74 +25,6 @@ class Scanner extends Scan
      * 参数区：
      * @return array
      */
-    public function scanModules(): array
-    {
-        # 扫描app模块
-        $app_modules = glob(APP_CODE_PATH . '*' . DS . '*' . DS . RegisterInterface::register_file, GLOB_NOSORT);
-        # 扫描vendor模块
-        $vendor_modules = glob(VENDOR_PATH . '*' . DS . '*' . DS . RegisterInterface::register_file, GLOB_NOSORT);
-        # 合并
-        return array_merge($vendor_modules, $app_modules);
-    }
-
-    /**
-     * @DESC         |扫描vendor供应商目录 模块
-     *
-     * @Author       秋枫雁飞
-     * @Email        aiweline@qq.com
-     * @Forum        https://bbs.aiweline.com
-     * @Description  此文件源码由Aiweline（秋枫雁飞）开发，请勿随意修改源码！
-     *
-     * 参数区：
-     * @return array|false
-     * @throws \ReflectionException
-     * @throws \Weline\Framework\App\Exception
-     */
-    public function scanAppModules(): array
-    {
-        # 合并
-        $modules = $this->scanModules();
-        return $modules;
-        # 解析模组
-        $modules = $this->parseModules($modules);
-        # 依赖排序
-        $module_dependencies = [];
-        foreach ($modules as $vendor => $modules_list) {
-            foreach ($modules_list as $module) {
-                $module_dependencies[] = $module;
-            }
-        }
-        /**@var Sort $sort */
-        $sort                = ObjectManager::getInstance(Sort::class);
-        $module_dependencies = $sort->dependenciesSort($module_dependencies);
-        Env::write(Env::path_MODULE_DEPENDENCIES_FILE, '<?php return ' . var_export($module_dependencies, true) . ';?>');
-        return [$modules, $module_dependencies];
-    }
-
-    /**
-     * @DESC         |扫描所有注册文件
-     *
-     * @Author       秋枫雁飞
-     * @Email        aiweline@qq.com
-     * @Forum        https://bbs.aiweline.com
-     * @Description  此文件源码由Aiweline（秋枫雁飞）开发，请勿随意修改源码！
-     *
-     * 参数区：
-     *
-     * @return array|false
-     */
-    public function scanRegisters()
-    {
-        $registers = $this->scanAllAppVendors();
-        foreach ($registers as $key => $vendor) {
-            unset($registers[$key]);
-            if ($vendor_files = $this->scanVendorModules($vendor)) {
-                $registers[$vendor] = $vendor_files;
-            }
-        }
-
-        return $registers;
-    }
 
     /**
      * @DESC         |扫描应用供应商
@@ -198,7 +128,7 @@ class Scanner extends Scan
                 'path'      => $origin_vendor . DS . $origin_module,
                 'register'  => $app_module_register,
                 'id'        => $vendor . '_' . $module,
-                'parent'    => $env['dependencies'] ?? [],
+                'parents'   => $env['parents'] ?? [],
                 'env_file'  => $env_file,
                 'base_path' => $base_path,
                 'env'       => $env

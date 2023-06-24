@@ -9,14 +9,12 @@
 
 namespace Weline\Framework\Module\Helper;
 
-use Weline\Framework\Acl\Acl;
 use Weline\Framework\App\Env;
 use Weline\Framework\DataObject\DataObject;
 use Weline\Framework\Event\EventsManager;
 use Weline\Framework\Http\Request;
 use Weline\Framework\Manager\ObjectManager;
 use Weline\Framework\Register\RegisterDataInterface;
-use Weline\Framework\System\File\App\Scanner;
 use Weline\Framework\System\File\Io\File;
 use Weline\Framework\Helper\AbstractHelper;
 use Weline\Framework\Http\RequestInterface;

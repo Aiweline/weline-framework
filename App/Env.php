@@ -194,6 +194,8 @@ class Env extends DataObject
 
     private array $hasGetConfig;
 
+    private array $dependencies = [];
+
     /**
      * @DESC         |私有化克隆函数
      *
@@ -354,6 +356,21 @@ class Env extends DataObject
         $this->module_list = (new Modules())->getList();
 
         return $this->module_list;
+    }
+
+    public function getDependencies(bool $reget = false): array
+    {
+        if (!$reget && $this->dependencies) {
+            return $this->dependencies;
+        }
+        $this->dependencies = (array)require self::path_MODULE_DEPENDENCIES_FILE;
+
+        return $this->dependencies;
+    }
+
+    public function saveDependencies(array $dependencies): bool
+    {
+        return file_put_contents(self::path_MODULE_DEPENDENCIES_FILE, '<?php  return ' . w_var_export($dependencies, true));
     }
 
     public function getActiveModules(bool $reget = false): array

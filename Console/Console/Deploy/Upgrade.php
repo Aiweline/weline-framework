@@ -12,15 +12,10 @@ namespace Weline\Framework\Console\Console\Deploy;
 use Weline\Framework\App\Env;
 use Weline\Framework\App\System;
 use Weline\Framework\Console\CommandAbstract;
-use Weline\Framework\System\File\App\Scanner as AppScanner;
 use Weline\Framework\View\Data\DataInterface;
 
 class Upgrade extends CommandAbstract
 {
-    /**
-     * @var AppScanner
-     */
-    private AppScanner $scanner;
 
     /**
      * @var System
@@ -28,11 +23,9 @@ class Upgrade extends CommandAbstract
     private System $system;
 
     public function __construct(
-        AppScanner $scanner,
         System     $system
     )
     {
-        $this->scanner = $scanner;
         $this->system  = $system;
     }
 

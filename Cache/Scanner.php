@@ -10,13 +10,14 @@
 namespace Weline\Framework\Cache;
 
 use Weline\Framework\App\Env;
+use Weline\Framework\Cache\Api\Data\CacheDataInterface;
 use Weline\Framework\Manager\ObjectManager;
 use Weline\Framework\Module\Must\DataInterface;
 use Weline\Framework\Register\Register;
 use Weline\Framework\Register\RegisterInterface;
 use Weline\Framework\System\File\Data\File;
 
-class Scanner extends \Weline\Framework\System\File\App\Scanner
+class Scanner
 {
     public const dir = 'Cache';
 
@@ -70,15 +71,28 @@ class Scanner extends \Weline\Framework\System\File\App\Scanner
             if (strpos($cache_file, 'Interface')) {
                 continue;
             }
+            $exploded_cache_dir = explode(CacheDataInterface::dir, $cache_file);
+            $module_base_path = array_shift($exploded_cache_dir);
+            $activeModules = Env::getInstance()->getActiveModules(true);
+            $module = [];
+            foreach ($activeModules as $activeModule){
+                if($activeModule['base_path']==$module_base_path){
+                    $module = $activeModule;
+                    break;
+                }
+            }
+            if(empty($module)){
+                continue;
+            }
             $cache_class = str_replace('.php', '', $cache_file);
             $cache_class = str_replace(APP_CODE_PATH, '', $cache_class);
             $cache_class = str_replace(VENDOR_PATH, '', $cache_class);
             $cache_class = str_replace(DS, '\\', $cache_class);
+
             # 处理模块目录
             $cache_class_dirs = explode('\\', $cache_class);
-            $vendor           = array_shift($cache_class_dirs);
-            $module           = array_shift($cache_class_dirs);
-            $class            = Register::parserModuleVendor($vendor) . '\\' . Register::parserModuleName($module) . '\\' . implode('\\', $cache_class_dirs);
+
+            $class            = $module['namespace_path']. '\\' . implode('\\', $cache_class_dirs);
             if (class_exists($class)) {
                 try {
                     $obj_class = $class;
@@ -112,7 +126,7 @@ class Scanner extends \Weline\Framework\System\File\App\Scanner
     {
         // 扫描核心命令 兼容AppCode和composer
         $app_framework      = glob(APP_CODE_PATH . 'Weline' . DS . 'Framework' . DS . '*' . DS . 'Cache' . DS . '*.php', GLOB_NOSORT);
-        $composer_framework = glob(VENDOR_PATH . 'Weline' . DS . 'Framework' . DS . '*' . DS . 'Cache' . DS . '*.php', GLOB_NOSORT);
+        $composer_framework = glob(VENDOR_PATH . 'weline' . DS . 'framework' . DS . '*' . DS . 'Cache' . DS . '*.php', GLOB_NOSORT);
         // 合并
         $cache_files = array_merge($composer_framework, $app_framework);
         # 查找缓存管理器

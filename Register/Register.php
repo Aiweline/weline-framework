@@ -10,13 +10,17 @@
 namespace Weline\Framework\Register;
 
 use Weline\Framework\App;
+use Weline\Framework\App\Exception;
 use Weline\Framework\Console\ConsoleException;
 use Weline\Framework\DataObject\DataObject;
 use Weline\Framework\Event\EventsManager;
 use Weline\Framework\Manager\ObjectManager;
+use Weline\Framework\Module\Dependency\Sort;
 
 class Register implements RegisterDataInterface
 {
+    private array $original_module_data = [];
+
     /**
      * @DESC         |注册
      *
@@ -48,7 +52,7 @@ class Register implements RegisterDataInterface
                 $module_name_dir = array_pop($appPathArray);
                 $vendor_dir      = array_pop($appPathArray);
                 // 安装数据
-                $install_params = [$type, $module_name, ['dir_path' => $vendor_dir . DS . $module_name_dir . DS, 'base_path' => $param . DS, 'module_name' => $module_name], $version, $description,$dependencies];
+                $install_params = [$type, $module_name, ['dir_path' => $vendor_dir . DS . $module_name_dir . DS, 'base_path' => $param . DS, 'module_name' => $module_name], $version, $description, $dependencies];
                 break;
             // 路由注册
             case self::ROUTER:
@@ -76,56 +80,180 @@ class Register implements RegisterDataInterface
         }
     }
 
-    public static function moduleName(string $vendor, string $module_name): string
+    static public function parserRegisterFunctionParams(string $register_file)
     {
-        return self::parserModuleVendor($vendor) . '_' . self::parserModuleName($module_name);
+        if (!is_file($register_file)) {
+            throw new Exception($register_file . __('注册文件不存在！'));
+        }
+        $registerArgs = self::getStaticFunctions($register_file);
+        $registerArgs = array_shift($registerArgs) ?? [];
+        if (empty($registerArgs)) {
+            throw new Exception($register_file . __(' 文件中：Register::register(...)  函数参数不能为空'));
+        }
+        // 反解析参数名
+        $registerRef = new \ReflectionClass(\Weline\Framework\Register\Register::class);
+        $method      = $registerRef->getMethod('register');
+        foreach ($method->getParameters() as $key => $argument) {
+            $registerArgs[$argument->getName()] = $registerArgs[$key] ?? (($argument->getType()->getName() === 'array') ? [] : null);
+            unset($registerArgs[$key]);
+        }
+        return $registerArgs;
     }
 
-    public static function parserModuleVendor(string $vendor): string
+    /**
+     * @DESC          # 获取所有注册文件
+     *
+     * @AUTH    秋枫雁飞
+     * @EMAIL aiweline@qq.com
+     * @DateTime: 2023/6/23 20:49
+     * 参数区：
+     * @return array
+     */
+    static function scanRegisters(): array
     {
-        return ucfirst($vendor);
+        # 扫描app模块
+        $app_modules = glob(APP_CODE_PATH . '*' . DS . '*' . DS . RegisterInterface::register_file, GLOB_NOSORT);
+        # 扫描vendor模块
+        $vendor_modules = glob(VENDOR_PATH . '*' . DS . '*' . DS . RegisterInterface::register_file, GLOB_NOSORT);
+        # 合并
+        return array_merge($vendor_modules, $app_modules);
     }
 
-    public static function moduleNameToNamespacePath(string $module_name): string
-    {
-        return str_replace('_', '\\', $module_name) . '\\';
-    }
 
-    public static function parserModuleName(string $module_name): string
+    /**
+     * @DESC          # 解析注册文件中的注册函数
+     *
+     * @AUTH    秋枫雁飞
+     * @EMAIL aiweline@qq.com
+     * @DateTime: 2023/6/24 0:09
+     * 参数区：
+     *
+     * @param $register_file
+     *
+     * @return array
+     */
+    static function getStaticFunctions($register_file)
     {
-        $module_rename = '';
-        if (is_int(strpos($module_name, '-'))) {
-            $module_arr = explode('-', $module_name);
-            foreach ($module_arr as $item) {
-                $module_rename .= ucfirst($item);
+        $tokens = token_get_all(file_get_contents($register_file));
+        $calls  = array();
+        foreach ($tokens as $key => $token) {
+            if (is_array($token) && $token[0] == T_DOUBLE_COLON) {
+                $call                = '';
+                $start               = $key - 1;
+                $brackets            = 0;
+                $params              = array();
+                $left_square_bracket = false;
+                $params_key          = 0;
+                $long_params         = '';
+                $function_name       = '';
+                while ($brackets >= 0) {
+                    $current_token = is_array($tokens[$start]) ? $tokens[$start][1] : $tokens[$start];
+                    $call          .= $current_token;
+
+                    if ($current_token == '(') {
+                        $brackets++;
+                        $function_name = trim($tokens[$start - 3][1]) . trim($tokens[$start - 2][1]) . trim($tokens[$start - 1][1]);
+                    } elseif ($current_token == ')') {
+                        $brackets = -1;
+                    }
+                    if ($brackets > 0) {
+                        if ($current_token == ']') {
+                            $left_square_bracket = false;
+                        }
+                        if ($current_token == '[') {
+                            $left_square_bracket = true;
+                        }
+                        if ($left_square_bracket) {
+                            if ($current_token !== '[' && $current_token !== ']') {
+                                if (trim($current_token)) {
+                                    $long_params .= $current_token;
+                                }
+                            }
+                        } else {
+                            if ($current_token == ',') {
+                                if ($tokens[$start - 2][1] == '::') {
+                                    $params[$params_key] = trim($tokens[$start - 3][1]) . trim($tokens[$start - 2][1]) . trim($tokens[$start - 1][1]);
+                                } else {
+                                    $params[$params_key] = trim($tokens[$start - 1][1]);
+                                }
+                                $params_key += 1;
+                            }
+                        }
+                        if (!$left_square_bracket) {
+                            $long_params         = rtrim($long_params, ',');
+                            $params[$params_key] = explode(',', $long_params);
+                        }
+                    }
+                    $start++;
+                }
+                if ($function_name) {
+                    $calls[$function_name] = $params;
+                }
+                $function_name = '';
+                $params        = [];
             }
-        } else {
-            $module_rename = $module_name;
         }
-        return ucfirst($module_rename);
+        return $calls;
     }
 
-    public static function convertToComposerName(string $name): string
+    /**
+     * @DESC          # 获取原始模组的信息（包含未注册的模组）
+     *
+     * @AUTH    秋枫雁飞
+     * @EMAIL aiweline@qq.com
+     * @DateTime: 2023/6/24 0:27
+     * 参数区：
+     * @return array
+     * @throws \Weline\Framework\App\Exception
+     */
+    static function getOriginModulesData(): array
     {
-        # 转化为composer名称
-        $name            = lcfirst($name);
-        $vendor_name_arr = w_split_by_capital($name);
-        return strtolower(implode('-', $vendor_name_arr));
-    }
-
-    public static function composerNameConvertToNamespace(string $name): string
-    {
-        # composer名称转化为命名空间
-        $name = explode('-', $name);
-        foreach ($name as &$item) {
-            $item = ucfirst($item);
+        $registers = Register::scanRegisters();
+        $modules   = [];
+        foreach ($registers as $register) {
+            $registerArgs = Register::parserRegisterFunctionParams($register);
+            $module       = trim($registerArgs['module_name'], '\'\"');
+            $vendorArr    = explode('_', $module);
+            $vendor       = array_shift($vendorArr);
+            $base_path    = str_replace(Register::register_file, '', $register);
+            $env_file     = $base_path . 'etc' . DS . 'env.php';
+            $env          = [];
+            if (file_exists($env_file)) {
+                $env = (array)include $env_file;
+            }
+            $dependencies = $registerArgs['dependencies'] ?? [];
+            foreach ($dependencies as &$dependency) {
+                $dependency = trim($dependency, '\'"');
+            }
+            $dependencies = array_merge($dependencies, ($env['dependencies'] ?? []));
+            $pathArr      = explode(DS, $base_path);
+            $path         = array_pop($pathArr);
+            if (empty($path)) {
+                $path = array_pop($pathArr);
+            }
+            $path                      = array_pop($pathArr) . DS . $path;
+            $modules[$vendor][$module] = [
+                'vendor'       => $vendor,
+                'name'         => $module,
+                'path'         => $path,
+                'register'     => $register,
+                'id'           => $module,
+                'dependencies' => $dependencies,
+                'env_file'     => $env_file,
+                'base_path'    => $base_path,
+                'env'          => $env
+            ];
         }
-        $name     = implode('\\', $name);
-        $name_arr = explode(DS, $name);
-        foreach ($name_arr as &$item_name) {
-            $item_name = ucfirst($item_name);
+        // 更新依赖排序
+        $dependency_modules = [];
+        foreach ($modules as $vendor_modules) {
+            foreach ($vendor_modules as $module_name => $module) {
+                $dependency_modules[$module_name] = $module;
+            }
         }
-        $name = implode('\\', $name_arr);
-        return str_replace(DS, '\\', $name);
+        /**@var Sort $dependencyModel */
+        $dependencyModel   = ObjectManager::getInstance(Sort::class);
+        $dependencyModules = $dependencyModel->dependenciesSort($dependency_modules);
+        return [$modules, $dependencyModules];
     }
 }

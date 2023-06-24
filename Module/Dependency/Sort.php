@@ -11,33 +11,38 @@ declare(strict_types=1);
 
 namespace Weline\Framework\Module\Dependency;
 
+use Weline\Framework\App\Env;
+
 class Sort
 {
-    function sortModules($modules) {
-        $sortedModules = array();
+    function sortModules(&$modules, $entity_id = 'id', $parent_key = 'parents')
+    {
+        $sortedModules  = array();
         $visitedModules = array();
 
-        foreach ($modules as $module => $module_data) {
-            $this->sortModuleDFS($module, $module_data['dependencies'], $modules, $sortedModules, $visitedModules);
+        foreach ($modules as $module_data) {
+            $this->sortModuleDFS($module_data[$entity_id], $module_data[$parent_key] ?? [], $modules, $sortedModules, $visitedModules, $entity_id, $parent_key);
         }
 
         return $sortedModules;
     }
 
-    function sortModuleDFS($module, $dependencies, $modules, &$sortedModules, &$visitedModules) {
+    function sortModuleDFS($module, $parents, &$modules, &$sortedModules, &$visitedModules, &$entity_id, &$parent_key)
+    {
         if (isset($visitedModules[$module])) {
             return;
         }
-
         $visitedModules[$module] = true;
-        foreach ($dependencies as $dependency) {
+        foreach ($parents as $dependency) {
             if (isset($modules[$dependency])) {
-                $this->sortModuleDFS($dependency, $modules[$dependency]['dependencies'], $modules, $sortedModules, $visitedModules);
+                $this->sortModuleDFS($dependency, $modules[$dependency][$parent_key], $modules, $sortedModules,
+                                     $visitedModules, $entity_id, $parent_key);
             }
         }
 
         $sortedModules[$module] = $modules[$module];
     }
+
     /**
      * @DESC          # 依赖排序
      *
@@ -52,8 +57,15 @@ class Sort
      *
      * @return array
      */
-    public function dependenciesSort(array $dependencies, string $entity_id = 'name', string $parent_key = 'dependencies'): array
+    public function dependenciesSort(array &$modules, string $entity_id = 'id', string $parent_key = 'dependencies'): array
     {
-        return $this->sortModules($dependencies);
+        $dependencies = $this->sortModules($modules, $entity_id, $parent_key);
+        $this->saveDenpendenciesSort($dependencies);
+        return $dependencies;
+    }
+
+    public function saveDenpendenciesSort(array $dependencies): bool
+    {
+        return Env::getInstance()->saveDependencies($dependencies);
     }
 }

@@ -11,7 +11,6 @@ namespace Weline\Framework\Setup\Console\Setup\Di;
 
 use Weline\Framework\Event\EventsManager;
 use Weline\Framework\Manager\ObjectManager;
-use Weline\Framework\System\File\App\Scanner as AppScanner;
 
 class Compile extends \Weline\Framework\Console\CommandAbstract
 {
@@ -20,17 +19,6 @@ class Compile extends \Weline\Framework\Console\CommandAbstract
      */
     public function execute(array $args = [], array $data = [])
     {
-        // 扫描代码
-        $scanner = new AppScanner();
-        list($vendor, $registers) = $scanner->scanAppModules();
-        $this->printer->note('DI:依赖更新...');
-        foreach ($registers as $name => $register) {
-            $register = $register['register'];
-            if (is_file(APP_CODE_PATH . $register)) {
-                $all_modules[$vendor . '_' . $name] = $register;
-                require APP_CODE_PATH . $register;
-            }
-        }
         # 分配编译事件
         /**@var EventsManager $evenManager */
         $evenManager = ObjectManager::getInstance(EventsManager::class);

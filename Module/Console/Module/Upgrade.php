@@ -19,7 +19,7 @@ use Weline\Framework\Module\Handle;
 use Weline\Framework\Module\Helper\Data;
 use Weline\Framework\Module\Model\Module;
 use Weline\Framework\Output\Cli\Printing;
-use Weline\Framework\System\File\App\Scanner as AppScanner;
+use Weline\Framework\Register\Register;
 
 class Upgrade extends CommandAbstract
 {
@@ -29,30 +29,23 @@ class Upgrade extends CommandAbstract
     private System $system;
 
     /**
-     * @var AppScanner
-     */
-    private AppScanner $scanner;
-
-    /**
      * @var Data
      */
     private Data $data;
 
     public function __construct(
-        Printing   $printer,
-        AppScanner $scanner,
-        Data       $data,
-        System     $system
+        Printing $printer,
+        Data     $data,
+        System   $system
     )
     {
         $this->printer = $printer;
         $this->system  = $system;
-        $this->scanner = $scanner;
         $this->data    = $data;
     }
 
     /**
-     * @DESC         |方法描述
+     * @DESC         |更新系统
      *
      * @Author       秋枫雁飞
      * @Email        aiweline@qq.com
@@ -70,19 +63,25 @@ class Upgrade extends CommandAbstract
     public function execute(array $args = [], array $data = [])
     {
         $i = 1;
-        // 删除路由文件
-        $this->printer->warning($i . '、路由更新...', '系统');
-        $this->printer->warning('清除文件：');
-        foreach (Env::router_files_PATH as $path) {
-            $this->printer->warning($path);
-            if (is_file($path)) {
-                $data = $this->system->exec('rm -f ' . $path);
-                if ($data) {
-                    $this->printer->printList($data);
-                }
-            }
-        }
+//        // 删除路由文件
+//        $this->printer->warning($i . '、路由更新...', '系统');
+//        $this->printer->warning('清除文件：');
+//        foreach (Env::router_files_PATH as $path) {
+//            $this->printer->warning($path);
+//            if (is_file($path)) {
+//                $data = $this->system->exec('rm -f ' . $path);
+//                if ($data) {
+//                    $this->printer->printList($data);
+//                }
+//            }
+//        }
+//        $i += 1;
         $i += 1;
+        $this->printer->note($i . '、命令行更新...');
+        /**@var \Weline\Framework\Console\Console\Command\Upgrade $commandManagerConsole*/
+        $commandManagerConsole = ObjectManager::getInstance(\Weline\Framework\Console\Console\Command\Upgrade::class);
+        $commandManagerConsole->execute();
+
         $this->printer->note($i . '、事件清理...');
         /**@var $cacheManagerConsole \Weline\CacheManager\Console\Cache\Clear */
         $cacheManagerConsole = ObjectManager::getInstance(\Weline\Framework\Event\Console\Event\Cache\Clear::class);
@@ -104,23 +103,26 @@ class Upgrade extends CommandAbstract
             }
         }
         $i += 1;
+        $this->printer->note($i . '、清理缓存...');
+        /**@var $cacheManagerConsole \Weline\CacheManager\Console\Cache\Flush */
+        $cacheManagerConsole = ObjectManager::getInstance(\Weline\CacheManager\Console\Cache\Flush::class);
+        $cacheManagerConsole->execute();
+        $this->system->exec('rm -rf ' . BP . 'var' . DS . 'cache');
+
         $this->printer->note($i . '、module模块更新...');
         // 注册模块
         $all_modules = [];
-        // 扫描代码
-        list($vendor, $dependencies) = $this->scanner->scanAppModules();
+        // 扫描模型注册代码
+        list($origin_vendor_modules, $dependencyModules) = Register::getOriginModulesData();
         // 注册模组
         $this->printer->note(__('1)注册模组'));
-        foreach ($dependencies as $module_name => $module_data) {
-            $register = $module_data['register'] ?? '';
-            if (is_file($register)) {
-                require $register;
-            }else{
-                unset($dependencies[$module_name]);
+        foreach ($dependencyModules as $module_name => $module) {
+            if (is_file($module['register'])) {
+                require $module['register'];
             }
         }
         $modules = Env::getInstance()->getModuleList(true);
-        /**@var Handle $module_handle*/
+        /**@var Handle $module_handle */
         $module_handle = ObjectManager::getInstance(Handle::class);
         // 安装Setup信息
         $this->printer->note(__('2)安装Setup信息'));
@@ -160,11 +162,7 @@ class Upgrade extends CommandAbstract
         $i += 1;
 
         // 清理其他
-        $this->printer->note($i . '、清理缓存...');
-        /**@var $cacheManagerConsole \Weline\CacheManager\Console\Cache\Flush */
-        $cacheManagerConsole = ObjectManager::getInstance(\Weline\CacheManager\Console\Cache\Flush::class);
-        $cacheManagerConsole->execute();
-        $this->system->exec('rm -rf ' . BP . 'var' . DS . 'cache');
+
 
         /**@var EventsManager $eventsManager */
         $eventsManager = ObjectManager::getInstance(EventsManager::class);

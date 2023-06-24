@@ -10,14 +10,11 @@
 namespace Weline\Framework\Plugin\Console\Plugin\Di;
 
 use Weline\Framework\App\Env;
-use Weline\Framework\App\Exception;
 use Weline\Framework\App\System;
-use Weline\Framework\Exception\Core;
 use Weline\Framework\Manager\ObjectManager;
 use Weline\Framework\Output\Cli\Printing;
 use Weline\Framework\Plugin\Console\Plugin\Cache\Clear;
 use Weline\Framework\Plugin\PluginsManager;
-use Weline\Framework\System\File\App\Scanner as AppScanner;
 
 class Compile implements \Weline\Framework\Console\CommandInterface
 {
