@@ -69,7 +69,7 @@ class Taglib
             return $name;
         }
         # 有字母的，且不是字符串，不存在特殊字符内的，可以加$
-        $special = ['null', 'and', 'or','xor'];
+        $special = ['null', 'and', 'or', 'xor'];
         if (preg_match('/^[a-zA-Z]/', $name)) {
             if (!in_array($name, $special) and !str_starts_with($name, '"') and !str_starts_with($name, "'")) {
                 $name = $name ? '$' . $name : $name;
@@ -80,31 +80,29 @@ class Taglib
 
     public function varParser(string $name): string
     {
+        $show = false;
+        if ($name == '$module->getPosition() === \'system\'') {
+            $show = true;
+        }
         $name_str = '';
         # 处理过滤器
         list($name, $default) = $this->checkFilter($name);
         # 去除空白以及空格
         $name = $this->checkVar($name);
+
+
         # 处理转行变量
 //        $name = str_replace('    ', '', $name);
         $name = preg_replace('/ {4,}/', '', $name);
+
         # 单双引号包含的字符串不解析
         $exclude_names = w_get_string_between_quotes($name);
+
         foreach ($exclude_names as $key => $exclude_name) {
             $name = str_replace($exclude_name, 'w_var_str' . $key, $name);
         }
-//        foreach (self::operators_symbols as $operators_symbol) {
-//            $name = str_replace($operators_symbol, " $operators_symbol ", $name);
-//            $name = str_replace("$operators_symbol =", " $operators_symbol= ", $name);
-//            $name = str_replace("$operators_symbol >", " $operators_symbol> ", $name);
-//            $name = preg_replace('/([\+\-\*\/%=&\^\|]+\s*)/', ' $1 ', $name);
-//            d($name);
-//        }
-//        $string = $name;
-//        $pattern = '/(?<![\$\.\+\-\*\/%=&\^\|!><])\s*((?<![\+\-\*\/%=&\^\|\!><])([\+\-\*\/%=&\^\|]{2,}|[\+\-\*\/%=&\^\|!><]=|\|\||&&|->|\?\?|::|\?\.)(?![\+\-\*\/%=&\^\|\!\?\.\w])|\+\+|\-\-)(?!\s*\d|\s|\.\s|\$\w|\w)/';
-//        $newString = preg_replace($pattern, ' $1 ', $string);
-//        $pattern = '/\s*([><=!]+|&&|\|\||[()])\s*/';
-        $pattern = '/(?<![\-\>()\s])\s*([><=!]+|&&|\|\|)\s*(?![()\s])/';
+
+        $pattern = '/(?<![\-\>()\s])\s*([><=!]={2,3}+|&&|\|\|)\s*(?![()\s])/';
         $name = preg_replace($pattern, ' $1 ', $name);
 
 //        $name = $newString;
@@ -237,7 +235,7 @@ class Taglib
                         }
                     }
             ],
-            'count'          => [
+            'count'       => [
                 'tag'      => 1,
                 'callback' =>
                     function ($tag_key, $config, $tag_data, $attributes) {
@@ -502,16 +500,16 @@ class Taglib
                                 }
                                 // 变量导入
                                 $vars_string = '[';
-                                if(isset($attributes['vars'])){
-                                    $vars =  explode('|', $attributes['vars']);
-                                    foreach ($vars as $key=>$var) {
-                                        $var_name = trim($var);
-                                        $var = '$'.$var_name;
-                                        $vars_string .="'$var_name'=>&$var,";
+                                if (isset($attributes['vars'])) {
+                                    $vars = explode('|', $attributes['vars']);
+                                    foreach ($vars as $key => $var) {
+                                        $var_name    = trim($var);
+                                        $var         = '$' . $var_name;
+                                        $vars_string .= "'$var_name'=>&$var,";
                                     }
                                 }
-                                $vars_string.=']';
-                                $result = '<?php echo framework_view_process_block(' . w_var_export($attributes, true) . ',$vars='.$vars_string.');?>';
+                                $vars_string .= ']';
+                                $result      = '<?php echo framework_view_process_block(' . w_var_export($attributes, true) . ',$vars=' . $vars_string . ');?>';
                                 break;
                             default:
                         }
