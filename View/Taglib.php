@@ -80,10 +80,6 @@ class Taglib
 
     public function varParser(string $name): string
     {
-        $show = false;
-        if ($name == '$module->getPosition() === \'system\'') {
-            $show = true;
-        }
         $name_str = '';
         # 处理过滤器
         list($name, $default) = $this->checkFilter($name);
@@ -102,7 +98,7 @@ class Taglib
             $name = str_replace($exclude_name, 'w_var_str' . $key, $name);
         }
 
-        $pattern = '/(?<![\-\>()\s])\s*([><=!]={2,3}+|&&|\|\|)\s*(?![()\s])/';
+        $pattern = '/(?<![\-\>()\s])\s*([><=!]={1,3}+|&&|\|\|)\s*(?![()\s])/';
         $name = preg_replace($pattern, ' $1 ', $name);
 
 //        $name = $newString;
