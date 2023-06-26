@@ -78,7 +78,7 @@ class Upgrade extends CommandAbstract
 //        $i += 1;
         $i += 1;
         $this->printer->note($i . '、命令行更新...');
-        /**@var \Weline\Framework\Console\Console\Command\Upgrade $commandManagerConsole*/
+        /**@var \Weline\Framework\Console\Console\Command\Upgrade $commandManagerConsole */
         $commandManagerConsole = ObjectManager::getInstance(\Weline\Framework\Console\Console\Command\Upgrade::class);
         $commandManagerConsole->execute();
 
@@ -95,7 +95,7 @@ class Upgrade extends CommandAbstract
         $i += 1;
         // 扫描代码
         $this->printer->note($i . '、清理模板缓存', '系统');
-        $modules = Env::getInstance()->getModuleList();
+        $modules      = Env::getInstance()->getModuleList();
         foreach ($modules as $module) {
             $tpl_dir = $module['base_path'] . DS . 'view' . DS . 'tpl';
             if (is_dir($tpl_dir)) {
@@ -121,7 +121,28 @@ class Upgrade extends CommandAbstract
                 require $module['register'];
             }
         }
-        $modules = Env::getInstance()->getModuleList(true);
+        $modules               = Env::getInstance()->getModuleList(true);
+        $dependencyModuleNames = array_keys($dependencyModules);
+        foreach ($modules as $module) {
+            if (!in_array($module['name'], $dependencyModuleNames)) {
+                $this->printer->error(__('发现严重错误！请检查 %1 模块是否已经被删除，请手动确认并删除 %2 中关于此模块的信息！', [$module['name'], Env::path_MODULES_FILE]));
+                $this->printer->note(__('输入以下信息选项，确认操作！'));
+                $this->printer->note(__('1) 停止执行。手动确认模块信息并处理。【默认】'));
+                $this->printer->note(__('2) 继续执行。（可能会出现不可预知的错误）'));
+                $anser = $this->system->input();
+                if ($anser == '1' || ($anser != '2')) {
+                    $this->printer->setup(__('程序停止运行，请检查问题后继续执行！'));
+                    exit(0);
+                }
+                $this->printer->setup(__('你选择了继续执行，可能会出现不可预知的错误。'));
+                $total = 3;
+                for ($i = 1; $i <= $total; $i++) {
+                    echo __("%1 秒后程序继续执行 %2 ...\r", [$total, $i]);
+                    // 模拟处理时间
+                    usleep(1000000);
+                }
+            }
+        }
         /**@var Handle $module_handle */
         $module_handle = ObjectManager::getInstance(Handle::class);
         // 安装Setup信息
@@ -162,8 +183,6 @@ class Upgrade extends CommandAbstract
         $i += 1;
 
         // 清理其他
-
-
         /**@var EventsManager $eventsManager */
         $eventsManager = ObjectManager::getInstance(EventsManager::class);
         $eventsManager->dispatch('Framework_Module::module_upgrade');
