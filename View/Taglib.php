@@ -849,12 +849,6 @@ class Taglib
                     $tag_config_patterns[$config_name] = $tag_patterns[$config_name];
                 }
             }
-//            foreach ($tag_config_patterns as &$tag_config_pattern) {
-//                $tag_config_pattern = htmlentities($tag_config_pattern);
-//            }
-//            if($tag=='if'){
-//                p( $tag_config_patterns);
-//            }
             # 默认匹配@tag()和@tag{}
             $tag_config_patterns['@tag()'] = $tag_patterns['@tag()'];
             $tag_config_patterns['@tag{}'] = $tag_patterns['@tag{}'];
@@ -874,11 +868,6 @@ class Taglib
                     $originalTag = $customTag[0];
                     if (isset($customTag[1])) {
                         $customTag[1] = str_replace(PHP_EOL, '', $customTag[1]);
-//                        if (('@tag{}' === $tag_key) || ('@tag()' === $tag_key)) {
-//                            $customTag[1] = str_replace(array("\r\n", "\r", "\n", "\t"), '', $customTag[1]);
-//                        } else {
-//                            $customTag[1] = str_replace(array("\r\n", "\r", "\n", "\t"), '', $customTag[1]);
-//                        }
                     }
 
                     $rawAttributes = $customTag[1] ?? '';
@@ -920,7 +909,7 @@ class Taglib
 //                    }
                     # 验证标签属性
                     $attrs = $tag_configs['attr'] ?? [];
-                    if ($attrs && ('tar-start' === $tag_key || 'tag-self-close-with-attrs' === $tag_key)) {
+                    if ($attrs && ('tar-start' === $tag_key || 'tag-self-close-with-attrs' === $tag_key|| 'tag' === $tag_key)) {
                         $attributes_keys = array_keys($formatedAttributes);
                         foreach ($attrs as $attr => $required) {
                             if ($required && !in_array($attr, $attributes_keys)) {
@@ -930,6 +919,7 @@ class Taglib
                             }
                         }
                     }
+
                     $result = $format_function($tag_key, $tag_configs, $customTag, $formatedAttributes);
 //                    if (DEV) {
 //                        $origin_tag = htmlspecialchars($customTag[0]) ?? '';
