@@ -60,10 +60,10 @@ class Data extends AbstractHelper
      *
      * 参数区：
      *
-     * @param array  $modules 【模组列表指针】
-     * @param string $path    【模组路径】
-     * @param string $name    【模组名】
-     * @param string $router  【控制器路径】
+     * @param array $modules 【模组列表指针】
+     * @param string $path 【模组路径】
+     * @param string $name 【模组名】
+     * @param string $router 【控制器路径】
      *
      * @throws \ReflectionException
      * @throws \Weline\Framework\App\Exception
@@ -76,16 +76,21 @@ class Data extends AbstractHelper
             $api_dir = $path . Handle::api_DIR . DS;
             if (is_dir($api_dir)) {
                 $api_classs = [];
-                $this->scan->globFile($api_dir . '*', $api_classs, '.php', $path, $module['namespace_path'] . '\\', true, true,$module['base_path']);
+                $this->scan->globFile($api_dir . '*', $api_classs, '.php', $path, $module['namespace_path'] . '\\', true, true, $module['base_path']);
                 foreach ($api_classs as $api_class) {
                     if (!class_exists($api_class)) {
                         continue;
                     }
-                    $apiDirArray = explode(Handle::api_DIR, $api_class);
-                    $baseRouter  = str_replace('\\', '/', array_pop($apiDirArray));
+                    $apiDirArray   = explode(Handle::api_DIR, $api_class);
+                    $baseRouter    = str_replace('\\', '/', array_pop($apiDirArray));
                     $baseRouterArr = preg_split('/(?=[A-Z])/', $baseRouter);
+                    foreach ($baseRouterArr as $baseRouterKey => $baseRouter) {
+                        if (empty($baseRouter)) {
+                            unset($baseRouterArr[$baseRouterKey]);
+                        }
+                    }
                     $baseRouter = implode('-', $baseRouterArr);
-                    $baseRouter  = trim($router . $baseRouter, '/');
+                    $baseRouter = trim($router . $baseRouter, '/');
 
                     $this->parent_class_arr = [];// 清空父类信息
                     $ctl_data               = $this->parserController($api_class, $name, $router);
@@ -130,23 +135,23 @@ class Data extends AbstractHelper
                         foreach ($routers as $router_) {
                             $route  = $rule_router . ($request_method ? '::' . $request_method : '');
                             $params = [
-                                'type'           => DataInterface::type_API,
-                                'area'           => $ctl_area,
-                                'module'         => $name,
-                                'base_router'    => $router_,
-                                'router'         => $route,
-                                'class'          => $api_class,
-                                'module_path'    => $path,
-                                'method'         => $method,
+                                'type' => DataInterface::type_API,
+                                'area' => $ctl_area,
+                                'module' => $name,
+                                'base_router' => $router_,
+                                'router' => $route,
+                                'class' => $api_class,
+                                'module_path' => $path,
+                                'method' => $method,
                                 'request_method' => $request_method,
                             ];
                             $data   = new DataObject($params);
                             /**@var \ReflectionAttribute $attribute */
                             foreach ($attributes as $attribute) {
                                 $this->getEvenManager()->dispatch('Weline_Module::controller_method_attributes', [
-                                    'data'            => $data,
-                                    'type'            => 'api',
-                                    'attribute'       => $attribute,
+                                    'data' => $data,
+                                    'type' => 'api',
+                                    'attribute' => $attribute,
                                     'controller_data' => $ctl_data
                                 ]);
                             }
@@ -162,15 +167,28 @@ class Data extends AbstractHelper
 
             if (is_dir($pc_dir)) {
                 $pc_classs = [];
-                $this->scan->globFile($pc_dir . '*', $pc_classs, '.php', $path, $module['namespace_path'] . '\\', true, true,$module['base_path']);
+                $this->scan->globFile($pc_dir . '*', $pc_classs, '.php', $path, $module['namespace_path'] . '\\', true, true, $module['base_path']);
                 foreach ($pc_classs as $pc_class) {
                     if (!class_exists($pc_class)) {
                         continue;
                     }
-                    $pcDirArray = explode(Handle::pc_DIR, $pc_class);
-                    $baseRouter = str_replace('\\', '/', array_pop($pcDirArray));
+                    $pcDirArray    = explode(Handle::pc_DIR, $pc_class);
+                    $baseRouter    = str_replace('\\', '/', array_pop($pcDirArray));
                     $baseRouterArr = preg_split('/(?=[A-Z])/', $baseRouter);
-                    $baseRouter = implode('-', $baseRouterArr);
+                    $baseRouter = '';
+                    foreach ($baseRouterArr as $baseRouterKey => $baseRouter_) {
+                        if(!isset($baseRouterArr[$baseRouterKey-1])){
+                            $baseRouter .= $baseRouter_;
+                            continue;
+                        }
+                        $pre_ = $baseRouterArr[$baseRouterKey-1];
+                        $lastChar = $pre_[strlen($pre_) - 1];
+                        if ($lastChar==='/') {
+                            $baseRouter .= $baseRouter_;
+                        }else{
+                            $baseRouter .= '-' . $baseRouter_;
+                        }
+                    }
                     $baseRouter = trim($router . $baseRouter, '/');
 
                     $this->parent_class_arr = [];// 清空父类信息
@@ -216,25 +234,25 @@ class Data extends AbstractHelper
                         foreach ($routers as $router_) {
                             $route  = $rule_router . ($request_method ? '::' . $request_method : '');
                             $params = [
-                                'type'           => DataInterface::type_PC,
-                                'area'           => $ctl_area,
-                                'module'         => $name,
-                                'base_router'    => $router_,
-                                'router'         => $route,
-                                'class'          => $pc_class,
-                                'method'         => $method,
-                                'module_path'    => $path,
+                                'type' => DataInterface::type_PC,
+                                'area' => $ctl_area,
+                                'module' => $name,
+                                'base_router' => $router_,
+                                'router' => $route,
+                                'class' => $pc_class,
+                                'method' => $method,
+                                'module_path' => $path,
                                 'request_method' => $request_method,
                             ];
                             $data   = new DataObject($params);
                             /**@var \ReflectionAttribute $attribute */
                             foreach ($attributes as $attribute) {
                                 $this->getEvenManager()->dispatch('Weline_Module::controller_attributes', [
-                                    'data'            => $data,
-                                    'type'            => 'pc',
-                                    'attribute'       => $attribute,
+                                    'data' => $data,
+                                    'type' => 'pc',
+                                    'attribute' => $attribute,
                                     'controller_data' => $ctl_data,
-                                    'params'=>$params,
+                                    'params' => $params,
                                 ]);
                             }
                             // 路由注册+
@@ -261,7 +279,7 @@ class Data extends AbstractHelper
      *
      * 参数区：
      *
-     * @param array  $modules
+     * @param array $modules
      * @param string $name
      *
      * @return string
@@ -347,12 +365,12 @@ class Data extends AbstractHelper
             }
 
             return [
-                'area'        => array_unique($this->parent_class_arr),
-                'methods'     => $controller_methods,
-                'attributes'  => $reflect->getAttributes(),
-                'class'       => $class,
+                'area' => array_unique($this->parent_class_arr),
+                'methods' => $controller_methods,
+                'attributes' => $reflect->getAttributes(),
+                'class' => $class,
                 'module_name' => $module_name,
-                'router'      => $router,
+                'router' => $router,
             ];
         } else {
             return [];
@@ -369,7 +387,7 @@ class Data extends AbstractHelper
      *
      * 参数区：
      *
-     * @param array  $modules
+     * @param array $modules
      * @param string $name
      *
      * @return bool
@@ -389,7 +407,7 @@ class Data extends AbstractHelper
      *
      * 参数区：
      *
-     * @param array  $modules
+     * @param array $modules
      * @param string $name
      *
      * @return bool
@@ -408,7 +426,7 @@ class Data extends AbstractHelper
      *
      * 参数区：
      *
-     * @param array  $modules
+     * @param array $modules
      * @param string $name
      * @param string $version
      *
