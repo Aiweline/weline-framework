@@ -84,12 +84,20 @@ class Data extends AbstractHelper
                     $apiDirArray   = explode(Handle::api_DIR, $api_class);
                     $baseRouter    = str_replace('\\', '/', array_pop($apiDirArray));
                     $baseRouterArr = preg_split('/(?=[A-Z])/', $baseRouter);
-                    foreach ($baseRouterArr as $baseRouterKey => $baseRouter) {
-                        if (empty($baseRouter)) {
-                            unset($baseRouterArr[$baseRouterKey]);
+                    $baseRouter = '';
+                    foreach ($baseRouterArr as $baseRouterKey => $baseRouter_) {
+                        if(!isset($baseRouterArr[$baseRouterKey-1])){
+                            $baseRouter .= $baseRouter_;
+                            continue;
+                        }
+                        $pre_ = $baseRouterArr[$baseRouterKey-1];
+                        $lastChar = $pre_[strlen($pre_) - 1];
+                        if ($lastChar==='/') {
+                            $baseRouter .= $baseRouter_;
+                        }else{
+                            $baseRouter .= '-' . $baseRouter_;
                         }
                     }
-                    $baseRouter = implode('-', $baseRouterArr);
                     $baseRouter = trim($router . $baseRouter, '/');
 
                     $this->parent_class_arr = [];// 清空父类信息
