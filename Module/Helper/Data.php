@@ -82,7 +82,9 @@ class Data extends AbstractHelper
                         continue;
                     }
                     $apiDirArray = explode(Handle::api_DIR, $api_class);
-                    $baseRouter  = str_replace('\\', '/', strtolower(array_pop($apiDirArray)));
+                    $baseRouter  = str_replace('\\', '/', array_pop($apiDirArray));
+                    $baseRouterArr = preg_split('/(?=[A-Z])/', $baseRouter);
+                    $baseRouter = implode('-', $baseRouterArr);
                     $baseRouter  = trim($router . $baseRouter, '/');
 
                     $this->parent_class_arr = [];// 清空父类信息
@@ -166,7 +168,9 @@ class Data extends AbstractHelper
                         continue;
                     }
                     $pcDirArray = explode(Handle::pc_DIR, $pc_class);
-                    $baseRouter = str_replace('\\', '/', strtolower(array_pop($pcDirArray)));
+                    $baseRouter = str_replace('\\', '/', array_pop($pcDirArray));
+                    $baseRouterArr = preg_split('/(?=[A-Z])/', $baseRouter);
+                    $baseRouter = implode('-', $baseRouterArr);
                     $baseRouter = trim($router . $baseRouter, '/');
 
                     $this->parent_class_arr = [];// 清空父类信息
