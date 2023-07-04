@@ -94,6 +94,7 @@ class Core
     {
         # 获取URL
         $this->url = $url = $this->processUrl();
+
 //        $url                     = str_replace('-', '', $origin_url);
         if ($router = $this->cache->get($this->_router_cache_key)) {
             $this->router = $router;
@@ -237,7 +238,7 @@ class Core
             if (
                 isset($routers[$url]) || isset($routers[$url . $method]) || (empty($url) && (isset($routers['index/index']) || isset($routers['index/index' . $method])))
             ) {
-                $this->router = $routers[$url] ?? $routers[$url . $method] ?? $routers['index/index'] ?? $routers['index/index' . $method];
+                $this->router = $routers[$url . $method] ?? $routers[$url] ?? $routers['index/index'] ?? $routers['index/index' . $method];
                 # 缓存路由结果
                 $this->router['type'] = 'pc';
                 $this->cache->set($this->_router_cache_key, $this->router);
