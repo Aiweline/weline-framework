@@ -54,8 +54,11 @@ class PcController extends Core
      * @return void
      * @throws Null
      */
-    protected function redirect(string|int $url, array $params = [], bool $merge_params = false): void
+    protected function redirect(string|int $url = '', array $params = [], bool $merge_params = false): void
     {
+        if (empty($url)) {
+            $this->request->getResponse()->redirect($this->_url->getCurrentUrl());
+        }
         if (is_string($url)) {
             if ($this->_url->isLink($url)) {
                 $this->request->getResponse()->redirect($url . (str_contains($url, '?') ? '&' : '') . http_build_query($params));
