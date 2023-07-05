@@ -254,7 +254,7 @@ trait QueryTrait
                 $identity_values = array_column($this->updates, $this->identity_field);
                 if ($identity_values) {
                     $identity_values_key                      = ':' . md5('identity_values_key');
-                    $identity_values_str                      = implode(',', $identity_values);
+                    $identity_values_str                      = implode('\',\'', $identity_values);
                     $this->bound_values[$identity_values_key] = $identity_values_str;
                     $wheres                                   .= ($wheres ? ' AND ' : 'WHERE ') . "$this->identity_field IN ( $identity_values_key )";
                 }
