@@ -559,6 +559,12 @@ abstract class AbstractModel extends DataObject
                 }
             }
         }
+        # 如果主键有值
+        if($this->getId()){
+            $this->unique_data[$this->_primary_key] = $this->getId();
+            $this->force_check_flag = true;
+        }
+
         // 保存前
         $this->save_before();
         // save之前事件
