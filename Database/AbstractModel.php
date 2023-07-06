@@ -511,12 +511,12 @@ abstract class AbstractModel extends DataObject
      * @return $this
      * @throws Null
      */
-    public function update(array|string $field = null, int|string $condition_field = 'id'): static
+    public function update(array|string $field = null, int|string $value_or_condition_field = 'id'): static
     {
         if ($field) {
-            $this->getQuery()->update($field, $condition_field);
+            $this->getQuery()->update($field, $value_or_condition_field);
         } else {
-            $this->getQuery()->update($this->getModelData(), $condition_field);
+            $this->getQuery()->update($this->getModelData(), $value_or_condition_field);
         }
         return $this;
     }

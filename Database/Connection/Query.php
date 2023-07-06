@@ -111,7 +111,7 @@ abstract class Query implements QueryInterface
         }
         # 单条记录更新
         if (is_string($field)) {
-            $this->single_updates[$field] = $value_or_condition_field;
+            $this->single_updates[$field] = "'{$value_or_condition_field}'";
         } else {
             // 设置数据更新依赖条件主键
             if ($this->identity_field !== $value_or_condition_field) {
@@ -322,9 +322,13 @@ abstract class Query implements QueryInterface
 
     public function fetch(string $model_class = ''): mixed
     {
+//        if($model_class=='test'){
+//            dd($this->PDOStatement);
+//        }
         $result = $this->PDOStatement->execute($this->bound_values);
 
         $origin_data = $this->PDOStatement->fetchAll(PDO::FETCH_ASSOC);
+
         $data        = [];
         if ($model_class) {
             foreach ($origin_data as $origin_datum) {
