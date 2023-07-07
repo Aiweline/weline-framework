@@ -154,14 +154,17 @@ trait QueryTrait
         if (!empty($this->_index_sort_keys)) {
             $_index_sort_keys_wheres = [];
             foreach ($this->wheres as $where_key => $where) {
-                $where_field = $where[0];
-                if (str_contains($where_field, '.')) {
-                    $where_field_arr = explode('.', $where_field);
-                    $where_field     = array_pop($where_field_arr);
-                }
-                if (in_array($where_field, $this->_index_sort_keys)) {
-                    $_index_sort_keys_wheres[array_search($where_field, $this->_index_sort_keys)] = $where;
-                    unset($this->wheres[$where_key]);
+                $where_cond = $where[1];
+                if($where_cond=='='){
+                    $where_field = $where[0];
+                    if (str_contains($where_field, '.')) {
+                        $where_field_arr = explode('.', $where_field);
+                        $where_field     = array_pop($where_field_arr);
+                    }
+                    if (in_array($where_field, $this->_index_sort_keys)) {
+                        $_index_sort_keys_wheres[array_search($where_field, $this->_index_sort_keys)] = $where;
+                        unset($this->wheres[$where_key]);
+                    }
                 }
             }
             if ($_index_sort_keys_wheres) {
