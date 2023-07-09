@@ -57,7 +57,7 @@ class Taglib
         if (str_contains($name, $filter)) {
             $name_arr = explode('|', $name);
             $name     = $name_arr[0];
-            $default  = $name_arr[1];
+            $default  = $this->varParser($name_arr[1]);
         }
         return [$name, $default];
     }
