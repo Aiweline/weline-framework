@@ -86,7 +86,7 @@ class Data extends AbstractHelper
                     $baseRouterArr = preg_split('/(?=[A-Z])/', $baseRouter);
                     $baseRouter = '';
                     foreach ($baseRouterArr as $baseRouterKey => $baseRouter_) {
-                        if(!isset($baseRouterArr[$baseRouterKey-1])){
+                        if(empty($baseRouterArr[$baseRouterKey-1])){
                             $baseRouter .= $baseRouter_;
                             continue;
                         }
@@ -185,7 +185,7 @@ class Data extends AbstractHelper
                     $baseRouterArr = preg_split('/(?=[A-Z])/', $baseRouter);
                     $baseRouter = '';
                     foreach ($baseRouterArr as $baseRouterKey => $baseRouter_) {
-                        if(!isset($baseRouterArr[$baseRouterKey-1])){
+                        if(empty($baseRouterArr[$baseRouterKey-1])){
                             $baseRouter .= $baseRouter_;
                             continue;
                         }
