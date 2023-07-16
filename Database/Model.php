@@ -65,7 +65,7 @@ abstract class Model extends AbstractModel implements ModelInterface
     }
 
     /**
-     * @DESC          # 方法描述
+     * @DESC          # 获取子节点
      *
      * @AUTH    秋枫雁飞
      * @EMAIL aiweline@qq.com
@@ -111,8 +111,8 @@ abstract class Model extends AbstractModel implements ModelInterface
                          ->getItems()
         ) {
             foreach ($subs as &$sub) {
-                $has_sub_menu = $this->clear()->where($parent_id_field, $sub->getData($main_field))->find()->fetch();
-                if ($has_sub_menu->getData($main_field)) {
+                $has_sub = $this->clear()->where($parent_id_field, $sub->getData($main_field))->find()->fetch();
+                if ($has_sub->getData($main_field)) {
                     $sub = $this->getSubs($sub,$main_field,$parent_id_field,$order_field,$order_sort);
                 }
             }
@@ -121,5 +121,54 @@ abstract class Model extends AbstractModel implements ModelInterface
             $model = $model->setData('sub', []);
         }
         return $model;
+    }
+
+
+    /**
+     * @DESC          # 父路径查询
+     *
+     * @AUTH    秋枫雁飞
+     * @EMAIL aiweline@qq.com
+     * @DateTime: 2023/7/16 13:01
+     * 参数区：
+     *
+     * @param \Weline\Framework\Database\Model $model
+     * @param string                           $main_field
+     * @param string                           $parent_id_field
+     * @param string                           $order_field
+     * @param string                           $order_sort
+     *
+     * @return \Weline\Framework\Database\Model
+     */
+    public function getParentPaths(Model  &$model,
+                                   string $main_field = '',
+                                   string $parent_id_field = 'parent_id',
+                                   string $order_field = 'position',
+                                   string $order_sort = 'ASC'): Model
+    {
+        $main_field = $main_field ?: $this::fields_ID;
+        $parents = $this->reset()
+                        ->where($main_field, $model->getData($parent_id_field))
+                        ->order($order_field, $order_sort)
+                        ->select()
+                        ->fetch()
+                        ->getItems();
+        $this->unsetData('0');
+        if ($parents) {
+            foreach ($parents as &$parent) {
+                $has_parent = $this->reset()
+                                   ->where($main_field, $parent->getData($parent_id_field))
+                                   ->find()
+                                   ->fetch();
+                if ($has_parent->getData($main_field)) {
+                    $parent = $this->getParentPaths($parent,$main_field,$parent_id_field,$order_field,$order_sort);
+                }
+            }
+            $model->setData('parents', $parents);
+        } else {
+            $model->setData('parents', []);
+        }
+        return $model;
+
     }
 }
