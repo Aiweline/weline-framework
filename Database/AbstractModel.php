@@ -511,12 +511,12 @@ abstract class AbstractModel extends DataObject
      * @return $this
      * @throws Null
      */
-    public function update(array|string $field = null, int|string $value_or_condition_field = 'id'): static
+    public function update(array|string $field = null, int|string $value_or_condition_field = ''): static
     {
         if ($field) {
-            $this->getQuery()->update($field, $value_or_condition_field);
+            $this->getQuery()->update($field, $value_or_condition_field?:$this->_primary_key);
         } else {
-            $this->getQuery()->update($this->getModelData(), $value_or_condition_field);
+            $this->getQuery()->update($this->getModelData(), $value_or_condition_field?:$this->_primary_key);
         }
         return $this;
     }
@@ -560,9 +560,9 @@ abstract class AbstractModel extends DataObject
             }
         }
         # 如果主键有值
-        if($this->getId()){
+        if ($this->getId()) {
             $this->unique_data[$this->_primary_key] = $this->getId();
-            $this->force_check_flag = true;
+            $this->force_check_flag                 = true;
         }
 
         // 保存前
@@ -579,6 +579,7 @@ abstract class AbstractModel extends DataObject
                     }
                 }
             }
+
             if ($this->force_check_flag) {
                 $save_result = $this->checkUpdateOrInsert();
 //                $save_result = $this->getQuery()->clearQuery()->insert($this->getModelData(), $this->_unit_primary_keys)->fetch();
@@ -800,13 +801,13 @@ abstract class AbstractModel extends DataObject
             # 拦截fetch返回的数据注入模型
             if ($is_fetch) {
                 $this->fetch_before();
-                if (is_array($query_data)) {
-                    $this->setFetchData($query_data);
-                    $this->setData($query_data);
-                } elseif (is_object($query_data)) {
+                if (is_object($query_data)) {
                     /**@var AbstractModel $query_data */
                     $this->setFetchData($query_data->getData());
                     $this->setData($query_data->getData());
+                } else if (is_array($query_data)) {
+                    $this->setFetchData($query_data);
+                    $this->setData($query_data);
                 } else {
                     $this->setFetchData([]);
                     $this->setData([]);
