@@ -86,7 +86,7 @@ class Data extends AbstractHelper
                     $baseRouterArr = preg_split('/(?=[A-Z])/', $baseRouter);
                     $baseRouter = '';
                     foreach ($baseRouterArr as $baseRouterKey => $baseRouter_) {
-                        if(empty($baseRouterArr[$baseRouterKey-1])){
+                        if(!isset($baseRouterArr[$baseRouterKey-1])){
                             $baseRouter .= $baseRouter_;
                             continue;
                         }
@@ -120,7 +120,7 @@ class Data extends AbstractHelper
                         if (in_array(strtoupper($first_value), RequestInterface::METHODS)) {
                             $request_method = strtoupper($first_value);
                             array_shift($request_method_split_array);
-                            $rule_method = implode('-', $request_method_split_array);
+                            $rule_method = implode('', $request_method_split_array);
                         }
                         # 检测请求方法和方法名是否重合，重合就使用方法名作为请求方法
                         if (in_array(strtoupper($rule_method), Request::METHODS)) {
@@ -185,7 +185,7 @@ class Data extends AbstractHelper
                     $baseRouterArr = preg_split('/(?=[A-Z])/', $baseRouter);
                     $baseRouter = '';
                     foreach ($baseRouterArr as $baseRouterKey => $baseRouter_) {
-                        if(empty($baseRouterArr[$baseRouterKey-1])){
+                        if(!isset($baseRouterArr[$baseRouterKey-1])){
                             $baseRouter .= $baseRouter_;
                             continue;
                         }
@@ -219,7 +219,7 @@ class Data extends AbstractHelper
                         if (in_array(strtoupper($first_value), RequestInterface::METHODS)) {
                             $request_method = strtoupper($first_value);
                             array_shift($request_method_split_array);
-                            $rule_method = implode('-', $request_method_split_array);
+                            $rule_method = implode('', $request_method_split_array);
                         }
                         # 如果没有解析到请求方法就使用方法名
                         if (!$request_method && in_array(strtoupper($rule_method), Request::METHODS)) {

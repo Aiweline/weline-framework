@@ -189,7 +189,7 @@ interface ConfigProviderInterface
 
     public function getCollate(): string;
 
-    public function setCollate(string $collate = 'utf8mb4_general_ci'): ConfigProviderInterface;
+    public function setCollate(string $collate = 'utf8mb4_0900_as_cs'): ConfigProviderInterface;
 
     /**
      * @DESC         |连接字符集

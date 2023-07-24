@@ -57,7 +57,6 @@ class Compile implements \Weline\Framework\Console\CommandInterface
             // 扫描目录子目录
             $this->printing->printing('编译目录扫描...', '系统');
             $files = scandir(Env::path_framework_generated_code);
-            if($files)
             foreach ($files as $file) {
                 if ($file != '.' && $file != '..') {
                     $real_file = Env::path_framework_generated_code.DS.$file;

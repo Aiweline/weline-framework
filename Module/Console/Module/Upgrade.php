@@ -64,18 +64,17 @@ class Upgrade extends CommandAbstract
     {
         $i = 1;
 //        // 删除路由文件
-//        $this->printer->warning($i . '、路由更新...', '系统');
-//        $this->printer->warning('清除文件：');
-//        foreach (Env::router_files_PATH as $path) {
-//            $this->printer->warning($path);
-//            if (is_file($path)) {
-//                $data = $this->system->exec('rm -f ' . $path);
-//                if ($data) {
-//                    $this->printer->printList($data);
-//                }
-//            }
-//        }
-//        $i += 1;
+        $this->printer->warning($i . '、路由更新...', '系统');
+        $this->printer->warning('清除文件：');
+        foreach (Env::router_files_PATH as $path) {
+            $this->printer->warning($path);
+            if (is_file($path)) {
+                $data = $this->system->exec('rm -f ' . $path);
+                if ($data) {
+                    $this->printer->printList($data);
+                }
+            }
+        }
         $i += 1;
         $this->printer->note($i . '、命令行更新...');
         /**@var \Weline\Framework\Console\Console\Command\Upgrade $commandManagerConsole */
