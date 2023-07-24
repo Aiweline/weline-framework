@@ -202,7 +202,9 @@ class ConfigProvider extends DataObject implements ConfigProviderInterface
 
     public function getOptions(): array
     {
-        return $this->getData('options') ?? [];
+        return $this->getData('options') ?? [
+            \PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES {$this->getCharset()} COLLATE {$this->getCollate()}"
+        ];
     }
 
     /**

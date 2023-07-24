@@ -43,7 +43,7 @@ class Create extends TableAbstract implements CreateInterface
                 $type = 'int';
             }
         }
-        $type_length    = $length ? "{$type}({$length})" : $type;
+        $type_length               = $length ? "{$type}({$length})" : $type;
         $this->fields[$field_name] = "`{$field_name}` {$type_length} {$options} COMMENT '{$comment}'";
 
         return $this;
@@ -55,7 +55,7 @@ class Create extends TableAbstract implements CreateInterface
         $comment      = $comment ? "COMMENT '{$comment}'" : '';
         $index_method = $index_method ? "USING {$index_method}" : '';
         $type         = strtoupper($type);
-        if(is_array($column)){
+        if (is_array($column)) {
             $column = implode('`,`', $column);
         }
         switch ($type) {
@@ -122,12 +122,12 @@ class Create extends TableAbstract implements CreateInterface
     public function create(): QueryInterface
     {
         // 字段
-        if(!array_key_exists('`create_time`', $this->fields)&&!array_key_exists('create_time', $this->fields)){
-            $create_time_comment_words = __('创建时间');
+        if (!array_key_exists('`create_time`', $this->fields) && !array_key_exists('create_time', $this->fields)) {
+            $create_time_comment_words     = __('创建时间');
             $this->fields['`create_time`'] = "`create_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '{$create_time_comment_words}'";
         }
-        if(!array_key_exists('`update_time`', $this->fields)&&!array_key_exists('update_time', $this->fields)){
-            $update_time_comment_words = __('更新时间');
+        if (!array_key_exists('`update_time`', $this->fields) && !array_key_exists('update_time', $this->fields)) {
+            $update_time_comment_words     = __('更新时间');
             $this->fields['`update_time`'] = "`update_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '{$update_time_comment_words}'";
         }
         $fields_str = implode(',' . PHP_EOL, $this->fields);
@@ -136,7 +136,7 @@ class Create extends TableAbstract implements CreateInterface
         $indexes_str = implode(',', $this->indexes);
         $indexes_str = rtrim($indexes_str, PHP_EOL);
         // 外键
-        $foreign_key_str = implode(','.PHP_EOL, $this->foreign_keys);
+        $foreign_key_str = implode(',' . PHP_EOL, $this->foreign_keys);
         $foreign_key_str = rtrim($foreign_key_str, PHP_EOL);
         // 组装结尾逗号
         if ($this->indexes) {
@@ -149,7 +149,24 @@ class Create extends TableAbstract implements CreateInterface
             $foreign_key_str .= ',';
         }
         $comment = $this->comment ? "COMMENT '{$this->comment}'" : '';
-        $sql     = <<<createSQL
+        # 没有additional时默认配置default charset utf8mb4 collate utf8mb4_0900_ai_ci
+        if (!empty($this->additional)) {
+            $this->additional = str_replace(';', '', $this->additional);
+            if (!str_contains($this->additional, strtolower('default')) and !str_contains($this->additional, strtoupper('default'))) {
+                $this->additional .= ' default ';
+            }
+            if (!str_contains($this->additional, strtolower('charset')) and !str_contains($this->additional, strtoupper('charset'))) {
+                $this->additional .= 'charset ' . $this->getConnection()->getConfigProvider()->getCharset() . ' ';
+            }
+            if (!str_contains($this->additional, strtolower('collate')) and !str_contains($this->additional, strtoupper('collate'))) {
+                $this->additional .= ' collate ' . $this->getConnection()->getConfigProvider()->getCollate() . ' ';
+            }
+            $this->additional .= ';';
+        } else {
+            $this->additional = "default charset {$this->getConnection()->getConfigProvider()->getCharset()} collate {$this->getConnection()->getConfigProvider()->getCollate()};";
+        }
+
+        $sql = <<<createSQL
 CREATE TABLE {$this->table}(
  {$fields_str}
  {$indexes_str}
