@@ -216,7 +216,7 @@ class ConfigProvider extends DataObject implements ConfigProviderInterface
      */
     public function getCollate(): string
     {
-        return $this->getData('collate') ?? 'utf8mb4_0900_as_cs';
+        return $this->getData('collate') ?? 'utf8mb4_0900_ai_ci';
     }
 
     /**
@@ -231,7 +231,7 @@ class ConfigProvider extends DataObject implements ConfigProviderInterface
      *
      * @return ConfigProviderInterface
      */
-    public function setCollate(string $collate = 'utf8mb4_0900_as_cs'): ConfigProviderInterface
+    public function setCollate(string $collate = 'utf8mb4_0900_ai_ci'): ConfigProviderInterface
     {
         return $this->setData('collate', $collate);
     }
