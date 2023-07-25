@@ -9,7 +9,6 @@
 
 namespace Weline\Framework\Module;
 
-use Composer\Composer;
 use Weline\Framework\Database\Model\ModelManager;
 use Weline\Framework\Module\Dependency\Checker;
 use Weline\Framework\Module\Model\Module;
@@ -81,7 +80,8 @@ class Handle implements HandleInterface, RegisterInterface
         Data     $helper,
         Printing $printer,
         System   $system,
-        Compress $compress
+        Compress $compress,
+        SetupHelper $setup_helper
     )
     {
         $this->modules  = Env::getInstance()->getModuleList();
@@ -89,6 +89,7 @@ class Handle implements HandleInterface, RegisterInterface
         $this->system   = $system;
         $this->printer  = $printer;
         $this->compress = $compress;
+        $this->setup_helper = $setup_helper;
     }
 
     /**
