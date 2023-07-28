@@ -309,8 +309,8 @@ abstract class Query implements QueryInterface
     public function query(string $sql): QueryInterface
     {
         $this->reset();
-        $this->sql          = $sql;
-        $this->fetch_type   = __FUNCTION__;
+        $this->sql        = $sql;
+        $this->fetch_type = __FUNCTION__;
         return $this;
     }
 
@@ -322,17 +322,17 @@ abstract class Query implements QueryInterface
 
     public function fetch(string $model_class = ''): mixed
     {
-        if($this->bound_values){
+        if ($this->bound_values) {
             $result = $this->PDOStatement->execute($this->bound_values);
         }
-        
-        if('query'==$this->fetch_type){
+
+        if ('query' == $this->fetch_type) {
             $this->PDOStatement = $this->connection->query($this->sql);
         }
 
         $origin_data = $this->PDOStatement->fetchAll(PDO::FETCH_ASSOC);
 
-        $data        = [];
+        $data = [];
         if ($model_class) {
             foreach ($origin_data as $origin_datum) {
                 $data[] = ObjectManager::make($model_class, ['data' => $origin_datum], '__construct');
@@ -359,7 +359,9 @@ abstract class Query implements QueryInterface
                 break;
             case 'delete':
             case 'update':
+                break;
             default:
+                throw new Exception(__('错误的获取类型。fetch之前必须有操作函数，操作函数包含（find,update,delete,select,query,insert,find）函数。'));
                 break;
         }
         $this->fetch_type = '';
