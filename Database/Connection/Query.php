@@ -308,9 +308,9 @@ abstract class Query implements QueryInterface
 
     public function query(string $sql): QueryInterface
     {
+        $this->reset();
         $this->sql          = $sql;
         $this->fetch_type   = __FUNCTION__;
-        $this->PDOStatement = $this->connection->query($sql);
         return $this;
     }
 
@@ -322,10 +322,13 @@ abstract class Query implements QueryInterface
 
     public function fetch(string $model_class = ''): mixed
     {
-//        if($model_class=='test'){
-//            dd($this->PDOStatement);
-//        }
-        $result = $this->PDOStatement->execute($this->bound_values);
+        if($this->bound_values){
+            $result = $this->PDOStatement->execute($this->bound_values);
+        }
+        
+        if('query'==$this->fetch_type){
+            $this->PDOStatement = $this->connection->query($this->sql);
+        }
 
         $origin_data = $this->PDOStatement->fetchAll(PDO::FETCH_ASSOC);
 
