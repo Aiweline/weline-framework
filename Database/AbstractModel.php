@@ -456,7 +456,7 @@ abstract class AbstractModel extends DataObject
         // load之前事件
         $this->getEvenManager()->dispatch($this->getOriginTableName() . '_model_load_before', ['model' => $this]);
         if (is_null($value)) {
-            $data = $this->getQuery()->where($this->_primary_key, $field_or_pk_value)->find()->fetch();
+            $data = $this->getQuery()->where('main_table.'.$this->_primary_key, $field_or_pk_value)->find()->fetch();
         } else {
             $data = $this->getQuery()->where($field_or_pk_value, $value)->find()->fetch();
         }
