@@ -41,7 +41,7 @@ interface CreateInterface extends TableInterface
      * 参数区：
      * @return bool
      */
-    public function create(): QueryInterface;
+    public function create(): mixed;
 
     /**
      * @DESC          # 添加字段

@@ -119,7 +119,7 @@ class Create extends TableAbstract implements CreateInterface
         return $this;
     }
 
-    public function create(): QueryInterface
+    public function create(): mixed
     {
         // 字段
         if (!array_key_exists('`create_time`', $this->fields) && !array_key_exists('create_time', $this->fields)) {
@@ -175,7 +175,7 @@ CREATE TABLE {$this->table}(
 ) {$comment} {$this->additional}
 createSQL;
         try {
-            $result = $this->query($sql);
+            $result = $this->query($sql)->fetch();
         } catch (\Exception $exception) {
             throw new Exception(__('创建表失败，' . PHP_EOL . PHP_EOL . 'SQL：%1 ' . PHP_EOL . PHP_EOL . 'ERROR：%2', [$sql, $exception->getMessage()]));
         }
