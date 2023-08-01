@@ -308,9 +308,10 @@ abstract class Query implements QueryInterface
 
     public function query(string $sql): QueryInterface
     {
+        $this->reset();
         $this->sql        = $sql;
         $this->fetch_type = __FUNCTION__;
-        $this->PDOStatement = $this->connection->query($sql);
+        $this->PDOStatement = $this->connection->getLink()->prepare($sql);
         return $this;
     }
 
