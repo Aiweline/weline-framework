@@ -121,6 +121,8 @@ class Data extends AbstractHelper
                             $request_method = strtoupper($first_value);
                             array_shift($request_method_split_array);
                             $rule_method = implode('-', $request_method_split_array);
+                        }else{
+                            $rule_method = trim(implode('-', $request_method_split_array), '-');
                         }
                         # 检测请求方法和方法名是否重合，重合就使用方法名作为请求方法
                         if (in_array(strtoupper($rule_method), Request::METHODS)) {
@@ -220,6 +222,8 @@ class Data extends AbstractHelper
                             $request_method = strtoupper($first_value);
                             array_shift($request_method_split_array);
                             $rule_method = implode('-', $request_method_split_array);
+                        }else{
+                            $rule_method = trim(implode('-', $request_method_split_array), '-');
                         }
                         # 如果没有解析到请求方法就使用方法名
                         if (!$request_method && in_array(strtoupper($rule_method), Request::METHODS)) {
