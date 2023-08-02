@@ -86,6 +86,11 @@ class Core implements Data\DataInterface
         return $this->_objectManager;
     }
 
+    public function getObject(string $class): mixed
+    {
+        return $this->getObjectManager()::getInstance($class);
+    }
+
     /**
      * @return Printing
      */
