@@ -261,7 +261,10 @@ class Template extends DataObject
 //            p($tplFile);
 
             if (!file_exists($tplFile)) {
-                throw new Exception(__('获取操作：%1，模板文件：%2 不存在！源文件：%3', [$fileName, $tplFile, $tplFile]));
+                $msg = __('获取操作：%1',$fileName).PHP_EOL;
+                $msg .= __('模板文件不存在！：%1 ', $tplFile).PHP_EOL;
+                $msg .= __('源文件：%1', $fileName);
+                throw new Exception($msg);
             }
 
             // 检测目录是否存在,不存在则建立
