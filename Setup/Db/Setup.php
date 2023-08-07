@@ -31,7 +31,7 @@ class Setup
      * Setup constructor.
      *
      * @param ConfigProvider $configProvider
-     * @param DdlFactory     $ddl_table
+     * @param DdlFactory $ddl_table
      *
      * @throws Exception
      * @throws \ReflectionException
@@ -139,8 +139,10 @@ class Setup
      */
     public function getTable(string $name = ''): string
     {
-        if (!str_starts_with($name, $this->getTablePrefix())) {
-            $name = $this->getTablePrefix() . $name;
+        if(!str_contains($name, '.')){
+            if (!str_starts_with($name, $this->getTablePrefix())) {
+                $name = $this->getTablePrefix() . $name;
+            }
         }
         return $name;
     }
