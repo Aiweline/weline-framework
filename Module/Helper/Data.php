@@ -158,7 +158,7 @@ class Data extends AbstractHelper
                             $data   = new DataObject($params);
                             /**@var \ReflectionAttribute $attribute */
                             foreach ($attributes as $attribute) {
-                                $this->getEvenManager()->dispatch('Weline_Module::controller_method_attributes', [
+                                $this->getEvenManager()->dispatch('Weline_Module::controller_attributes', [
                                     'data' => $data,
                                     'type' => 'api',
                                     'attribute' => $attribute,
