@@ -261,11 +261,11 @@ class Alter extends TableAbstract implements AlterInterface
             # 是否修改表名
             if ($this->new_table_name) {
                 $sql = "ALTER TABLE {$this->table} RENAME TO {$this->new_table_name}";
-                try {
-                    $this->query->query($sql)->fetch();
-                } catch (\Exception $exception) {
-                    exit($exception->getMessage() . PHP_EOL . __('数据库SQL:%1', $sql) . PHP_EOL);
-                }
+            }
+            try {
+               $this->query->query($sql)->fetch();
+            } catch (\Exception $exception) {
+               exit($exception->getMessage() . PHP_EOL . __('数据库SQL:%1', $sql) . PHP_EOL);
             }
         } catch (\Exception $exception) {
             exit($exception->getMessage());
