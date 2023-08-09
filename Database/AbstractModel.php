@@ -1464,6 +1464,10 @@ PAGINATION;
         return $this;
     }
 
+    public function clearJoin(){
+        $this->_bind_model_fields = [];
+    }
+
     public function joinModel(AbstractModel|string $model, string $alias = '', $condition = '', $type = 'LEFT', string $fields = '*'): AbstractModel
     {
         // init方法调用的join常驻
