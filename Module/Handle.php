@@ -226,6 +226,8 @@ class Handle implements HandleInterface, RegisterInterface
             if ($this->helper->isDisabled($this->modules, $module->getName())) {
                 $module->setStatus(false);
                 $this->printer->warning(str_pad($module->getName(), 45) . __('已禁用！'));
+            }else{
+                $this->setupModel($module);
             }
         } else {
             $this->printer->setup("扩展{$module->getName()}安装中...");
