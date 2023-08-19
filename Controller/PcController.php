@@ -20,6 +20,7 @@ use Weline\Framework\Http\Request;
 use Weline\Framework\Http\Url;
 use Weline\Framework\Manager\MessageManager;
 use Weline\Framework\Manager\ObjectManager;
+use Weline\Framework\Security\Token;
 use Weline\Framework\Session\Session;
 use Weline\Framework\Session\SessionManager;
 use Weline\Framework\View\Data\DataInterface;
@@ -48,8 +49,8 @@ class PcController extends Core
 
     /**
      * @param string|int $url url或者http状态码
-     * @param array      $params
-     * @param bool       $merge_params
+     * @param array $params
+     * @param bool $merge_params
      *
      * @return void
      * @throws Null
@@ -64,7 +65,7 @@ class PcController extends Core
                 $this->request->getResponse()->redirect($url . (str_contains($url, '?') ? '&' : '') . http_build_query($params));
             } else {
                 $this->request->getResponse()->redirect($this->request->isBackend() ? $this->_url->getBackendUrl($url, $params, $merge_params) :
-                                                            $this->_url->getUrl($url, $params, $merge_params));
+                    $this->_url->getUrl($url, $params, $merge_params));
             }
         } elseif ($url = 404) {
             $this->request->getResponse()->responseHttpCode($url);
@@ -76,16 +77,39 @@ class PcController extends Core
         return ObjectManager::getInstance(EventsManager::class);
     }
 
+    protected function csrf(): bool
+    {
+        return false;
+    }
+
     protected function isAllowed(): void
     {
         /**@var Session $session */
         $session = ObjectManager::getInstance(Session::class);
+//        $session->setData('form_key_paths','');
+        # form表单检测
         if (!empty($form_key_paths_str = $session->getData('form_key_paths')) && !empty($form_key = $session->getData('form_key'))) {
             $form_key_paths = explode(',', $form_key_paths_str);
-            if (in_array($this->_url->getUrl(), $form_key_paths) && ($form_key !== $this->request->getParam('form_key'))) {
+            if (in_array($this->_url->getCurrentUrl(), $form_key_paths) && ($form_key !== $request_token)) {
                 $this->noRouter();
             }
         }
+        # scrf 检测
+        if ($this->csrf() || ($this->request->getServer('Content-Type') === 'application/json')) {
+            # 处理form-key和token问题
+            $request_token = $this->request->getServer('X-CSRF-TOKEN');
+            if (empty($request_token)) {
+                $request_token = $this->request->getParam('form_key');
+            }
+            if (empty($request_token)) {
+                $request_token = $this->request->getParam('t');
+            }
+            if ($request_token !== Token::get('csrf')) {
+                $this->noRouter();
+                return;
+            }
+        }
+
     }
 
     protected function getControllerCache(): CacheInterface
@@ -148,7 +172,7 @@ class PcController extends Core
      *
      * 参数区：
      *
-     * @param array|string      $tpl_var
+     * @param array|string $tpl_var
      * @param array|string|null $value
      *
      * @return PcController
@@ -174,7 +198,7 @@ class PcController extends Core
      * 参数区：
      *
      * @param string|null $fileName
-     * @param array       $data
+     * @param array $data
      *
      * @return mixed
      * @throws Null
@@ -228,12 +252,12 @@ class PcController extends Core
         if ($module_dir = $this->getControllerCache()->get($cache_key)) {
             return $module_dir;
         }
-        $reflect             = new ReflectionObject($this);
-        $filename            = $reflect->getFileName();
-        $filename            = str_replace(Env::GENERATED_DIR, 'app', $filename);
+        $reflect = new ReflectionObject($this);
+        $filename = $reflect->getFileName();
+        $filename = str_replace(Env::GENERATED_DIR, 'app', $filename);
         $ctl_dir_reflect_arr = explode(self::dir, $filename);
-        $module_dir          = array_shift($ctl_dir_reflect_arr);
-        $module_dir          = $module_dir . DataInterface::dir . DS;
+        $module_dir = array_shift($ctl_dir_reflect_arr);
+        $module_dir = $module_dir . DataInterface::dir . DS;
         if (!is_dir($module_dir)) {
             mkdir($module_dir, 0775, true);
         }
@@ -266,13 +290,13 @@ class PcController extends Core
         if (!DEBUG) {
             return $this->getMessageManager()->addException($exception);
         } else {
-            $return_data['data']      = DEV ? $data : '';
+            $return_data['data'] = DEV ? $data : '';
             $return_data['exception'] = DEV ? $exception : $exception->getMessage();
-            $return_data              = DEV ? json_encode($return_data) : '';
-            $msg                      = DEV ? $exception->getMessage() : __($msg);
-            $msg_title                = __('消息');
-            $data_title               = __('数据');
-            $html                     = <<<HTML
+            $return_data = DEV ? json_encode($return_data) : '';
+            $msg = DEV ? $exception->getMessage() : __($msg);
+            $msg_title = __('消息');
+            $data_title = __('数据');
+            $html = <<<HTML
 $msg_title:$msg,
 $data_title:$return_data,
 HTML;

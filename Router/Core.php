@@ -71,8 +71,8 @@ class Core
             $this->is_admin = is_int(strpos(strtolower($this->request_area), \Weline\Framework\Router\DataInterface::area_BACKEND));
         }
         // 读取url
-        $this->url_cache_key     = 'url_cache_key_' . $this->request->getUri() . $this->request->getMethod();
-        $this->rule_cache_key    = 'rule_data_cache_key_' . $this->request->getUri() . $this->request->getMethod();
+        $this->url_cache_key = 'url_cache_key_' . $this->request->getUri() . $this->request->getMethod();
+        $this->rule_cache_key = 'rule_data_cache_key_' . $this->request->getUri() . $this->request->getMethod();
         $this->_router_cache_key = 'router_start_cache_key_' . $this->request->getUri() . $this->request->getMethod();
     }
 
@@ -114,7 +114,7 @@ class Core
             // 开发模式(静态资源可访问app本地静态资源)
             $static = $this->StaticFile($url);
             if ($static) {
-                exit($static);
+                return  $static;
             }
             http_response_code(404);
             throw new Exception('未知的路由！');
@@ -124,10 +124,10 @@ class Core
 
     public function processUrl()
     {
-        $url  = $this->cache->get($this->url_cache_key);
+        $url = $this->cache->get($this->url_cache_key);
         $rule = $this->cache->get($this->rule_cache_key);
         if (PROD && $url) {
-            $this->url_cache_data  = $url;
+            $this->url_cache_data = $url;
             $this->rule_cache_data = $rule;
             # 将规则设置到请求类
             $this->request->setRule($rule);
@@ -141,9 +141,9 @@ class Core
             # ----------事件：处理url之前 开始------------
             /**@var EventsManager $eventManager */
             $eventManager = ObjectManager::getInstance(EventsManager::class);
-            $routerData   = new DataObject(['path' => $url, 'rule' => []]);
+            $routerData = new DataObject(['path' => $url, 'rule' => []]);
             $eventManager->dispatch('Weline_Framework_Router::process_uri_before', ['data' => $routerData]);
-            $url  = $routerData->getData('path');
+            $url = $routerData->getData('path');
             $rule = $routerData->getData('rule');
 
             # 将规则设置到请求类
@@ -181,7 +181,7 @@ class Core
      */
     public function Api(string $url)
     {
-        $url          = strtolower($url);
+        $url = strtolower($url);
         $is_api_admin = $this->request_area === \Weline\Framework\Controller\Data\DataInterface::type_api_BACKEND;
 
         if ($is_api_admin) {
@@ -192,7 +192,7 @@ class Core
         }
         if (file_exists($router_filepath)) {
             $routers = include $router_filepath;
-            $method  = '::' . strtoupper($this->request->getMethod());
+            $method = '::' . strtoupper($this->request->getMethod());
             if (
                 isset($routers[$url]) || isset($routers[$url . $method]) || (empty($url) && (isset($routers['index/index']) || isset($routers['index/index' . $method])))
             ) {
@@ -223,8 +223,8 @@ class Core
      */
     public function Pc(string $url)
     {
-        $in          = false;
-        $url         = strtolower($url);
+        $in = false;
+        $url = strtolower($url);
         $is_pc_admin = $this->request_area === \Weline\Framework\Controller\Data\DataInterface::type_pc_BACKEND;
         // 检测api路由区域
         if ($is_pc_admin) {
@@ -234,7 +234,7 @@ class Core
         }
         if (is_file($router_filepath)) {
             $routers = include $router_filepath;
-            $method  = '::' . strtoupper($this->request->getMethod());
+            $method = '::' . strtoupper($this->request->getMethod());
             if (
                 isset($routers[$url]) || isset($routers[$url . $method]) || (empty($url) && (isset($routers['index/index']) || isset($routers['index/index' . $method])))
             ) {
@@ -266,7 +266,6 @@ class Core
      */
     public function StaticFile(string &$url): mixed
     {
-        header('Cache-Control: max-age=3600');
         $filename = APP_CODE_PATH . trim($url, DS);
         $filename = str_replace('/', DS, $filename);
         // 阻止读取其他文件
@@ -275,29 +274,46 @@ class Core
         }
         if (!is_file($filename)) {
             # 检测vendor目录的组件文件
-            $filename = VENDOR_PATH. trim($url, DS);
-            if(!is_file($filename)){
+            $filename = VENDOR_PATH . trim($url, DS);
+            if (!is_file($filename)) {
                 # 检测vendor目录的组件文件
                 $split_array = explode('/', $url);
-                $module = array_shift($split_array).'_'.array_shift($split_array);
-                $base_path = Env::getInstance()->getModuleInfo($module)['base_path']??'';
+                $module = array_shift($split_array) . '_' . array_shift($split_array);
+                $base_path = Env::getInstance()->getModuleInfo($module)['base_path'] ?? '';
                 $filename = $base_path . trim(implode('/', $split_array), DS);
                 $filename = str_replace('/', DS, $filename);
             }
         }
         if (is_file($filename)) {
             $filename_arr = explode('.', $filename);
-            $file_ext     = end($filename_arr);
+            $file_ext = end($filename_arr);
             if ($file_ext === 'css') {
                 $mime_type = 'text/css';
             } elseif ($file_ext === 'js') {
-                $mime_type = 'text/javascript; charset=utf-8';
+                $mime_type = 'text/javascript';
             } else {
-                $fi        = new \finfo(FILEINFO_MIME_TYPE);
+                $fi = new \finfo(FILEINFO_MIME_TYPE);
                 $mime_type = $fi->file($filename);
             }
-            header('Content-Type:' . $mime_type);
-            return readfile($filename);
+            // 响应头
+            header('Cache-Control: max-age=3600');
+            header("Content-Type:$mime_type;charset=UTF-8");
+            // Handle caching
+            $fileModificationTime = gmdate('D, d M Y H:i:s', filemtime($filename)).' GMT';
+            $headers = getallheaders();
+            if(isset($headers['If-Modified-Since']) && $headers['If-Modified-Since'] == $fileModificationTime) {
+                header('HTTP/1.1 304 Not Modified');
+                exit();
+            }
+            header('Last-Modified: '.$fileModificationTime);
+            header("X-XSS-Protection: 1; mode=block");
+            header('Expires: ' . (PROD ? '10' : '0'));
+            header('Cache-Control: must-revalidate');
+            header('X-Content-Type-Options: nosniff');
+            header('Pragma: public');
+            header('Content-Length: ' . filesize($filename));
+            readfile($filename);
+            return true;
         }
         return false;
     }
@@ -306,9 +322,9 @@ class Core
     public function getController(array $router): array
     {
         $controller_cache_controller_key = 'controller_cache_key_' . implode('_', $router['class']) . '_controller';
-        $controller_cache_method_key     = 'controller_cache_key_' . implode('_', $router['class']) . '_method';
-        $dispatch                        = $this->cache->get($controller_cache_controller_key);
-        $dispatch_method                 = $this->cache->get($controller_cache_method_key);
+        $controller_cache_method_key = 'controller_cache_key_' . implode('_', $router['class']) . '_method';
+        $dispatch = $this->cache->get($controller_cache_controller_key);
+        $dispatch_method = $this->cache->get($controller_cache_method_key);
         if ($dispatch && $dispatch_method) {
             return [$dispatch, $dispatch_method];
         } else {
@@ -340,6 +356,10 @@ class Core
         if (!Env::getInstance()->getModuleStatus($module)) {
             $this->request->getResponse()->noRouter();
         }
+        # 页头阻止XSS
+        header("X-Frame-Options: SAMEORIGIN");
+        header("X-Content-Type-Options: nosniff");
+        header("X-XSS-Protection: 1; mode=block");
         # 全页缓存
         $cache_key = $this->cache->buildWithRequestKey('router_route_fpc_cache_key_' . Cookie::getLangLocal());
         if (PROD && $html = $this->cache->get($cache_key)) {
@@ -358,10 +378,10 @@ class Core
         $dispatchReflection = ObjectManager::getReflectionInstance($dispatch);
         $attributes = $dispatchReflection->getAttributes();
         foreach ($attributes as $attribute) {
-            $dispatchAttribute = ObjectManager::getInstance($attribute->getName(),$attribute->getArguments());
-            if(method_exists($dispatchAttribute, 'execute')){
+            $dispatchAttribute = ObjectManager::getInstance($attribute->getName(), $attribute->getArguments());
+            if (method_exists($dispatchAttribute, 'execute')) {
                 $result = $dispatchAttribute->execute();
-                if($result){
+                if ($result) {
                     return $result;
                 }
             }
@@ -370,12 +390,12 @@ class Core
 //        $dispatch->assign($this->request->getData());
         /**@var EventsManager $eventManager */
         $eventManager = ObjectManager::getInstance(EventsManager::class);
-        $eventManager->dispatch('Framework_Router::route_before', ['route'=>$this]);
+        $eventManager->dispatch('Framework_Router::route_before', ['route' => $this]);
         $result = call_user_func([ObjectManager::getInstance($dispatch), $method], /*...$this->request->getParams()*/);
         # ----------事件：处理url之前 开始------------
         /**@var EventsManager $eventManager */
         $eventManager = ObjectManager::getInstance(EventsManager::class);
-        $resultData   = new DataObject(['result' => $result, 'route' => $this]);
+        $resultData = new DataObject(['result' => $result, 'route' => $this]);
         $eventManager->dispatch('Framework_Router::route_after', ['data' => $resultData]);
 //        file_put_contents(__DIR__.'/'.$cache_key.'.html', $result);
         /** Get output buffer. */

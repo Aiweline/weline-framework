@@ -234,4 +234,8 @@ class Session implements SessionInterface
         }
         return false;
     }
+    public function getGcMaxLifeTime(): int
+    {
+        return ini_get('session.gc_maxlifetime');
+    }
 }
