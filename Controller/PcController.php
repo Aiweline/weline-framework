@@ -90,26 +90,26 @@ class PcController extends Core
         # form表单检测
         if (!empty($form_key_paths_str = $session->getData('form_key_paths')) && !empty($form_key = $session->getData('form_key'))) {
             $form_key_paths = explode(',', $form_key_paths_str);
-            if (in_array($this->_url->getCurrentUrl(), $form_key_paths) && ($form_key !== $request_token)) {
+            if (in_array($this->_url->getCurrentUrl(), $form_key_paths) && ($form_key !== $this->request->getPost('form_key'))) {
                 $this->noRouter();
             }
+        }else{
+            # scrf 检测
+            if ($this->csrf() || ($this->request->getServer('Content-Type') === 'application/json')) {
+                # 处理form-key和token问题
+                $request_token = $this->request->getServer('X-CSRF-TOKEN');
+                if (empty($request_token)) {
+                    $request_token = $this->request->getParam('form_key');
+                }
+                if (empty($request_token)) {
+                    $request_token = $this->request->getParam('t');
+                }
+                if ($request_token !== Token::get('csrf')) {
+                    $this->noRouter();
+                    return;
+                }
+            }
         }
-        # scrf 检测
-        if ($this->csrf() || ($this->request->getServer('Content-Type') === 'application/json')) {
-            # 处理form-key和token问题
-            $request_token = $this->request->getServer('X-CSRF-TOKEN');
-            if (empty($request_token)) {
-                $request_token = $this->request->getParam('form_key');
-            }
-            if (empty($request_token)) {
-                $request_token = $this->request->getParam('t');
-            }
-            if ($request_token !== Token::get('csrf')) {
-                $this->noRouter();
-                return;
-            }
-        }
-
     }
 
     protected function getControllerCache(): CacheInterface
