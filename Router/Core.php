@@ -114,7 +114,7 @@ class Core
             // 开发模式(静态资源可访问app本地静态资源)
             $static = $this->StaticFile($url);
             if ($static) {
-                return  $static;
+                exit();
             }
             http_response_code(404);
             throw new Exception('未知的路由！');
