@@ -398,7 +398,7 @@ abstract class RequestAbstract extends RequestFilter
     public function getBaseHost(): string
     {
         $port = $this->getServer('SERVER_PORT');
-        return $this->getServer('REQUEST_SCHEME') . '://' . $this->getServer('SERVER_NAME') . (($port !== '80' && $port !== '443') ? ':' . $port : '');
+        return $this->getServer('HTTP_X_FORWARDED_PROTO')?:$this->getServer('REQUEST_SCHEME') . '://' . $this->getServer('SERVER_NAME') . (($port !== '80' && $port !== '443') ? ':' . $port : '');
     }
 
     public function getPrePath(): string
