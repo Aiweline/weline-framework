@@ -16,6 +16,7 @@ class Modules
 {
     private array $modules = [];
     private array $active_modules = [];
+    private array $disable_modules = [];
 
     /**
      * @DESC         |获取已经安装的模块列表
@@ -26,34 +27,41 @@ class Modules
      */
     public function getList(bool $only_active = false)
     {
-        if ($only_active) {
-            if ($this->active_modules) {
-                return $this->active_modules;
-            }
-            if (!$this->modules) {
-                $this->getList(false);
-            }
-            foreach ($this->modules as $module) {
-                if ($module['status']) {
-                    $this->active_modules[$module['name']] = $module;
-                }
-            }
-            return $this->active_modules;
-        }
         if ($this->modules) {
-            return $this->modules;
+            if ($only_active) {
+                if ($this->active_modules) {
+                    return $this->active_modules;
+                }
+                foreach ($this->modules as $module) {
+                    if ($module['status']) {
+                        $this->active_modules[$module['name']] = $module;
+                    }
+                }
+                return $this->active_modules;
+            } else {
+                if ($this->disable_modules) {
+                    return $this->disable_modules;
+                }
+                foreach ($this->modules as $module) {
+                    if ($module['status']) {
+                        $this->disable_modules[$module['name']] = $module;
+                    }
+                }
+                return $this->disable_modules;
+            }
+        } else {
+            $modules_file = Env::path_MODULES_FILE;
+            if (!is_file($modules_file)) {
+                $file = new File();
+                $file->open($modules_file, $file::mode_w_add);
+                $text = '<?php return ' . w_var_export([], true) . ';?>';
+                $file->write($text);
+                $file->close();
+            }
+            $modules_data  = include $modules_file;
+            $this->modules = is_array($modules_data) ? $modules_data : [];
         }
-        $modules_file = Env::path_MODULES_FILE;
-        if (!is_file($modules_file)) {
-            $file = new File();
-            $file->open($modules_file, $file::mode_w_add);
-            $text = '<?php return ' . w_var_export([], true) . ';?>';
-            $file->write($text);
-            $file->close();
-        }
-        $modules_data = include $modules_file;
-        $this->modules = is_array($modules_data) ? $modules_data : [];
-        return $this->modules;
+        return $this->getList($only_active);
     }
 
 }
