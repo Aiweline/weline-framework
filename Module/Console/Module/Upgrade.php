@@ -37,11 +37,10 @@ class Upgrade extends CommandAbstract
         Printing $printer,
         Data     $data,
         System   $system
-    )
-    {
+    ) {
         $this->printer = $printer;
-        $this->system  = $system;
-        $this->data    = $data;
+        $this->system = $system;
+        $this->data = $data;
     }
 
     /**
@@ -63,7 +62,7 @@ class Upgrade extends CommandAbstract
     public function execute(array $args = [], array $data = [])
     {
         $i = 1;
-//        // 删除路由文件
+        //        // 删除路由文件
         $this->printer->warning($i . '、路由更新...', '系统');
         $this->printer->warning('清除文件：');
         foreach (Env::router_files_PATH as $path) {
@@ -94,7 +93,7 @@ class Upgrade extends CommandAbstract
         $i += 1;
         // 扫描代码
         $this->printer->note($i . '、清理模板缓存', '系统');
-        $modules      = Env::getInstance()->getModuleList();
+        $modules = Env::getInstance()->getModuleList();
         foreach ($modules as $module) {
             $tpl_dir = $module['base_path'] . DS . 'view' . DS . 'tpl';
             if (is_dir($tpl_dir)) {
@@ -120,7 +119,18 @@ class Upgrade extends CommandAbstract
                 require $module['register'];
             }
         }
-        $modules               = Env::getInstance()->getModuleList(true);
+        $modules = Env::getInstance()->getModuleList(true);
+        foreach ($modules as $module) {
+            if (!isset($dependencyModules[$module['name']])) {
+                $this->printer->setup(__('发现网站正在进行搬迁，请再次运行php bin/m setup:upgrade命令！'));
+                exit(0);
+            }
+            $dependencyModule = $dependencyModules[$module['name']];
+            if($module['base_path'] != $dependencyModule['base_path']){
+                $this->printer->setup(__('发现网站正在进行搬迁，请再次运行php bin/m setup:upgrade命令！'));
+                exit(0);
+            }
+        }
         $dependencyModuleNames = array_keys($dependencyModules);
         foreach ($modules as $module) {
             if (!in_array($module['name'], $dependencyModuleNames)) {
@@ -164,11 +174,11 @@ class Upgrade extends CommandAbstract
         $i += 1;
         $this->printer->note($i . '、收集模块信息', '系统');
         # 加载module中的助手函数
-        $modules                = Env::getInstance()->getActiveModules();
+        $modules = Env::getInstance()->getActiveModules();
         $function_files_content = '';
         foreach ($modules as $module) {
             $global_file_pattern = $module['base_path'] . 'Global' . DS . '*.php';
-            $global_files        = glob($global_file_pattern);
+            $global_files = glob($global_file_pattern);
             foreach ($global_files as $global_file) {
                 # 读取文件内容 去除注释以及每个文件末尾的 '\?\>'结束符
                 $function_files_content .= str_replace('?>', '', file_get_contents($global_file)) . PHP_EOL;

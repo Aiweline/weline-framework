@@ -212,15 +212,15 @@ class Handle implements HandleInterface, RegisterInterface
         # 模块数据
         $module = new Module();
         $module->setStatus(true)
-               ->setPosition($position)
-               ->setName($module_name)
-               ->setRouter($router)
-               ->setNamespacePath(str_replace('_', '\\', $param['module_name']))
-               ->setBasePath($param['base_path'])
-               ->setPath($param['dir_path'])
-               ->setVersion($version ?: '1.0.0')
-               ->setDescription($description ?: '')
-               ->setDependencies($dependencies);
+            ->setPosition($position)
+            ->setName($module_name)
+            ->setRouter($router)
+            ->setNamespacePath(str_replace('_', '\\', $param['module_name']))
+            ->setBasePath($param['base_path'])
+            ->setPath($param['dir_path'])
+            ->setVersion($version ?: '1.0.0')
+            ->setDescription($description ?: '')
+            ->setDependencies($dependencies);
         // 已经存在模块则更新
         if ($this->helper->isInstalled($this->modules, $module->getName())) {
             if ($this->helper->isDisabled($this->modules, $module->getName())) {
@@ -237,7 +237,7 @@ class Handle implements HandleInterface, RegisterInterface
             $this->printer->success(str_pad($module->getName(), 45) . __('已安装！'));
         }
         $this->modules[$module->getName()] = $module->getData();
-//        // 更新模块
+        // 更新模块
         $this->helper->updateModules($this->modules);
         return $module;
     }

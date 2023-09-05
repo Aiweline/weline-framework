@@ -25,43 +25,18 @@ class Modules
      *
      * @return array
      */
-    public function getList(bool $only_active = false)
+    public function getList()
     {
-        if ($this->modules) {
-            if ($only_active) {
-                if ($this->active_modules) {
-                    return $this->active_modules;
-                }
-                foreach ($this->modules as $module) {
-                    if ($module['status']) {
-                        $this->active_modules[$module['name']] = $module;
-                    }
-                }
-                return $this->active_modules;
-            } else {
-                if ($this->disable_modules) {
-                    return $this->disable_modules;
-                }
-                foreach ($this->modules as $module) {
-                    if ($module['status']) {
-                        $this->disable_modules[$module['name']] = $module;
-                    }
-                }
-                return $this->disable_modules;
-            }
-        } else {
-            $modules_file = Env::path_MODULES_FILE;
-            if (!is_file($modules_file)) {
-                $file = new File();
-                $file->open($modules_file, $file::mode_w_add);
-                $text = '<?php return ' . w_var_export([], true) . ';?>';
-                $file->write($text);
-                $file->close();
-            }
-            $modules_data  = include $modules_file;
-            $this->modules = is_array($modules_data) ? $modules_data : [];
+        $modules_file = Env::path_MODULES_FILE;
+        if (!is_file($modules_file)) {
+            $file = new File();
+            $file->open($modules_file, $file::mode_w_add);
+            $text = '<?php return ' . w_var_export([], true) . ';?>';
+            $file->write($text);
+            $file->close();
         }
-        return $this->getList($only_active);
+        $modules_data  = include $modules_file;
+        return is_array($modules_data) ? $modules_data : [];
     }
 
 }
