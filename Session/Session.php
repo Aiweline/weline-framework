@@ -187,7 +187,8 @@ class Session implements SessionInterface
 
     public function logout(): bool
     {
-        return $this->session->destroy();
+        $this->session->delete($this::login_KEY);
+        return $this->session->delete($this::login_KEY_ID);
     }
 
     public function getType(): string
