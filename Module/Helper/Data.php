@@ -468,7 +468,7 @@ class Data extends AbstractHelper
         $text = '<?php return ' . w_var_export($modules, true) . ';';
         $this->file->write($text);
         $this->file->close();
-        Env::getInstance()->reload();
+        Env::getInstance()->getModuleList(true);
     }
 
     /**
