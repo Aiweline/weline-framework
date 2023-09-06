@@ -10,6 +10,7 @@
 namespace Weline\Framework\Http;
 
 
+use JetBrains\PhpStorm\NoReturn;
 use Weline\Framework\DataObject\DataObject;
 use Weline\Framework\Event\EventsManager;
 use Weline\Framework\Manager\ObjectManager;
@@ -91,6 +92,7 @@ class Response implements ResponseInterface
         exit();
     }
 
+    #[NoReturn]
     public function redirect(string $url, $code = 302): void
     {
         $data = new DataObject(['url' => $url, 'code' => $code]);
