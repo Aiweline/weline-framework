@@ -85,7 +85,7 @@ class Response implements ResponseInterface
         exit();
     }
 
-    public function responseHttpCode($code = 200): void
+    public function responseHttpCode(int $code = 200): void
     {
         http_response_code($code);
         exit();
@@ -93,12 +93,16 @@ class Response implements ResponseInterface
 
     public function redirect(string $url, $code = 200): void
     {
+        $data = new DataObject(['url' => $url, 'code' => $code]);
+        $this->getEvenManager()->dispatch('Weline_Framework_Http::response_redirect_before',['data'=>$data]);
+        $url = $data->getData('url');
+        $code = $data->getData('code');
         http_response_code($code);
         Header("Location:$url");
         exit(0);
     }
 
-    public function renderJson($data): bool|string
+    public function renderJson(array $data): bool|string
     {
         Header('Content-Type:application/json; charset=utf-8');
         return json_encode($data);
