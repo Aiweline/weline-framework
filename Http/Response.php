@@ -91,7 +91,7 @@ class Response implements ResponseInterface
         exit();
     }
 
-    public function redirect(string $url, $code = 301): void
+    public function redirect(string $url, $code = 302): void
     {
         $data = new DataObject(['url' => $url, 'code' => $code]);
         $this->getEvenManager()->dispatch('Weline_Framework_Http::response_redirect_before',['data'=>$data]);
