@@ -65,7 +65,6 @@ class Session implements SessionInterface
             session_start();
         } else {
             if ($session_id) {
-                session_destroy();
                 session_id($session_id);
                 session_start();
             }
