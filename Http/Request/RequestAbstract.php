@@ -64,7 +64,7 @@ abstract class RequestAbstract extends RequestFilter
         if (empty($this->_response)) {
             $this->_response = $this->getResponse();
         }
-        $url_arr           = explode('/', trim($this->getModuleUrlPath(), '/'));
+        $url_arr = explode('/', trim($this->getModuleUrlPath(), '/'));
         $this->area_router = array_shift($url_arr);
     }
 
@@ -334,7 +334,7 @@ abstract class RequestAbstract extends RequestFilter
         if (!is_null($this->uri)) {
             return $this->uri;
         }
-        $uri      = rtrim($this->getServer('REQUEST_URI'), '/');
+        $uri = rtrim($this->getServer('REQUEST_URI'), '/');
         $url_path = $this->cache->get($this->uri_cache_key);
         if ($url_path !== false) {
             $this->uri_cache_url_path_data = $url_path;
@@ -345,7 +345,7 @@ abstract class RequestAbstract extends RequestFilter
         if ($uri && $this->isGet()) {
             /**@var EventsManager $event */
             $event = ObjectManager::getInstance(EventsManager::class);
-            $data  = new DataObject(['uri' => $uri]);
+            $data = new DataObject(['uri' => $uri]);
             $event->dispatch('Weline_Framework_Router::router_start', ['data' => $data]);
             $uri = $data->getData('uri');
             $this->setServer('REQUEST_URI', $uri);
@@ -371,26 +371,26 @@ abstract class RequestAbstract extends RequestFilter
 
     public function getBaseUrl(): string
     {
-        $uri     = $this->getUri();
+        $uri = $this->getUri();
         $url_exp = explode('?', $uri);
         return $this->getBaseHost() . array_shift($url_exp);
     }
 
-    function getFullUrl(): string
+    public function getFullUrl(): string
     {
         return $this->getServer('REQUEST_SCHEME') . '://' . $this->getServer('SERVER_NAME') . $this->getServer('REQUEST_URI');
     }
 
     public function getBaseUri(): string
     {
-        $uri     = $this->getUri();
+        $uri = $this->getUri();
         $url_exp = explode('?', $uri);
         return $this->getBaseHost() . array_shift($url_exp);
     }
 
     public function getFirstUrlPath(): string
     {
-        $uri     = $this->getUri();
+        $uri = $this->getUri();
         $url_exp = explode('?', $uri);
         return trim(array_shift($url_exp), '/');
     }
@@ -398,7 +398,7 @@ abstract class RequestAbstract extends RequestFilter
     public function getBaseHost(): string
     {
         $port = $this->getServer('SERVER_PORT');
-        return ($this->getServer('HTTP_X_FORWARDED_PROTO')?:$this->getServer('REQUEST_SCHEME')) . '://' . $this->getServer('SERVER_NAME') . (($port !== '80' && $port !== '443') ? ':' . $port : '');
+        return ($this->getServer('HTTP_X_FORWARDED_PROTO') ?: $this->getServer('REQUEST_SCHEME')) . '://' . $this->getServer('SERVER_NAME') . (($port !== '80' && $port !== '443') ? ':' . $port : '');
     }
 
     public function getPrePath(): string
@@ -418,5 +418,24 @@ abstract class RequestAbstract extends RequestFilter
     public function getResponse(): Response
     {
         return $this->_response = ObjectManager::getInstance(\Weline\Framework\Http\Response::class);
+    }
+
+    public function isAjax(): bool
+    {
+        if (strtolower($this->getServer('HTTP_X_REQUESTED_WITH')) == strtolower('XMLHttpRequest')) {
+            return true;
+        }
+        return isset($_GET['isAjax']) || isset($_POST['isAjax']);
+    }
+
+    public function isIframe(): bool
+    {
+        if ($this->request->getServer('HTTP_SEC_FETCH_DEST') == 'iframe') {
+            return true;
+        }
+        if ($this->request->getServer('Sec-Fetch-Dest') == 'iframe') {
+            return true;
+        }
+        return isset($_GET['isIframe']) || isset($_POST['isIframe']);
     }
 }
