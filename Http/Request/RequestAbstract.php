@@ -430,10 +430,10 @@ abstract class RequestAbstract extends RequestFilter
 
     public function isIframe(): bool
     {
-        if ($this->request->getServer('HTTP_SEC_FETCH_DEST') == 'iframe') {
+        if ($this->getServer('HTTP_SEC_FETCH_DEST') == 'iframe') {
             return true;
         }
-        if ($this->request->getServer('Sec-Fetch-Dest') == 'iframe') {
+        if ($this->getServer('Sec-Fetch-Dest') == 'iframe') {
             return true;
         }
         return isset($_GET['isIframe']) || isset($_POST['isIframe']);
