@@ -26,11 +26,13 @@ class BackendController extends PcController
 
     public function __init()
     {
+        $this->getEventManager()->dispatch('Framework_App::backend_controller_init_before');
         $this->cache = $this->getControllerCache();
         if (!isset($this->session)) {
             $this->session = ObjectManager::getInstance(BackendSession::class);
         }
         parent::__init();
+        $this->getEventManager()->dispatch('Framework_App::backend_controller_init_after');
     }
 
     protected function isAllowed(): void
