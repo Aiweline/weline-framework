@@ -16,8 +16,8 @@ use Weline\Framework\Session\Driver\SessionDriverHandlerInterface;
 
 class Session implements SessionInterface
 {
-    public const login_KEY        = 'WL_USER';
-    public const login_KEY_ID     = 'WL_USER_ID';
+    public const login_KEY = 'WL_USER';
+    public const login_KEY_ID = 'WL_USER_ID';
     public const login_USER_MODEL = 'WL_USER_MODEL';
 
     private ?AbstractModel $user = null;
@@ -34,14 +34,14 @@ class Session implements SessionInterface
     public function __init()
     {
         if (isset($_SERVER['REQUEST_URI']) && !isset($this->session)) {
-            $type          = 'frontend';
+            $type = 'frontend';
             $identity_path = '/';
             if (is_int(strpos($_SERVER['REQUEST_URI'], Env::getInstance()->getData('admin')))) {
                 $identity_path .= Env::getInstance()->getConfig('admin');
-                $type          = 'backend';
+                $type = 'backend';
             } elseif (is_int(strpos($_SERVER['REQUEST_URI'], Env::getInstance()->getConfig('api_admin')))) {
                 $identity_path .= Env::getInstance()->getConfig('api_admin');
-                $type          = 'api_backend';
+                $type = 'api_backend';
             }
             if (session_status() !== PHP_SESSION_ACTIVE) {
                 # 保持浏览器session唯一，除非清空浏览器cookie
@@ -49,14 +49,14 @@ class Session implements SessionInterface
                     session_id($sess_id);
                 }
                 session_set_cookie_params(3600, $identity_path);
-//                session_set_cookie_params(['samesite' => 'Strict', 'Secure' => false]);
+                //                session_set_cookie_params(['samesite' => 'Strict', 'Secure' => false]);
             }
             $this->session = SessionManager::getInstance()->create();
             $this->setType($type)->setData('path', $identity_path);
         }
     }
 
-    public function start(string $session_id = null)
+    public function start(string $session_id = null): void
     {
         if (session_status() !== PHP_SESSION_ACTIVE) {
             if ($session_id) {
@@ -64,7 +64,7 @@ class Session implements SessionInterface
             }
             session_start();
         } else {
-            if ($session_id) {
+            if (session_id() != $session_id) {
                 session_id($session_id);
                 session_start();
             }
@@ -234,6 +234,7 @@ class Session implements SessionInterface
         }
         return false;
     }
+
     public function getGcMaxLifeTime(): int
     {
         return ini_get('session.gc_maxlifetime');
