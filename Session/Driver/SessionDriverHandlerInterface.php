@@ -9,8 +9,9 @@
 
 namespace Weline\Framework\Session\Driver;
 
-interface SessionDriverHandlerInterface
+interface SessionDriverHandlerInterface extends \SessionHandlerInterface
 {
+    public function __construct(array $config);
     /**
      * @DESC          # 设置数据
      *
@@ -50,8 +51,6 @@ interface SessionDriverHandlerInterface
      * @return bool
      */
     public function delete($name): bool;
-
-    public function destroy();
 
     /**
      * @DESC          # 获取Session ID

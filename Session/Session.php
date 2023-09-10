@@ -43,31 +43,21 @@ class Session implements SessionInterface
                 $identity_path .= Env::getInstance()->getConfig('api_admin');
                 $type = 'api_backend';
             }
-            if (session_status() !== PHP_SESSION_ACTIVE) {
-                # 保持浏览器session唯一，除非清空浏览器cookie
-                if ($sess_id = $_COOKIE['PHPSESSID'] ?? null) {
-                    session_id($sess_id);
-                }
-                session_set_cookie_params(3600, $identity_path);
-                //                session_set_cookie_params(['samesite' => 'Strict', 'Secure' => false]);
-            }
             $this->session = SessionManager::getInstance()->create();
+            $this->start();
             $this->setType($type)->setData('path', $identity_path);
         }
     }
 
     public function start(string $session_id = null): void
     {
-        if (session_status() !== PHP_SESSION_ACTIVE) {
-            if ($session_id) {
-                session_id($session_id);
-            }
-            session_start();
-        } else {
+        if ($session_id) {
             if (session_id() != $session_id) {
                 session_id($session_id);
-                session_start();
             }
+        }
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
         }
     }
 
@@ -221,12 +211,12 @@ class Session implements SessionInterface
         return $this->getType() === 'frontend';
     }
 
-    public function destroy()
+    public function destroy(string $id = null): bool
     {
-        return $this->session->destroy();
+        return $this->session->destroy($id ?: $this->session->getSessionId());
     }
 
-    public function delete(string $name)
+    public function delete(string $name): bool
     {
         if (isset($_SESSION[$name])) {
             unset($_SESSION[$name]);
