@@ -97,9 +97,8 @@ class SessionManager
                     $this->cache->set($cache_key, $driver_class);
                 }
             }
-            $driver_config = $this->config['drivers'][$driver];
+            $driver_config = $this->config['drivers'][$driver] ?? [];
             $this->_session = new $driver_class($driver_config);
-            session_set_save_handler($this->_session, true);
         }
         return $this->_session;
     }
