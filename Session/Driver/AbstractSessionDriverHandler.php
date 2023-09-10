@@ -20,6 +20,9 @@ abstract class AbstractSessionDriverHandler extends DataObject implements Sessio
     public function __construct(array $config)
     {
         parent::__construct($config);
+//        ini_set('session.save_handler', 'user');
+        ini_set('session.auto_start', '0');
+        register_shutdown_function(array($this, 'close'));
         session_set_save_handler($this, true);
     }
 
