@@ -57,14 +57,14 @@ class ModelManager
                 $model = ObjectManager::getInstance($model_class);
                 if ($model instanceof AbstractModel) {
                     $data = new DataObject(['model' => $model]);
-                    $this->getEvenManager()->dispatch('Framework_Database::model_update_before', ['data' => $data, 'type' => $type, 'object' => $this]);
+                    $this->getEvenManager()->dispatch('Framework_Database::model_update_before', ['data' => $data, 'type' => $type, 'object' => $this, 'module' => $module]);
                     if (PROD) {
                         $this->printing->printing($model::class);
                     }
                     $modelSetup->putModel($model);
                     # 执行模型升级
                     $model->$type($modelSetup, $context);
-                    $this->getEvenManager()->dispatch('Framework_Database::model_update_after', ['data' => $data, 'type' => $type, 'object' => $this]);
+                    $this->getEvenManager()->dispatch('Framework_Database::model_update_after', ['data' => $data, 'type' => $type, 'object' => $this, 'module' => $module]);
                 }
             }
         }
