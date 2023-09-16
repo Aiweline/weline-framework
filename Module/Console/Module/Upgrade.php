@@ -125,12 +125,14 @@ class Upgrade extends CommandAbstract
         $modules = Env::getInstance()->getModuleList(true);
         foreach ($modules as $module) {
             if (!isset($dependencyModules[$module['name']])) {
-                $this->printer->setup(__('发现网站正在进行搬迁，请再次运行php bin/m setup:upgrade命令！'));
+                $this->system->exec(PHP_BINARY.' php bin/m cache:clear -f');
+                $this->printer->setup(__('发现网站正在进行搬迁，请再次运行php bin/m setup:upgrade命令！如果有问题请运行composer update后再次运行。'));
                 exit(0);
             }
             $dependencyModule = $dependencyModules[$module['name']];
             if($module['base_path'] != $dependencyModule['base_path']){
-                $this->printer->setup(__('发现网站正在进行搬迁，请再次运行php bin/m setup:upgrade命令！'));
+                $this->system->exec(PHP_BINARY.' php bin/m cache:clear -f');
+                $this->printer->setup(__('发现网站正在进行搬迁，请再次运行php bin/m setup:upgrade命令！如果有问题请运行composer update后再次运行。'));
                 exit(0);
             }
         }
