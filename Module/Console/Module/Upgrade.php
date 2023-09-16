@@ -54,13 +54,16 @@ class Upgrade extends CommandAbstract
      * 参数区：
      *
      * @param array $args
-     *
+     * @param array $data
      * @return mixed|void
-     * @throws \ReflectionException
      * @throws Exception
+     * @throws \ReflectionException
      */
     public function execute(array $args = [], array $data = [])
     {
+        /**@var EventsManager $eventsManager */
+        $eventsManager = ObjectManager::getInstance(EventsManager::class);
+        $eventsManager->dispatch('Framework_Module::module_upgrade_before');
         $i = 1;
         //        // 删除路由文件
         $this->printer->warning($i . '、路由更新...', '系统');
