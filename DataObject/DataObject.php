@@ -71,22 +71,6 @@ class DataObject implements \ArrayAccess
 
         return $this;
     }
-    /**
-     * @DESC         | 添加数据
-     *
-     * 向对象添加数据。
-     * 保留对象中以前的数据。
-     *
-     * 参数区：
-     *
-     * @param array $arr
-     *
-     * @return $this
-     */
-    public function add(array $arr): static
-    {
-        return $this->addData($arr);
-    }
 
     /**
      * @DESC          # 添加累计类型的数据
@@ -140,26 +124,6 @@ class DataObject implements \ArrayAccess
         return $this;
     }
 
-    /**
-     * @DESC         |设置数据
-     *
-     *  覆盖对象中的数据。
-     *  $key参数可以是字符串或数组。
-     *  如果$key是string，则属性值将被$value覆盖
-     *  如果$key是数组，它将覆盖对象中的所有数据。
-     *
-     * 参数区：
-     *
-     * @param      $key
-     * @param null $value
-     *
-     * @return $this
-     */
-    public function set($key, $value = null): static
-    {
-        return $this->setData($key, $value);
-    }
-
     public function setObjectData(array $data): static
     {
         $this->_data = $data;
@@ -193,20 +157,6 @@ class DataObject implements \ArrayAccess
     }
 
     /**
-     * @DESC         |卸载数据
-     *
-     * 参数区：
-     *
-     * @param null $key
-     *
-     * @return $this
-     */
-    public function unset($key = null): DataObject
-    {
-        return $this->unsetData($key);
-    }
-
-    /**
      * @DESC          # 清空数据
      *
      * @AUTH    秋枫雁飞
@@ -219,21 +169,6 @@ class DataObject implements \ArrayAccess
     {
         $this->_data = [];
         return $this;
-    }
-
-
-    /**
-     * @DESC          # 清空数据
-     *
-     * @AUTH    秋枫雁飞
-     * @EMAIL aiweline@qq.com
-     * @DateTime: 2021/9/1 22:52
-     * 参数区：
-     * @return $this
-     */
-    public function clear(): DataObject
-    {
-        return $this->clearDataObject();
     }
 
     /**
@@ -287,28 +222,6 @@ class DataObject implements \ArrayAccess
     }
 
     /**
-     * @DESC         | 对象数据获取者
-     *
-     *如果未定义$key，则将以数组形式返回所有数据。
-     *否则它将返回$key指定的元素的值。
-     *可以使用a/b/c这样的键来访问嵌套的数组数据
-     *如果指定了$index，则假定属性数据是数组
-     *并检索相应的成员。如果数据是字符串-它将被分解
-     *由新行字符转换为数组。
-     *
-     * 参数区：
-     *
-     * @param string $key
-     * @param null $index
-     *
-     * @return mixed
-     */
-    public function get(string $key = '', $index = null): mixed
-    {
-        return $this->getData($key, $index);
-    }
-
-    /**
      * @DESC         |通过路径获取数据
      *
      * 方法将路径看作键名链: a/b/c => ['a']['b']['c']
@@ -348,10 +261,10 @@ class DataObject implements \ArrayAccess
      *
      * @return mixed
      */
-    public function getByPath($path): mixed
-    {
-        return $this->getDataByPath($path);
-    }
+//    public function getByPath($path): mixed
+//    {
+//        return $this->getDataByPath($path);
+//    }
 
     /**
      * @DESC         |按特定键获取对象数据
@@ -365,20 +278,6 @@ class DataObject implements \ArrayAccess
     public function getDataByKey($key): mixed
     {
         return $this->_getData($key);
-    }
-
-    /**
-     * @DESC         |按特定键获取对象数据
-     *
-     * 参数区：
-     *
-     * @param $key
-     *
-     * @return mixed
-     */
-    public function getByKey($key): mixed
-    {
-        return $this->getDataByKey($key);
     }
 
     /**
@@ -418,21 +317,6 @@ class DataObject implements \ArrayAccess
     }
 
     /**
-     * @DESC         |使用调用setter方法设置对象数据
-     *
-     * 参数区：
-     *
-     * @param       $key
-     * @param array $args
-     *
-     * @return $this
-     */
-    public function setUsingMethod($key, array $args = []): static
-    {
-        return $this->setDataUsingMethod($key, $args);
-    }
-
-    /**
      * @DESC         |通过调用getter方法按键获取对象数据
      *
      * 参数区：
@@ -443,23 +327,6 @@ class DataObject implements \ArrayAccess
      * @return mixed
      */
     public function getDataUsingMethod($key, $args = null): mixed
-    {
-        $method = 'get' . str_replace('_', '', ucwords($key, '_'));
-
-        return $this->{$method}($args);
-    }
-
-    /**
-     * @DESC         |通过调用getter方法按键获取对象数据
-     *
-     * 参数区：
-     *
-     * @param      $key
-     * @param null $args
-     *
-     * @return mixed
-     */
-    public function getUsingMethod($key, $args = null): mixed
     {
         $method = 'get' . str_replace('_', '', ucwords($key, '_'));
 
@@ -485,23 +352,6 @@ class DataObject implements \ArrayAccess
         }
 
         return array_key_exists($key, $this->_data);
-    }
-
-    /**
-     * @DESC         |检查数据
-     *
-     * 如果$key为空，则检查对象中是否有任何数据
-     * 否则检查是否设置了指定的属性。
-     *
-     * 参数区：
-     *
-     * @param string $key
-     *
-     * @return bool
-     */
-    public function has(string $key = ''): bool
-    {
-        return $this->hasData($key);
     }
 
     /**
