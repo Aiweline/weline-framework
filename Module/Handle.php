@@ -382,7 +382,7 @@ class Handle implements HandleInterface, RegisterInterface
             $this->printer->success(str_pad($module->getName(), 45) . __('已安装！'));
         }
 //        // 更新模块
-        $this->helper->updateModules($this->modules);
+//        $this->helper->updateModules($this->modules); #FIXME 解决重复刷新modules文件导致更新不成功问题
         return $module;
     }
 
@@ -405,7 +405,6 @@ class Handle implements HandleInterface, RegisterInterface
             if (DEV) {
                 $this->printer->setup($module->getName() . '：更新路由...', '开发');
             }
-
             $this->helper->registerModuleRouter($this->modules, $module->getBasePath(), $module->getName(), $module->getRouter());
             if (DEV) {
                 $this->printer->setup($module->getName() . '：更新路由完成...', '开发');
