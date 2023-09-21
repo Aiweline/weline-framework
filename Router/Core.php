@@ -329,15 +329,7 @@ class Core
             return [$dispatch, $dispatch_method];
         } else {
             $class_name = $router['class']['name'] ?? '';
-            // 检测注册方法
-            /**@var \Weline\Framework\Controller\Core $dispatch */
-            $dispatch = ObjectManager::getInstance($class_name);
-            $dispatch->__setModuleInfo($router);
             $method = $router['class']['method'] ?: 'index';
-            # 检测控制器方法
-            if (!method_exists($dispatch, $method)) {
-                throw new Exception("{$class_name}: 控制器方法 {$method} 不存在!");
-            }
             $this->cache->set($controller_cache_method_key, $method);
             $this->cache->set($controller_cache_controller_key, $class_name);
             return [$class_name, $method];
@@ -371,7 +363,6 @@ class Core
                 $this->request->getResponse()->noRouter();
             }
         }
-
         $this->request->setRouter($this->router);
         list($dispatch, $method) = $this->getController($this->router);
         // 解析注解
@@ -386,17 +377,24 @@ class Core
                 }
             }
         }
+
         /**@var \Weline\Framework\Controller\Core $dispatch */
 //        $dispatch->assign($this->request->getData());
         /**@var EventsManager $eventManager */
         $eventManager = ObjectManager::getInstance(EventsManager::class);
         $eventManager->dispatch('Framework_Router::route_before', ['route' => $this]);
-        $result = call_user_func([ObjectManager::getInstance($dispatch), $method], /*...$this->request->getParams()*/);
+        $dispatch = ObjectManager::getInstance($dispatch);
+        $dispatch->__setModuleInfo($this->router);
+
+        # 检测控制器方法
+        if (!method_exists($dispatch, $method)) {
+            throw new Exception("{$dispatch::class}: 控制器方法 {$method} 不存在!");
+        }
+        $result = call_user_func([$dispatch, $method], /*...$this->request->getParams()*/);
         # ----------事件：处理url之前 开始------------
-        /**@var EventsManager $eventManager */
-        $eventManager = ObjectManager::getInstance(EventsManager::class);
         $resultData = new DataObject(['result' => $result, 'route' => $this]);
         $eventManager->dispatch('Framework_Router::route_after', ['data' => $resultData]);
+
 //        file_put_contents(__DIR__.'/'.$cache_key.'.html', $result);
         /** Get output buffer. */
         $this->cache->set($cache_key, $result, 5);
