@@ -125,13 +125,13 @@ class Upgrade extends CommandAbstract
         $modules = Env::getInstance()->getModuleList(true);
         foreach ($modules as $module) {
             if (!isset($dependencyModules[$module['name']])) {
-                $this->system->exec(PHP_BINARY.' php bin/m cache:clear -f');
+                $this->system->exec(PHP_BINARY . ' php bin/m cache:clear -f');
                 $this->printer->setup(__('发现网站正在进行搬迁，请再次运行php bin/m setup:upgrade命令！如果有问题请运行composer update后再次运行。'));
                 exit(0);
             }
             $dependencyModule = $dependencyModules[$module['name']];
-            if($module['base_path'] != $dependencyModule['base_path']){
-                $this->system->exec(PHP_BINARY.' php bin/m cache:clear -f');
+            if ($module['base_path'] != $dependencyModule['base_path']) {
+                $this->system->exec(PHP_BINARY . ' php bin/m cache:clear -f');
                 $this->printer->setup(__('发现网站正在进行搬迁，请再次运行php bin/m setup:upgrade命令！如果有问题请运行composer update后再次运行。'));
                 exit(0);
             }
@@ -161,8 +161,14 @@ class Upgrade extends CommandAbstract
         $module_handle = ObjectManager::getInstance(Handle::class);
         // 安装Setup信息
         $this->printer->note(__('2)安装Setup信息'));
+        $modules = $module_handle->getModules();
         foreach ($modules as $module_name => $module) {
-            $module_handle->setupInstall(new Module($module));
+            if (isset($module['upgrading']) and $module['upgrading']) {
+                $module_handle->setupInstall(new Module($module));
+            }
+            if (isset($module['installing']) and $module['installing']) {
+                $module_handle->setupInstall(new Module($module));
+            }
         }
         // 注册模型数据库信息
         $this->printer->note(__('3)注册模型数据库信息'));

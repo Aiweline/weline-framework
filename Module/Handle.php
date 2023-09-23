@@ -81,7 +81,8 @@ class Handle implements HandleInterface, RegisterInterface
         Printing $printer,
         System   $system,
         Compress $compress,
-        SetupHelper $setup_helper
+        SetupHelper $setup_helper,
+        SetupData $setup_data,
     )
     {
         $this->modules  = Env::getInstance()->getModuleList();
@@ -90,6 +91,7 @@ class Handle implements HandleInterface, RegisterInterface
         $this->printer  = $printer;
         $this->compress = $compress;
         $this->setup_helper = $setup_helper;
+        $this->setup_data = $setup_data;
     }
 
     /**
@@ -227,12 +229,14 @@ class Handle implements HandleInterface, RegisterInterface
                 $module->setStatus(false);
                 $this->printer->warning(str_pad($module->getName(), 45) . __('已禁用！'));
             }else{
+                $module['upgrading'] = true;
                 $this->setupModel($module);
             }
         } else {
             $this->printer->setup("扩展{$module->getName()}安装中...");
             // 全新安装
             $module->setStatus(true);
+            $module['installing'] = true;
             $this->modules[$module->getName()] = $module->getData();
             $this->printer->success(str_pad($module->getName(), 45) . __('已安装！'));
         }
@@ -342,32 +346,35 @@ class Handle implements HandleInterface, RegisterInterface
         if (is_dir($setup_dir) && DEV) {
             $this->printer->setup($setup_dir . '：升级目录...', '开发');
         }
-        // 已经存在模块则更新
-        if ($this->helper->isInstalled($this->modules, $module->getName())) {
-            if ($this->helper->isDisabled($this->modules, $module->getName())) {
-                $module->setStatus(false);
-                $this->printer->warning(str_pad($module->getName(), 45) . __('已禁用！'));
-            } else {
-                // 是否更新模块：是则加载模块下的Setup模块下的文件进行更新
-                $old_version = $this->modules[$module->getName()]['version'];
-                if ($this->helper->isUpgrade($this->modules, $module->getName(), $module->getVersion())) {
-                    $this->printer->note(__('扩展 %1 升级中...', $module->getName()));
-                    $this->printer->setup(__('升级 %1 到 %2', [$old_version, $module->getVersion()]));
+        # 检测是否禁用
+        if($this->helper->isDisabled($this->modules, $module->getName())){
+            $this->printer->warning(str_pad($module->getName(), 45) . __('已禁用！'));
+            return $module;
+        }
+        # 更新
+        if(isset($module['upgrading']) and $module['upgrading']){
+            // 是否更新模块：是则加载模块下的Setup模块下的文件进行更新
+            $old_version = $this->modules[$module->getName()]['version'];
+            if ($this->helper->isUpgrade($this->modules, $module->getName(), $module->getVersion())) {
+                $this->printer->note(__('扩展 %1 升级中...', $module->getName()));
+                $this->printer->setup(__('升级 %1 到 %2', [$old_version, $module->getVersion()]));
 
-                    foreach (\Weline\Framework\Setup\Data\DataInterface::upgrade_FILES as $upgrade_FILE) {
-                        $setup_file = $setup_dir . DS . $upgrade_FILE . '.php';
-                        if (file_exists($setup_file)) {
-                            $setup = ObjectManager::getInstance($setup_namespace . $upgrade_FILE);
-                            $this->setup_data->setModuleContext($this->setup_context);
-                            $result = $setup->setup($this->setup_data, $this->setup_context);
-                            $this->printer->note("{$result}");
-                        }
+                foreach (\Weline\Framework\Setup\Data\DataInterface::upgrade_FILES as $upgrade_FILE) {
+                    $setup_file = $setup_dir . DS . $upgrade_FILE . '.php';
+                    if (file_exists($setup_file)) {
+                        $setup = ObjectManager::getInstance($setup_namespace . $upgrade_FILE);
+                        $this->setup_data->setModuleContext($this->setup_context);
+                        $result = $setup->setup($this->setup_data, $this->setup_context);
+                        $this->printer->note("{$result}");
                     }
                 }
-                $this->modules[$module->getName()] = $module->getData();
-                $this->printer->success(str_pad($module->getName(), 45) . __('已更新！'));
             }
-        } else {
+            $module->unsetData('upgrading');
+            $this->modules[$module->getName()] = $module->getData();
+            $this->printer->success(str_pad($module->getName(), 45) . __('已更新！'));
+        }
+        # 安装
+        if(isset($module['installing']) and $module['installing']){
             $this->printer->setup("扩展{$module->getName()}安装中...");
             $module->setStatus(true);
             // 安装模块：加载模块下的Setup模块下的安装文件进行安装
@@ -380,9 +387,10 @@ class Handle implements HandleInterface, RegisterInterface
                 }
             }
             $this->printer->success(str_pad($module->getName(), 45) . __('已安装！'));
+            $module->unsetData('installing');
         }
 //        // 更新模块
-//        $this->helper->updateModules($this->modules); #FIXME 解决重复刷新modules文件导致更新不成功问题
+        $this->helper->updateModules($this->modules); #FIXME 解决重复刷新modules文件导致更新不成功问题
         return $module;
     }
 
