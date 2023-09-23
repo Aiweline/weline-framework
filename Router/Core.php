@@ -388,7 +388,8 @@ class Core
 
         # 检测控制器方法
         if (!method_exists($dispatch, $method)) {
-            throw new Exception("{$dispatch::class}: 控制器方法 {$method} 不存在!");
+            $dispatch_class = $dispatch::class;
+            throw new Exception("{$dispatch_class}: 控制器方法 {$method} 不存在!");
         }
         $result = call_user_func([$dispatch, $method], /*...$this->request->getParams()*/);
         # ----------事件：处理url之前 开始------------
