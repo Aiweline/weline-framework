@@ -19,6 +19,6 @@ class StateTest extends TestCore
     {
         /**@var $ob State */
         $ob = ObjectManager::getInstance(State::class);
-        p($ob->getStateCode(), 0, 2);
+        self::assertIsObject($ob);
     }
 }
