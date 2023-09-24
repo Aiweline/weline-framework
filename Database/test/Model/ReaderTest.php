@@ -24,8 +24,9 @@ class ReaderTest extends TestCore
         $this->model = ObjectManager::getInstance(Reader::class);
     }
 
-    public function testUpdate()
+    public function testReader()
     {
-        p($this->model->update());
+        $result = $this->model->getFileList();
+        self::assertIsArray($result);
     }
 }
