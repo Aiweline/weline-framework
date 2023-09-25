@@ -22,7 +22,6 @@ class Block extends Template implements BlockInterface
     public ?CacheInterface $_cache = null;
     protected string $_template = '';
     protected bool $is_init = false;
-    protected array $action_params = [];
 
     public function __construct(array $data = [])
     {
@@ -54,7 +53,7 @@ class Block extends Template implements BlockInterface
         if (is_bool(strpos($template, '::'))) {
             throw new Exception(__('模板文件设置错误：%1,正确示例：Weline_System::demo.phtml'));
         }
-        $template_arr         = explode('::', $template);
+        $template_arr = explode('::', $template);
         $template_module_name = array_shift($template_arr);
         # 设置模板位置
         $this->setData('template', $template);
@@ -87,11 +86,11 @@ class Block extends Template implements BlockInterface
      *
      * 参数区：
      *
-     * @param string $fileName   获取的模板名
-     * @param array  $dictionary 参数绑定
+     * @param string $fileName 获取的模板名
+     * @param array $dictionary 参数绑定
      *
-     * @return bool|void
-     * @throws \Exception
+     * @return string
+     * @throws Exception
      */
     public function fetchHtml(string $fileName, array $dictionary = []): string
     {
@@ -133,39 +132,53 @@ class Block extends Template implements BlockInterface
      * @EMAIL aiweline@qq.com
      * @DateTime: 2023/5/15 22:29
      * 参数区：
-     * @return array
-     * @throws \Weline\Framework\App\Exception
+     * @param string $attribute_param_key
+     * @return array|string
+     * @throws Exception
      */
-    protected function getParseVarsParams(string $attribute_param_key): array
+    protected function getParseVarsParams(string $attribute_param_key): array|string
     {
-        if ($action_params = $this->action_params) {
-            return $action_params;
-        }
-        $vars                = $this->getData('vars');
+        $vars = $this->getData('vars');
         $attribute_param_keys = $this->getData($attribute_param_key);
         if (empty($vars) || empty($attribute_param_keys)) {
             return [];
         }
-        $action_params_template     = trim($attribute_param_keys, '{}');
+        $action_params_template = trim($attribute_param_keys, '{}');
+        $action_params = [];
+        # 支持单参数
+        if (!str_contains($attribute_param_keys, ':') and !str_contains($attribute_param_keys, ',')) {
+            $action_param_value_arr = explode('.', $attribute_param_keys);
+            $currentVar = $vars;
+            $currentName = '';
+            foreach ($action_param_value_arr as $k__ => $item) {
+                $currentName .= $item . '.';
+                if (!isset($currentVar[$item])) {
+                    throw new \Weline\Framework\App\Exception(__('参数调用链不存在。调用链：%1，不存在的参数：%2。使用示例：%3', [$currentName, $item, $this->doc()]));
+                }
+                $currentVar = $currentVar[$item];
+            }
+            return $currentVar;
+        }
+        # 多参数解析
         $action_params_template_arr = explode(',', $action_params_template);
-        $action_params              = [];
         foreach ($action_params_template_arr as $action_param) {
             $action_param_arr = explode(':', $action_param);
             if (empty($action_param_arr) || (count($action_param_arr) != 2) || !isset($action_param_arr[1])) {
                 throw new \Weline\Framework\App\Exception(__('错误的%1参数格式，正确格式应该是:%2', [$attribute_param_key, $this->doc()]));
             }
-            $action_param_name      = trim($action_param_arr[0]);
+            $action_param_name = trim($action_param_arr[0]);
             $action_param_value_arr = explode('.', $action_param_arr[1]);
-            $first_var              = trim(array_shift($action_param_value_arr));
+            $first_var = trim(array_shift($action_param_value_arr));
             if (!isset($vars[$first_var])) {
                 throw new \Weline\Framework\App\Exception(__('参数链%1没有%2参数，确保参数调用链正常！正确格式应该是:%3', [$action_param_arr[1], $first_var,
-                                                                                                                         $this->doc()]));
+                    $this->doc()]));
             }
             $action_param_name_var = $vars[$first_var];
+            $currentName = '';
             foreach ($action_param_value_arr as $action_param) {
+                $currentName .= $action_param . '.';
                 if (!isset($action_param_name_var[$action_param])) {
-                    throw new \Weline\Framework\App\Exception(__('参数链%1没有%2参数，确保参数调用链正常！正确格式应该是:%3', [$action_param_arr[1], $action_param,
-                                                                                                                             $this->doc()]));
+                    throw new \Weline\Framework\App\Exception(__('参数调用链不存在。调用链：%1，不存在的参数：%2。使用示例：%3', [$currentName, $action_param, $this->doc()]));
                 }
                 $action_param_name_var = $action_param_name_var[$action_param];
             }
