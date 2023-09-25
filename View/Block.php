@@ -136,7 +136,7 @@ class Block extends Template implements BlockInterface
      * @return array|string
      * @throws Exception
      */
-    protected function getParseVarsParams(string $attribute_param_key): array|string
+    protected function getParseVarsParams(string $attribute_param_key): array|string|null
     {
         $vars = $this->getData('vars');
         $attribute_param_keys = $this->getData($attribute_param_key);
@@ -150,12 +150,15 @@ class Block extends Template implements BlockInterface
             $action_param_value_arr = explode('.', $attribute_param_keys);
             $currentVar = $vars;
             $currentName = '';
-            foreach ($action_param_value_arr as $k__ => $item) {
+            foreach ($action_param_value_arr as $action_param_value_key => $item) {
                 $currentName .= $item . '.';
-                if (!isset($currentVar[$item])) {
+                if ($action_param_value_key !== 0 and !isset($currentVar[$item])) {
                     throw new \Weline\Framework\App\Exception(__('参数调用链不存在。调用链：%1，不存在的参数：%2。使用示例：%3', [$currentName, $item, $this->doc()]));
                 }
                 $currentVar = $currentVar[$item];
+                if(empty($currentVar)){
+                    break;
+                }
             }
             return $currentVar;
         }
@@ -175,12 +178,15 @@ class Block extends Template implements BlockInterface
             }
             $action_param_name_var = $vars[$first_var];
             $currentName = '';
-            foreach ($action_param_value_arr as $action_param) {
+            foreach ($action_param_value_arr as $action_param_value_key => $action_param) {
                 $currentName .= $action_param . '.';
-                if (!isset($action_param_name_var[$action_param])) {
+                if ($action_param_value_key !== 0 and !isset($action_param_name_var[$action_param])) {
                     throw new \Weline\Framework\App\Exception(__('参数调用链不存在。调用链：%1，不存在的参数：%2。使用示例：%3', [$currentName, $action_param, $this->doc()]));
                 }
                 $action_param_name_var = $action_param_name_var[$action_param];
+                if(empty($action_param_name_var)){
+                    break;
+                }
             }
             $action_params[$action_param_name] = $action_param_name_var;
         }
