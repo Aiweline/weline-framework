@@ -132,7 +132,12 @@ class Request extends Request\RequestAbstract implements RequestInterface
             foreach (explode('&', $params) as $key => $value) {
                 $value = explode('=', $value);
                 if (count($value) === 2) {
-                    $params_[$value[0]] = $value[1] ?? '';
+                    if(str_ends_with($value[0], '%5B%5D')){
+                        $paramName = rtrim($value[0],'%5B%5D');
+                        $params_[$paramName][] = $value[1] ?? '';
+                    }else{
+                        $params_[$value[0]] = $value[1] ?? '';
+                    }
                 }
             }
             $params = $params_;
