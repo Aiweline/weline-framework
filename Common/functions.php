@@ -172,7 +172,6 @@ if (!function_exists('framework_view_process_block')) {
 
         $block_class = str_replace(' ', '', trim($data['class']));
         # 处理参数
-        array_shift($data);
         $params = [];
         foreach ($data as $key => $param) {
             if (is_string($key)) {
