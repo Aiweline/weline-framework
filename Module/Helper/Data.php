@@ -192,11 +192,13 @@ class Data extends AbstractHelper
                             continue;
                         }
                         $pre_ = $baseRouterArr[$baseRouterKey-1];
-                        $lastChar = $pre_[strlen($pre_) - 1];
-                        if ($lastChar==='/') {
-                            $baseRouter .= $baseRouter_;
-                        }else{
-                            $baseRouter .= '-' . $baseRouter_;
+                        if($pre_){
+                            $lastChar = $pre_[strlen($pre_) - 1];
+                            if ($lastChar==='/') {
+                                $baseRouter .= $baseRouter_;
+                            }else{
+                                $baseRouter .= '-' . $baseRouter_;
+                            }
                         }
                     }
                     $baseRouter = trim($router . $baseRouter, '/');
