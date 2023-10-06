@@ -13,6 +13,7 @@ namespace Weline\Framework\View;
 
 use Weline\Framework\Manager\ObjectManager;
 use Weline\Framework\UnitTest\TestCore;
+
 class TaglibTest extends TestCore
 {
     private Taglib $taglib;
@@ -78,9 +79,13 @@ class TaglibTest extends TestCore
      */
     public function testElse()
     {
-        $content   = '<else />';
         $template = new Template();
+        $content   = '<else />';
         $parse_str = $this->taglib->tagReplace($template, $content);
-        self::assertTrue($parse_str === "<?php else:?>", '解析变量');
+        $result1 = $parse_str === "<?php else:?>";
+        $content   = '<else/>';
+        $parse_str = $this->taglib->tagReplace($template, $content);
+        $result2 = $parse_str === "<?php else:?>";
+        self::assertTrue($result1 && $result2, '解析变量');
     }
 }
