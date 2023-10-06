@@ -1488,7 +1488,7 @@ PAGINATION;
         # 自动设置条件
         $model_table = $model->getTable();
         if (empty($condition)) {
-            $condition = "`main_table`.`{$this->getIdField()}`=`{$alias}`.`{$model->getIdField()}`";
+            $condition = "`main_table`.`{$model->getIdField()}`=`{$alias}`.`{$model->getIdField()}`";
         }
         if (empty($this->_join_model_fields)) {
             $this->_join_model_fields = $this->getModelFields();
@@ -1521,7 +1521,7 @@ PAGINATION;
 //            $query->fields(($query->fields !== '*') ? $query->fields . ',' . $fields : $fields);
             $query->fields($query->fields . ',' . $fields);
         }
-        $query->join($model_table . ($alias ? " {$alias}" : ''), $condition, $type);
+        $query->join($model_table . ($alias ? " `{$alias}`" : ''), $condition, $type);
         return $this->bindQuery($query);
     }
 
