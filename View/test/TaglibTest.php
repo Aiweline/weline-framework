@@ -13,12 +13,11 @@ namespace Weline\Framework\View;
 
 use Weline\Framework\Manager\ObjectManager;
 use Weline\Framework\UnitTest\TestCore;
-
 class TaglibTest extends TestCore
 {
     private Taglib $taglib;
 
-    function setUp(): void
+    public function setUp(): void
     {
         parent::setUp();
         $this->taglib = ObjectManager::getInstance(Taglib::class);
@@ -33,9 +32,9 @@ class TaglibTest extends TestCore
     public function testTagIf()
     {
         $template = new Template();
-//        $content = '@if{req.type==="progress-select-entity"=>"active"}';
-//        $content = "@if{req.type==='progress-select-entity'=>'active'}";
-//        $content = "@if{type==='progress-select-entity'=>'active'}";
+        //        $content = '@if{req.type==="progress-select-entity"=>"active"}';
+        //        $content = "@if{req.type==='progress-select-entity'=>'active'}";
+        //        $content = "@if{type==='progress-select-entity'=>'active'}";
         $content = '@if{country.is_active.r!==1 and a==1 =>1|0}';
         d($content);
         $parse_str = $this->taglib->tagReplace($template, $content);
@@ -43,12 +42,16 @@ class TaglibTest extends TestCore
         self::assertTrue($parse_str === "<?php if((\$country['is_active']['r']??'') !== 1 and \$a == 1  ):echo 1; else: echo 0; endif;?>", '解析变量');
     }
 
+    /**
+     * Summary of testArrow
+     * @return void
+     */
     public function testArrow()
     {
         $template = new Template();
-//        $content = '@if{req.type==="progress-select-entity"=>"active"}';
-//        $content = "@if{req.type==='progress-select-entity'=>'active'}";
-//        $content = "@if{type==='progress-select-entity'=>'active'}";
+        //        $content = '@if{req.type==="progress-select-entity"=>"active"}';
+        //        $content = "@if{req.type==='progress-select-entity'=>'active'}";
+        //        $content = "@if{type==='progress-select-entity'=>'active'}";
         $content = '@if{country->is_active() =>1|0}';
         d($content);
         $parse_str = $this->taglib->tagReplace($template, $content);
@@ -67,5 +70,17 @@ class TaglibTest extends TestCore
         $content   = '{{attribute.local_name|attribute.name}}';
         $parse_str = $this->taglib->varParser($content);
         self::assertTrue($parse_str === "({{attribute['local_name']??(\$attribute['name}}']??'') ) ");
+    }
+
+    /**
+     * Summary of testElse
+     * @return void
+     */
+    public function testElse()
+    {
+        $content   = '<else />';
+        $template = new Template();
+        $parse_str = $this->taglib->tagReplace($template, $content);
+        self::assertTrue($parse_str === "<?php else:?>", '解析变量');
     }
 }
