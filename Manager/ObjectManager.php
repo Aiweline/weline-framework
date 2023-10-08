@@ -112,12 +112,12 @@ class ObjectManager implements ManagerInterface
 
         // 类名规则处理
         $new_class = self::parserClass($class);
-//        $class_cache_key = $class . '_cache_key';
-//        $new_class       = self::$cache->get($class_cache_key);
-//        if (empty($new_class)) {
-//            $new_class = self::parserClass($class);
-//            self::$cache->set($class_cache_key, $new_class);
-//        }
+        //        $class_cache_key = $class . '_cache_key';
+        //        $new_class       = self::$cache->get($class_cache_key);
+        //        if (empty($new_class)) {
+        //            $new_class = self::parserClass($class);
+        //            self::$cache->set($class_cache_key, $new_class);
+        //        }
 
         # 兼容原类参数，做到只修改特定参数
         if ($arguments) {
@@ -127,17 +127,17 @@ class ObjectManager implements ManagerInterface
         } else {
             $arguments = self::getMethodParams($new_class);
         }
-//        if (str_contains($new_class, 'Aiweline\Bbs\Controller\Account\BaseController')) {
-//            p($arguments);
-//        }
+        //        if (str_contains($new_class, 'Aiweline\Bbs\Controller\Account\BaseController')) {
+        //            p($arguments);
+        //        }
         $refClass = self::$reflections[$class] ?? self::$reflections[$class] = new ReflectionClass($new_class);
-//        if ($refClass->isAbstract()) {
-//            throw new Exception(__('抽象类无法被实例化：%1', $class));
-//        }
-        self::$reflections[$class] = $refClass;
-//        p($refClass->getAttributes());
+        //        if ($refClass->isAbstract()) {
+        //            throw new Exception(__('抽象类无法被实例化：%1', $class));
+        //        }
+        // self::$reflections[$class] = $refClass;
+        //        p($refClass->getAttributes());
         $new_object           = $refClass->newInstanceArgs($arguments);
-//        $new_object->filename = $refClass->getFileName();
+        //        $new_object->filename = $refClass->getFileName();
         /*$classAttrs = $refClass->getAttributes();
         foreach ($classAttrs as $key => $classAttr) {
             $value = $classAttr->getName();
@@ -204,11 +204,11 @@ class ObjectManager implements ManagerInterface
             self::$cache->set($class_cache_key, $new_class);
         }
         $arguments = $arguments ?: self::getMethodParams($new_class);
-//        if ($new_class == 'Aiweline\Bbs\Controller\Index') {
-//            p($arguments);
-//        }
+        if ($new_class == 'Kte\GeoDataToOpencart\Console\Cache\GeoCacheFactory') {
+            p($arguments);
+        }
         $refClass = (new \ReflectionClass($new_class));
-//        p($refClass->getAttributes());
+        //        p($refClass->getAttributes());
         $new_object = $refClass->newInstanceArgs($arguments);
         /*$classAttrs = $refClass->getAttributes();
         foreach ($classAttrs as $key => $classAttr) {
@@ -306,9 +306,9 @@ class ObjectManager implements ManagerInterface
         if (method_exists($new_object, $init_method_name)) {
             $new_object->__init();
         }
-//        if ($class == 'Weline\DeveloperWorkspace\Block\Catalogs') {
-//            p($new_object->__init());
-//        }
+        //        if ($class == 'Weline\DeveloperWorkspace\Block\Catalogs') {
+        //            p($new_object->__init());
+        //        }
         // 工厂类
         if (str_ends_with($class, 'Factory') && $init_factory) {
             $create_method = 'create';
@@ -429,9 +429,9 @@ class ObjectManager implements ManagerInterface
             if (count($params) > 0) {
                 // 判断参数类型
                 foreach ($params as $key => $param) {
-//                    if($instance_or_class=='Aiweline\Bbs\Controller\Index'){
-//                        p($param->getType()->getName());
-//                    }
+                    //                    if($instance_or_class=='Aiweline\Bbs\Controller\Index'){
+                    //                        p($param->getType()->getName());
+                    //                    }
                     if ($param->getType() && class_exists($param->getType()->getName())) {
                         // 获得参数类型名称
                         $paramTypeName = $param->getType()->getName();
@@ -442,6 +442,7 @@ class ObjectManager implements ManagerInterface
                             $args = self::getMethodParams($paramTypeName);
                             // 实例化时执行自定义__init方法
                             try {
+                                // $newObj = ObjectManager::getInstance($paramTypeName, $args);
                                 $newObj = (new ReflectionClass(self::parserClass($paramTypeName)))->newInstanceArgs($args);
                             } catch (\ReflectionException $e) {
                                 if (CLI or DEV) {
@@ -449,8 +450,14 @@ class ObjectManager implements ManagerInterface
                                 }
                                 throw new Exception(__('无法实例化该类：%1，错误：%2', [$paramTypeName, $e->getMessage()]), $e);
                             }
-                            if (method_exists($newObj, '__init')) {
+                            if(method_exists($newObj, '__init')) {
                                 $newObj->__init();
+                            }
+                            if(str_ends_with($newObj::class,'Factory')) {
+                                self::$instances[$paramTypeName]=$newObj;
+                                self::$instances[rtrim($paramTypeName, 'Factory')]=$newObj->create();;
+                            } else {
+                                self::$instances[$paramTypeName]=$newObj;
                             }
                             $paramArr[] = $newObj;
                         }
