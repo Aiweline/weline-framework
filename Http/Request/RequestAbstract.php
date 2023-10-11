@@ -285,6 +285,18 @@ abstract class RequestAbstract extends RequestFilter
     }
 
     /**
+     * @DESC         |设置请求方法
+     *
+     * 参数区：
+     *
+     * @return string
+     */
+    public function setMethod(string $method): string
+    {
+        return $this->setServer('REQUEST_METHOD', $method);
+    }
+
+    /**
      * @DESC         |是否手机设备
      *
      * 参数区：
