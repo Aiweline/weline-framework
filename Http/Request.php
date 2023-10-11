@@ -192,7 +192,7 @@ class Request extends Request\RequestAbstract implements RequestInterface
     public function isGet(bool $set_get = true): bool
     {
         if($set_get) {
-            return $this->setMethod(self::GET);
+            $this->setServer('REQUEST_METHOD', self::GET);
         }
         return $this->getMethod() === self::GET;
     }
