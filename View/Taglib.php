@@ -832,7 +832,7 @@ class Taglib
                 'tag'                       => '/<' . $tag . '([\s\S]*?)>([\s\S]*?)<\/' . $tag . '>/m',
                 'tag-start'                 => '/<' . $tag . '([\s\S]*?)>/m',
                 'tag-end'                   => '/<\/' . $tag . '>/m',
-                'tag-self-close'            => '/<' . $tag . '([\s\S]*?)\/>/m',
+                'tag-self-close'            => '/<' . $tag . '\s*\/>/m',
                 '@tag()'                    => '/\@' . $tag . '\(([\s\S]*?)\)/m',
                 '@tag{}'                    => '/\@' . $tag . '\{([\s\S]*?)\}/m',
             ];
