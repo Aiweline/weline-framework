@@ -25,7 +25,6 @@ use Weline\Framework\Session\Session;
 use Weline\Framework\Ui\FormKey;
 use Weline\Framework\View\Cache\ViewCache;
 use Weline\Framework\View\Data\DataInterface;
-use Weline\I18n\Model\I18n;
 
 class Template extends DataObject
 {
@@ -125,20 +124,29 @@ class Template extends DataObject
 
     public function init()
     {
+        $this->theme ?? $this->theme = Env::getInstance()->getConfig('theme', Env::default_theme_DATA);
+        $this->eventsManager ?? $this->eventsManager = ObjectManager::getInstance(EventsManager::class);
+        $this->viewCache ?? $this->viewCache = ObjectManager::getInstance(ViewCache::class)->create();
         if (!CLI) {
             $this->request = ObjectManager::getInstance(Request::class);
             if (empty($this->view_dir)) {
                 $this->view_dir = $this->request->getRouterData('module_path') . DataInterface::dir . DS;
             }
             $this->getData('title') ?? $this->setData('title', $this->request->getModuleName());
-            $this->setData('req', $this->request->getParams());
-            $this->setData('env', Env::getInstance()->getConfig());
-            $this->setData('local', ['code' => Cookie::getLangLocal(), 'lang' => Cookie::getLang()]);
+            $this->getData('req') ?? $this->setData('req', $this->request->getParams());
+            $this->getData('env') ?? $this->setData('env', Env::getInstance()->getConfig());
+            $this->getData('local') ?? $this->setData('local', ['code' => Cookie::getLangLocal(), 'lang' => Cookie::getLang()]);
+            if(!$this->getData('module_paths')) {
+                $modules_cache_key = 'weline_module_paths_cache';
+                $modules = $this->viewCache->get($modules_cache_key);
+                if(empty($modules)) {
+                    $modules = Env::getInstance()->getActiveModules();
+                    $modules = array_column($modules, 'path', 'name');
+                    $this->viewCache->set($modules_cache_key, $modules);
+                }
+                $this->setData('module_paths', $modules);
+            }
         }
-
-            $this->theme ?? $this->theme = Env::getInstance()->getConfig('theme', Env::default_theme_DATA);
-            $this->eventsManager ?? $this->eventsManager = ObjectManager::getInstance(EventsManager::class);
-            $this->viewCache ?? $this->viewCache = ObjectManager::getInstance(ViewCache::class)->create();
 
         if (empty($this->statics_dir)) {
             $this->statics_dir = $this->getViewDir(DataInterface::view_STATICS_DIR);
@@ -226,7 +234,7 @@ class Template extends DataObject
             $tplFile     = $this->viewCache->get($tplFile_cache_key);
         }
         # 测试
-//        file_put_contents(__DIR__ . '/test.txt', $comFileName . PHP_EOL, FILE_APPEND);
+        //        file_put_contents(__DIR__ . '/test.txt', $comFileName . PHP_EOL, FILE_APPEND);
         // 编译文件不存在的时候 重新对文件进行处理 防止每次都处理
         if (!is_file($comFileName) || !is_file($tplFile)) {
             // 解析模板路由
@@ -249,19 +257,19 @@ class Template extends DataObject
             list($fileName, $file_dir, $view_dir, $template_dir, $compile_dir) = $this->processFileSource($fileName, $file_dir);
             // 判断文件后缀
             $file_ext = substr(strrchr($fileName, '.'), 1);
-//
-//            // 检测模板文件：如果文件名有后缀 则直接到view下面读取。没有说明是默认
+            //
+            //            // 检测模板文件：如果文件名有后缀 则直接到view下面读取。没有说明是默认
             if ($file_ext) {
                 $tplFile = $view_dir . $fileName;
             } else {
                 $tplFile = $view_dir . $fileName . $this->getFileExt();
             }
-//            p($tplFile,1);
+            //            p($tplFile,1);
             $tplFile = $this->fetchFile($tplFile);
-//            p($tplFile);
+            //            p($tplFile);
 
             if (!file_exists($tplFile)) {
-                $msg = __('获取操作：%1',$fileName).PHP_EOL;
+                $msg = __('获取操作：%1', $fileName).PHP_EOL;
                 $msg .= __('模板文件不存在！：%1 ', $tplFile).PHP_EOL;
                 $msg .= __('源文件：%1', $fileName);
                 throw new Exception($msg);
@@ -289,7 +297,7 @@ class Template extends DataObject
         }
 
         # 测试
-//        file_put_contents(__DIR__ . '/test.txt', $comFileName . PHP_EOL, FILE_APPEND);
+        //        file_put_contents(__DIR__ . '/test.txt', $comFileName . PHP_EOL, FILE_APPEND);
         if (is_int(strpos($comFileName, '\\'))) {
             $comFileName = str_replace('\\', DS, $comFileName);
         }
@@ -453,7 +461,8 @@ class Template extends DataObject
         $hooker_content = '';
         foreach ($hookers as $module => $hooker_file) {
             if (DEV) {
-                $content = "<!-- 来自模组 $module 的钩子实现{$name}代码 起-->" . $this->fetchTagHtml('hooks', $hooker_file) . "<!-- 来自模组 $module 的钩子实现{$name}代码 止-->";;
+                $content = "<!-- 来自模组 $module 的钩子实现{$name}代码 起-->" . $this->fetchTagHtml('hooks', $hooker_file) . "<!-- 来自模组 $module 的钩子实现{$name}代码 止-->";
+                ;
             } else {
                 $content = $this->fetchTagHtml('hooks', $hooker_file);
             }
