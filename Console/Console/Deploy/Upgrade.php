@@ -16,7 +16,6 @@ use Weline\Framework\View\Data\DataInterface;
 
 class Upgrade extends CommandAbstract
 {
-
     /**
      * @var System
      */
@@ -24,8 +23,7 @@ class Upgrade extends CommandAbstract
 
     public function __construct(
         System     $system
-    )
-    {
+    ) {
         $this->system  = $system;
     }
 
@@ -37,7 +35,7 @@ class Upgrade extends CommandAbstract
         foreach ($modules as $module) {
             $name                   = $module['name'];
             $module_view_static_dir = $module['base_path'] . DataInterface::dir . DS . DataInterface::dir_type_STATICS;
-            $module_view_dir        = $module['path'] . DataInterface::dir;
+            $module_view_dir        = (DEV?$module['path']:str_replace('_', DS, $module['name']).DS) . DataInterface::dir;
             // windows的文件复制兼容
             if (IS_WIN) {
                 $module_view_dir .= DS.DataInterface::dir_type_STATICS . DS;
@@ -49,7 +47,7 @@ class Upgrade extends CommandAbstract
                 $theme = Env::getInstance()->getConfig('theme', Env::default_theme_DATA);
 
                 # 主题目录
-                $pub_view_dir = PUB . 'static' . DS . $theme['path'] . DS . $module_view_dir;
+                $pub_view_dir =  PUB . 'static' . DS . $theme['path'] . DS . $module_view_dir;
 
                 if (!is_dir($pub_view_dir)) {
                     mkdir($pub_view_dir, 0775, true);

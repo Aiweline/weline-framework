@@ -136,16 +136,6 @@ class Template extends DataObject
             $this->getData('req') ?? $this->setData('req', $this->request->getParams());
             $this->getData('env') ?? $this->setData('env', Env::getInstance()->getConfig());
             $this->getData('local') ?? $this->setData('local', ['code' => Cookie::getLangLocal(), 'lang' => Cookie::getLang()]);
-            if(!$this->getData('module_paths')) {
-                $modules_cache_key = 'weline_module_paths_cache';
-                $modules = $this->viewCache->get($modules_cache_key);
-                if(empty($modules)) {
-                    $modules = Env::getInstance()->getActiveModules();
-                    $modules = array_column($modules, 'path', 'name');
-                    $this->viewCache->set($modules_cache_key, $modules);
-                }
-                $this->setData('module_paths', $modules);
-            }
         }
 
         if (empty($this->statics_dir)) {

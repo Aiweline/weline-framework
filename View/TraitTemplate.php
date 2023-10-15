@@ -16,9 +16,7 @@ use Weline\Framework\App\Exception;
 use Weline\Framework\DataObject\DataObject;
 use Weline\Framework\Exception\Core;
 use Weline\Framework\Http\Cookie;
-use Weline\Framework\Http\Request;
 use Weline\Framework\Manager\ObjectManager;
-use Weline\Framework\System\Security\Encrypt;
 use Weline\Framework\View\Data\DataInterface;
 use Weline\Framework\View\Data\HtmlInterface;
 
@@ -161,7 +159,7 @@ trait TraitTemplate
                     $modules = Env::getInstance()->getModuleList();
                     if (isset($modules[$module_name]) && $module = $modules[$module_name]) {
                         $module_view_dir_path = $module['base_path'] . DataInterface::dir . DS;
-                        $base_url_path        = $this->getModuleViewDir($module_view_dir_path, DataInterface::view_STATICS_DIR);
+                        $base_url_path        = $this->getModuleViewDir($module_view_dir_path, DataInterface::view_STATICS_DIR, $module_name);
                         $t_f                  = str_replace($module_name . '::', '', $t_f);
                     }
                 }
@@ -205,7 +203,7 @@ trait TraitTemplate
                     $modules = Env::getInstance()->getModuleList();
                     if (isset($modules[$module_name]) && $module = $modules[$module_name]) {
                         $module_view_dir_path = $module['base_path'] . DataInterface::dir . DS;
-                        $base_url_path        = $this->getModuleViewDir($module_view_dir_path, DataInterface::view_STATICS_DIR);
+                        $base_url_path        = $this->getModuleViewDir($module_view_dir_path, DataInterface::view_STATICS_DIR, $module_name);
                         $t_f                  = str_replace($module_name . '::', '', $t_f);
                     } else {
                         throw new Exception(__('资源不存在：%1，模组：%2', [$source, $module_name]));
@@ -249,10 +247,10 @@ trait TraitTemplate
      */
     private function getViewDir(string $type = ''): string
     {
-        return $this->getModuleViewDir($this->view_dir, $type);
+        return $this->getModuleViewDir($this->view_dir, $type, $this->request->getModuleName());
     }
 
-    private function getModuleViewDir(string $module_view_dir_path, string $type)
+    private function getModuleViewDir(string $module_view_dir_path, string $type, string $module_name)
     {
         switch ($type) {
             case DataInterface::dir_type_TEMPLATE:
@@ -266,13 +264,21 @@ trait TraitTemplate
                 }
                 break;
             case DataInterface::dir_type_STATICS:
-                $cache_key = 'getViewDir' . $module_view_dir_path . $type;
+                $cache_key = 'getViewDir' . $module_view_dir_path . $type.(PROD ? 'prod' : 'dev');
                 if ($cache_static_dir = $this->viewCache->get($cache_key)) {
                     return $cache_static_dir;
                 }
+                # 生产环境处理
+                if (PROD) {
+                    $module_view_dir_path_arr =  $path_arr = explode(DS, $module_view_dir_path);
+                    $view_dir = array_pop($module_view_dir_path_arr);
+                    $view_dir=   array_pop($module_view_dir_path_arr).DS.$view_dir;
+                    array_pop($module_view_dir_path_arr);
+                    array_pop($module_view_dir_path_arr);
+                    $module_view_dir_path = implode(DS, $module_view_dir_path_arr).DS.str_replace('_', DS, $module_name).DS.$view_dir;
+                }
                 $path = $module_view_dir_path . DataInterface::view_STATICS_DIR . DS;
-
-                # 非开发环境
+                # 生产环境处理
                 if (PROD) {
                     $path = str_replace(APP_CODE_PATH, PUB . 'static' . DS . $this->theme['path'] . DS, $path);
                     $path = str_replace(VENDOR_PATH, PUB . 'static' . DS . $this->theme['path'] . DS, $path);

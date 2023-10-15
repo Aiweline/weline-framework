@@ -9,7 +9,6 @@
 
 namespace Weline\Framework\View;
 
-use Weline\Framework\Manager\ObjectManager;
 use Weline\Framework\UnitTest\TestCore;
 
 class TemplateTest extends TestCore
