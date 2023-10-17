@@ -127,8 +127,9 @@ class Template extends DataObject
         $this->theme ?? $this->theme = Env::getInstance()->getConfig('theme', Env::default_theme_DATA);
         $this->eventsManager ?? $this->eventsManager = ObjectManager::getInstance(EventsManager::class);
         $this->viewCache ?? $this->viewCache = ObjectManager::getInstance(ViewCache::class)->create();
+        $this->request = ObjectManager::getInstance(Request::class);
+
         if (!CLI) {
-            $this->request = ObjectManager::getInstance(Request::class);
             if (empty($this->view_dir)) {
                 $this->view_dir = $this->request->getRouterData('module_path') . DataInterface::dir . DS;
             }
