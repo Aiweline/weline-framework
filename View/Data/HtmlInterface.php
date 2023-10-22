@@ -21,9 +21,11 @@ interface HtmlInterface
      * @DateTime: 2021/9/15 21:12
      * 参数区：
      *
+     * @param string $key
      * @param string $html
+     * @return \Weline\Framework\View\Data\HtmlInterface
      */
-    public function setHtml(string $html): static;
+    public function setHtml(string $key, string $html): static;
 
     /**
      * @DESC          # 读取头部信息
@@ -32,9 +34,24 @@ interface HtmlInterface
      * @EMAIL aiweline@qq.com
      * @DateTime: 2021/9/15 21:12
      * 参数区：
+     * @param string $key
      * @return string
      */
-    public function getHtml(): string;
+    public function getHtml(string $key = ''): string;
 
-    public function addHtml(string $html): static;
+    /**
+     * 添加html信息
+     * @param string $key
+     * @param string $html
+     * @return $this
+     */
+    public function addHtml(string $key, string $html): static;
+
+    /**
+     * 追加html，不保存到数据库
+     * @param string $key
+     * @param string $html
+     * @return $this
+     */
+    public function append(string $key, string $html): static;
 }
