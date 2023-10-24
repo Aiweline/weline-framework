@@ -24,7 +24,13 @@ class Tool
         );
         # 排除的类型
         if ($exclude_expression) {
-            $expression = array_diff_key($expression, $exclude_expression);
+            if(is_string($exclude_expression)){
+                unset($expression[$exclude_expression]);
+            }else{
+                foreach ($exclude_expression as $item) {
+                    unset($expression[$item]);
+                }
+            }
         }
         foreach ($expression as $type => $e) {
             $ret = preg_match_all($e, $sql, $matches);
