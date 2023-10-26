@@ -58,8 +58,8 @@ abstract class AbstractModel extends DataObject
 {
     # 主数据库连接使用标志
     public const framework_db_master = false;
-    public const table               = '';
-    public const primary_key         = '';
+    public const table = '';
+    public const primary_key = '';
     # 索引名
     public const indexer = '';
     /**
@@ -67,7 +67,7 @@ abstract class AbstractModel extends DataObject
      *
      * @var array
      */
-    public const fields_ID          = 'id';
+    public const fields_ID = 'id';
     public const fields_CREATE_TIME = 'create_time';
 
     public const fields_UPDATE_TIME = 'update_time';
@@ -442,7 +442,7 @@ abstract class AbstractModel extends DataObject
      * 参数区：
      *
      * @param int|string $field_or_pk_value 字段或者主键的值
-     * @param null       $value             字段的值，只读取主键就不填
+     * @param null $value 字段的值，只读取主键就不填
      *
      * @return mixed
      * @throws null
@@ -456,7 +456,7 @@ abstract class AbstractModel extends DataObject
         // load之前事件
         $this->getEvenManager()->dispatch($this->getOriginTableName() . '_model_load_before', ['model' => $this]);
         if (is_null($value)) {
-            $data = $this->getQuery()->where('main_table.'.$this->_primary_key, $field_or_pk_value)->find()->fetch();
+            $data = $this->getQuery()->where('main_table.' . $this->_primary_key, $field_or_pk_value)->find()->fetch();
         } else {
             $data = $this->getQuery()->where($field_or_pk_value, $value)->find()->fetch();
         }
@@ -506,17 +506,17 @@ abstract class AbstractModel extends DataObject
      * 参数区：
      *
      * @param array|string|null $field
-     * @param string            $condition_field
+     * @param string $condition_field
      *
      * @return $this
      * @throws Null
      */
-    public function update(array|string $field = null, int|string $value_or_condition_field = ''): static
+    public function update(array|string $field = null, int|string|null $value_or_condition_field = ''): static
     {
         if ($field) {
-            $this->getQuery()->update($field, $value_or_condition_field ?: $this->_primary_key);
+            $this->getQuery()->update($field, is_null($value_or_condition_field) ? $this->_primary_key : $value_or_condition_field);
         } else {
-            $this->getQuery()->update($this->getModelData(), $value_or_condition_field ?: $this->_primary_key);
+            $this->getQuery()->update($this->getModelData(), is_null($value_or_condition_field) ? $this->_primary_key : $value_or_condition_field);
         }
         return $this;
     }
@@ -527,7 +527,7 @@ abstract class AbstractModel extends DataObject
      * 参数区：
      *
      * @param array|bool|AbstractModel $data
-     * @param string|null              $sequence
+     * @param string|null $sequence
      *
      * @return bool
      * @throws NUll
@@ -620,7 +620,7 @@ abstract class AbstractModel extends DataObject
      * @DateTime: 2021/9/14 22:49
      * 参数区：
      *
-     * @param bool         $force_check_flag
+     * @param bool $force_check_flag
      * @param string|array $check_field
      *
      * @return AbstractModel
@@ -1211,7 +1211,7 @@ abstract class AbstractModel extends DataObject
      * 参数区：
      *
      * @param array|string $key
-     * @param mixed        $value
+     * @param mixed $value
      *
      * @return AbstractModel
      */
@@ -1271,9 +1271,9 @@ abstract class AbstractModel extends DataObject
      * @DateTime: 2022/7/7 22:22
      * 参数区：
      *
-     * @param int   $page     页码
-     * @param int   $pageSize 页大小
-     * @param array $params   请求参数
+     * @param int $page 页码
+     * @param int $pageSize 页大小
+     * @param array $params 请求参数
      *
      * @return AbstractModel|$this
      * @throws Exception
@@ -1464,7 +1464,8 @@ PAGINATION;
         return $this;
     }
 
-    public function clearJoin(){
+    public function clearJoin()
+    {
         $this->_bind_model_fields = [];
     }
 
@@ -1572,14 +1573,14 @@ PAGINATION;
             }
             $data        = $this->getModelData();
             $save_result = $this->getQuery()->where($this->unique_data)
-                                ->update($data)
-                                ->fetch();
+                ->update($data)
+                ->fetch();
         } else {
             $unique_fields            = array_keys($this->unique_data);
             $this->_unit_primary_keys = array_unique(array_merge($this->_unit_primary_keys, $unique_fields));
             $save_result              = $this->getQuery()
-                                             ->insert($this->getModelData(), $this->_unit_primary_keys)
-                                             ->fetch();
+                ->insert($this->getModelData(), $this->_unit_primary_keys)
+                ->fetch();
             $this->setId($save_result);
         }
         return $save_result;
