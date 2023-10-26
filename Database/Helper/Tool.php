@@ -16,31 +16,38 @@ class Tool
 {
     static function sql2table($sql, string|array $exclude_expression = '')
     {
-        $expression = array(
-            'update' => '/UPDATE[\s`]+?(\w+[\.]?\w+)[\s`]+?/is',
-            'insert' => '/INSERT[\s]{1,}INTO[\s]{1,}[`]?([A-Za-z0-9\_]{1,}[\.]?([A-Za-z0-9\_]{1,})?)[`]?/is',
-            'delete' => '/DELETE\s+?FROM[\s`]+?(\w+[\.]?\w+)[\s`]+?/is',
-            'select' => '/((SELECT.+?FROM)|(LEFT\\s+JOIN|JOIN|LEFT))[\\s`]+?(\\w+[\.]?\\w+)[\\s`]+?/is'
-        );
-        # 排除的类型
+        $expression   = '/(SELECT|DELETE)(?:\s*\/\*.*\*\/\s*?)*\s+FROM*\s+([^\s\/*;]+)?|(?:(?:(CREATE|ALTER|DROP)(?:(?:\s*\/\*.*\*\/\s*?)*\s+OR(?:\s*\/\*.*\*\/\s*?)*\s+(REPLACE))?)(?:\s*\/\*.*\*\/\s*?)*\s+TABLE(?:(?:\s*\/\*.*\*\/\s*?)*\s+IF(?:\s*\/\*.*\*\/\s*?)*\s+EXISTS)?|(UPDATE)|(ALTER)|(INSERT)(?:\s*\/\*.*\*\/\s*?)*\s+(?:INTO?))(?:\s*\/\*.*\*\/\s*?)*\s+([^\s\/*;]+)|(?:(REPLACE)(?:\s*\/\*.*\*\/\s*?)*\s+(?:INTO?))(?:\s*\/\*.*\*\/\s*?)*\s+([^\s\/*;]+)(?:\s*\/\*.*\*\/\s*?)*\s+([^\s\/*;]+)/im';
+        $ret          = preg_match_all($expression, $sql, $matches);
+        $result       = [];
+        $mathces_rows = array_shift($matches);
+        foreach ($mathces_rows as $match_row_index => $match_row) {
+            $have_content_times = 0;
+            $action             = '';
+            array_reverse($matches);
+            foreach ($matches as $match) {
+                $match_result = $match[$match_row_index];
+                if (!empty($match_result) and strtolower($match_result) !== 'replace') {
+                    $have_content_times++;
+                    # 第一个值是动作
+                    if ($have_content_times === 1) {
+                        $action = strtolower($match_result);
+                    }
+                    # 第二个值是表名
+                    if ($have_content_times >= 2) {
+                        $result[$action][] = $match_result;
+                        continue;
+                    }
+                }
+            }
+        }
         if ($exclude_expression) {
-            if(is_string($exclude_expression)){
-                unset($expression[$exclude_expression]);
-            }else{
-                foreach ($exclude_expression as $item) {
-                    unset($expression[$item]);
-                }
+            if (is_string($exclude_expression)) {
+                $exclude_expression = explode(',', $exclude_expression);
+            }
+            foreach ($exclude_expression as $item) {
+                unset($result[$item]);
             }
         }
-        foreach ($expression as $type => $e) {
-            $ret = preg_match_all($e, $sql, $matches);
-            if (is_int($ret) and $ret) {
-                if ($type == 'insert') {
-                    return array($type => array_unique($matches[1]));
-                }
-                return array($type => array_unique(array_pop($matches)));
-            }
-        }
-        return array();
+        return $result;
     }
 }
