@@ -246,14 +246,14 @@ class Taglib
                                     $var_name .= '$' . $var_name;
                                 }
                                 $var_name = $this->varParser($var_name);
-                                return "<?=isset($var_name)?count({$var_name}):0?>";
+                                return "<?=$var_name?count({$var_name}):0?>";
                             default:
                                 $var_name = $tag_data[2];
                                 if (!str_starts_with($var_name, '$')) {
                                     $var_name = '$' . $var_name;
                                 }
                                 $var_name = $this->varParser($var_name);
-                                return "<?=isset($var_name)?count({$var_name}):0?>";
+                                return "<?=$var_name?count({$var_name}):0?>";
                         }
                     }
             ],
