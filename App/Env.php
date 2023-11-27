@@ -353,6 +353,9 @@ class Env extends DataObject
         if (!$reget && $this->module_list) {
             return $this->module_list;
         }
+        if(!is_file(Env::path_MODULES_FILE)){
+            return [];
+        }
         $this->module_list = (array)require Env::path_MODULES_FILE;
 
         return $this->module_list;
