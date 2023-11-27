@@ -303,8 +303,6 @@ class Env extends DataObject
             $text = '<?php return ' . w_var_export($config, true) . ';';
             $file->write($text);
             $file->close();
-            // 重置环境参数
-            $this->reload();
             return true;
         } catch (Exception $exception) {
             return false;
