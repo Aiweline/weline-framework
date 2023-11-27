@@ -17,12 +17,12 @@ class Env extends DataObject
 {
     public const vendor_path = BP . 'vendor' . DS;
 
-    public const framework_name      = 'Weline';
-    public const framework_path      = self::vendor_path . 'weline' . DS . 'framework' . DS;
+    public const framework_name = 'Weline';
+    public const framework_path = self::vendor_path . 'weline' . DS . 'framework' . DS;
     public const framework_code_path = APP_CODE_PATH . 'Weline' . DS . 'Framework' . DS;
 
     public const path_framework_generated = BP . 'generated' . DS;
-    public const path_bin                 = BP . 'bin' . DS;
+    public const path_bin = BP . 'bin' . DS;
 
     public const path_framework_generated_code = self::path_framework_generated . 'code' . DS;
 
@@ -49,18 +49,18 @@ class Env extends DataObject
     public const path_LANGUAGE_PACK = BP . 'app' . DS . 'i18n' . DS;
 
     public const register_FILE_PATHS = [
-        'app_code'      => APP_CODE_PATH,
-        'vendor_code'   => self::path_VENDOR_CODE,
-        'theme_design'  => self::path_CODE_DESIGN,
+        'app_code' => APP_CODE_PATH,
+        'vendor_code' => self::path_VENDOR_CODE,
+        'theme_design' => self::path_CODE_DESIGN,
         'language_pack' => self::path_LANGUAGE_PACK,
     ];
 
     public const default_theme_DATA = [
-        'id'          => 0,
-        'name'        => 'default',
-        'path'        => 'Weline' . DS . 'default',
-        'parent_id'   => null,
-        'is_active'   => 1,
+        'id' => 0,
+        'name' => 'default',
+        'path' => 'Weline' . DS . 'default',
+        'parent_id' => null,
+        'is_active' => 1,
         'create_time' => '2021-04-05 16:49:58',
     ];
 
@@ -127,47 +127,47 @@ class Env extends DataObject
     private static Env $instance;
 
     public const default_CONFIG = [
-        'cache'   => self::default_CACHE,
+        'cache' => self::default_CACHE,
         'session' => self::default_SESSION,
-        'log'     => self::default_LOG,
-        'php-cs'  => true,
+        'log' => self::default_LOG,
+        'php-cs' => true,
     ];
 
     // 日志
     public const default_LOG = [
-        'error'     => 'var' . DS . 'log' . DS . 'error.log',
+        'error' => 'var' . DS . 'log' . DS . 'error.log',
         'exception' => 'var' . DS . 'log' . DS . 'exception.log',
-        'notice'    => 'var' . DS . 'log' . DS . 'notice.log',
-        'warning'   => 'var' . DS . 'log' . DS . 'warning.log',
-        'debug'     => 'var' . DS . 'log' . DS . 'debug.log',
+        'notice' => 'var' . DS . 'log' . DS . 'notice.log',
+        'warning' => 'var' . DS . 'log' . DS . 'warning.log',
+        'debug' => 'var' . DS . 'log' . DS . 'debug.log',
     ];
 
     // 缓存
     public const default_CACHE = [
         'default' => 'file',
         'drivers' => [
-            'file'  => [
+            'file' => [
                 'path' => 'var/cache/',
             ],
             'redis' => [
-                'tip'      => '开发中...',
-                'server'   => '127.0.0.1',
-                'port'     => 6379,
+                'tip' => '开发中...',
+                'server' => '127.0.0.1',
+                'port' => 6379,
                 'database' => 1,
             ],
         ],
-        'status'  => [
-            'config'               => 1,
+        'status' => [
+            'config' => 1,
             'framework_controller' => 1,
-            'database'             => 1,
-            'database_model'       => 1,
-            'framework_event'      => 1,
-            'framework_object'     => 1,
-            'framework_phrase'     => 1,
-            'framework_plugin'     => 1,
-            'router_cache'         => 1,
-            'framework_view'       => 1,
-            'frontend_cache'       => 1,
+            'database' => 1,
+            'database_model' => 1,
+            'framework_event' => 1,
+            'framework_object' => 1,
+            'framework_phrase' => 1,
+            'framework_plugin' => 1,
+            'router_cache' => 1,
+            'framework_view' => 1,
+            'frontend_cache' => 1,
         ]
     ];
 
@@ -175,7 +175,7 @@ class Env extends DataObject
     public const default_SESSION = [
         'default' => 'file',
         'drivers' => [
-            'file'  => [
+            'file' => [
                 'path' => 'var/session/',
             ],
             'mysql' => [
@@ -293,8 +293,9 @@ class Env extends DataObject
     public function setConfig(string $key, $value = null): bool
     {
         $this->hasGetConfig[$key] = $value;
-        $config                   = $this->getConfig();
-        $config[$key]             = $value;
+        $config = $this->getConfig();
+        $config[$key] = $value;
+        $this->config[$key] = $value;
 
         try {
             $file = new File();
@@ -353,7 +354,7 @@ class Env extends DataObject
         if (!$reget && $this->module_list) {
             return $this->module_list;
         }
-        if(!is_file(Env::path_MODULES_FILE)){
+        if (!is_file(Env::path_MODULES_FILE)) {
             return [];
         }
         $this->module_list = (array)require Env::path_MODULES_FILE;
@@ -381,7 +382,7 @@ class Env extends DataObject
         if (!$reget && $this->active_module_list) {
             return $this->active_module_list;
         }
-        $modules        = $this->getModuleList($reget);
+        $modules = $this->getModuleList($reget);
         $active_modules = [];
         foreach ($modules as $module) {
             if ($module['status']) {
