@@ -149,7 +149,7 @@ class Uploader
                 }
             }
         }
-        return $result;
+        return $result??false;
     }
 
     public function getUploadFilename(string $filename): string
