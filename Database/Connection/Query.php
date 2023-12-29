@@ -191,7 +191,11 @@ abstract class Query implements QueryInterface
 //                $this->wheres[] = [$field];
 //            }
             if (is_array($value)) {
-                foreach ($value as $item) {
+                $last  = array_key_last($value);
+                foreach ($value as $k=>$item) {
+                    if($k === $last) {
+                        $where_logic = 'AND';
+                    }
                     $where_array = [$field, $condition, $item, $where_logic];
                     # 检测条件数组 下角标 必须为数字
                     $this->checkWhereArray($where_array, 0);
