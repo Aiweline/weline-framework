@@ -26,6 +26,10 @@ if (!function_exists('p')) {
         // 执行时间
         $exe_time = microtime(true) - START_TIME;
         $isCli    = (PHP_SAPI === 'cli');
+        if(!$isCli){
+            // 响应500
+            http_response_code(500);
+        }
         $echo_pre = ($isCli ? PHP_EOL : '<pre>');
         echo $echo_pre;
         $parent_call_info = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $trace_deep);
