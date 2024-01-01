@@ -165,7 +165,7 @@ trait QueryTrait
                     unset($this->wheres[$where_key]);
                 }
             }
-            if($_index_sort_keys_wheres){
+            if ($_index_sort_keys_wheres) {
                 foreach (array_reverse($this->_index_sort_keys) as $filed_key) {
                     if (isset($_index_sort_keys_wheres[$filed_key])) {
                         array_unshift($this->wheres, ...$_index_sort_keys_wheres[$filed_key]);
@@ -211,12 +211,24 @@ trait QueryTrait
                             $where[0] = $quote . (($quote === '`') ? str_replace('.', '`.`', $where[0]) : $where[0]) . $quote;
                             # 处理带别名的参数键
                             $param                      = str_replace('.', '__', $param) . $key;
-                            $this->bound_values[$param] = (string)$where[2];
-                            $where[2]                   = match (strtolower($where[1])) {
-                                'in', 'find_in_set' => '(' . $param . ')',
-                                default => $param,
+                            switch (strtolower($where[1])) {
+                                case 'in':
+                                case 'find_in_set' :
+                                    $set_where = '(';
+                                    if (is_array($where[2])) {
+                                        foreach ($where[2] as $in_where_key => $item) {
+                                            $set_where_key_param                      = $param . '_' . $where[1] . '_' . $in_where_key;
+                                            $this->bound_values[$set_where_key_param] = (string)$item;
+                                            $set_where                                .= $set_where_key_param . ',';
+                                        }
+                                        $where[2] = rtrim($set_where, ',') . ')';
+                                        break;
+                                    }
+                                default:
+                                    $this->bound_values[$param] = (string)$where[2];
+                                    $where[2] = $param;
                             };
-                            $wheres                     .= '(' . implode(' ', $where) . ') ' . $logic;
+                            $wheres .= '(' . implode(' ', $where) . ') ' . $logic;
                         }
                 }
             }
