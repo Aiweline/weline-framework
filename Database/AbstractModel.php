@@ -31,7 +31,7 @@ use Weline\Framework\Output\Debug\Printing;
  * @method AbstractModel|QueryInterface table(string $table_name)
  * @method AbstractModel|QueryInterface fields(string $fields)
  * @method AbstractModel|QueryInterface join(string $table, string $condition, string $type = 'left')
- * @method AbstractModel|QueryInterface where(array|string $field, mixed $value = null, string $con = '=', string $logic = 'AND')
+ * @method AbstractModel|QueryInterface where(array|string $field, mixed $value = null, string $con = '=', string $logic = 'AND', string $array_where_logic_type = 'and')
  * @method AbstractModel|QueryInterface limit(int $size, int $offset = 0)
  * @method AbstractModel|QueryInterface page(int $page = 1, int $pageSize = 20)
  * @method AbstractModel|QueryInterface order(string $fields, string $sort = 'ASC')
@@ -392,7 +392,7 @@ abstract class AbstractModel extends DataObject
             }
         }
         // 联合主键索引对where条件进行排序提升查询速度
-        $query->_index_sort_keys = array_unique([$this->_primary_key] + $this->_unit_primary_keys + $this->_index_sort_keys);
+        $query->_index_sort_keys = array_unique([$this->_primary_key,...$this->_unit_primary_keys,...$this->_index_sort_keys]);
         return $query;
     }
 
@@ -1473,7 +1473,7 @@ PAGINATION;
 
     public function bindQuery(QueryInterface &$query): static
     {
-        $query->_index_sort_keys = array_unique($query->_index_sort_keys + $this->_unit_primary_keys + $this->_index_sort_keys);
+        $query->_index_sort_keys = array_unique([...$query->_index_sort_keys ,...$this->_unit_primary_keys , ...$this->_index_sort_keys]);
         $this->_bind_query = $query;
         return $this;
     }

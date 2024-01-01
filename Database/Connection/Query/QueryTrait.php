@@ -153,6 +153,7 @@ trait QueryTrait
         // 如果有联合主键，把条件按照联合主键的顺序依次添加到sql语句中，提升查询速度
         if (!empty($this->_index_sort_keys)) {
             $_index_sort_keys_wheres = [];
+            d($this->wheres);
             foreach ($this->wheres as $where_key => $where) {
                 $where_cond  = $where[1];
                 $where_field = $where[0];
@@ -161,13 +162,15 @@ trait QueryTrait
                     $where_field     = array_pop($where_field_arr);
                 }
                 if (in_array($where_field, $this->_index_sort_keys)) {
-                    $_index_sort_keys_wheres[array_search($where_field, $this->_index_sort_keys)][] = $where;
+                    $_index_sort_keys_wheres[$where_field][] = $where;
                     unset($this->wheres[$where_key]);
                 }
             }
-            if ($_index_sort_keys_wheres) {
-                foreach ($_index_sort_keys_wheres as $index => $index_sort_keys_where) {
-                    array_unshift($this->wheres, ...$index_sort_keys_where);
+            if($_index_sort_keys_wheres){
+                foreach (array_reverse($this->_index_sort_keys) as $filed_key) {
+                    if (isset($_index_sort_keys_wheres[$filed_key])) {
+                        array_unshift($this->wheres, ...$_index_sort_keys_wheres[$filed_key]);
+                    }
                 }
             }
         }
