@@ -153,7 +153,6 @@ trait QueryTrait
         // 如果有联合主键，把条件按照联合主键的顺序依次添加到sql语句中，提升查询速度
         if (!empty($this->_index_sort_keys)) {
             $_index_sort_keys_wheres = [];
-            d($this->wheres);
             foreach ($this->wheres as $where_key => $where) {
                 $where_cond  = $where[1];
                 $where_field = $where[0];
