@@ -160,6 +160,7 @@ abstract class Query implements QueryInterface
     {
         $where_logic = trim(strtoupper($where_logic));
         $condition   = trim(strtoupper($condition));
+        $array_where_logic_type   = trim(strtoupper($array_where_logic_type));
         if (is_array($field)) {
             foreach ($field as $f_key => $where_array) {
                 if (!is_array($where_array)) {
@@ -182,7 +183,15 @@ abstract class Query implements QueryInterface
             }
         } else {
             if (is_array($value)) {
-                if ($where_logic === 'AND') {
+                if ($condition === 'IN' || $condition === 'NOT IN') {
+                    $value_data  = implode("','", $value);
+                    $where_array = [$field, $condition, $value_data, $where_logic];
+                    # 检测条件数组 下角标 必须为数字
+                    $this->checkWhereArray($where_array, 0);
+                    # 检测条件数组 检测第二个元素必须是限定的 条件操作符
+                    $this->checkConditionString($where_array);
+                    $this->wheres[] = $where_array;
+                } else {
                     $last_key = array_key_last($value);
                     foreach ($value as $kv => $item) {
                         if ($last_key === $kv) {
@@ -195,30 +204,6 @@ abstract class Query implements QueryInterface
                         # 检测条件数组 检测第二个元素必须是限定的 条件操作符
                         $this->checkConditionString($where_array);
                         $this->wheres[] = $where_array;
-                    }
-                } else {
-                    if ($condition === 'IN' || $condition === 'NOT IN') {
-                        $value_data  = implode("','", $value);
-                        $where_array = [$field, $condition, $value_data, $array_where_logic_type];
-                        # 检测条件数组 下角标 必须为数字
-                        $this->checkWhereArray($where_array, 0);
-                        # 检测条件数组 检测第二个元素必须是限定的 条件操作符
-                        $this->checkConditionString($where_array);
-                        $this->wheres[] = $where_array;
-                    } else {
-                        $last_key = array_key_last($value);
-                        foreach ($value as $kv => $item) {
-                            if ($last_key === $kv) {
-                                $array_where_logic_type = $where_logic;
-                            }
-                            # 判断字段是否为同一个
-                            $where_array = [$field, $condition, $item, $array_where_logic_type];
-                            # 检测条件数组 下角标 必须为数字
-                            $this->checkWhereArray($where_array, 0);
-                            # 检测条件数组 检测第二个元素必须是限定的 条件操作符
-                            $this->checkConditionString($where_array);
-                            $this->wheres[] = $where_array;
-                        }
                     }
                 }
             } else {
