@@ -184,8 +184,7 @@ abstract class Query implements QueryInterface
         } else {
             if (is_array($value)) {
                 if ($condition === 'IN' || $condition === 'NOT IN') {
-                    $value_data  = implode("','", $value);
-                    $where_array = [$field, $condition, $value_data, $where_logic];
+                    $where_array = [$field, $condition, $value, $where_logic];
                     # 检测条件数组 下角标 必须为数字
                     $this->checkWhereArray($where_array, 0);
                     # 检测条件数组 检测第二个元素必须是限定的 条件操作符
