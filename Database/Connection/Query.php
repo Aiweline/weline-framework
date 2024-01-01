@@ -156,8 +156,10 @@ abstract class Query implements QueryInterface
         return $this;
     }
 
-    public function where(array|string $field, mixed $value = null, string $condition = '=', string $where_logic = 'AND'): QueryInterface
+    public function where(array|string $field, mixed $value = null, string $condition = '=', string $where_logic = 'AND', string $array_where_logic_type = 'AND'): QueryInterface
     {
+        $where_logic = trim(strtoupper($where_logic));
+        $condition   = trim(strtoupper($condition));
         if (is_array($field)) {
             foreach ($field as $f_key => $where_array) {
                 if (!is_array($where_array)) {
@@ -166,12 +168,11 @@ abstract class Query implements QueryInterface
                     $where_array[0] = $f_key;
                     $where_array[1] = '=';
                     $where_array[2] = $value;
-                    $where_array[3] = $where_logic;
+                    $where_array[3] = $array_where_logic_type;
                 } elseif (2 === count($where_array)) {# 处理两个元素数组
                     $where_array[2] = $where_array[1];
                     $where_array[1] = '=';
                 }
-
 
                 # 检测条件数组 下角标 必须为数字
                 $this->checkWhereArray($where_array, $f_key);
@@ -180,28 +181,45 @@ abstract class Query implements QueryInterface
                 $this->wheres[] = $where_array;
             }
         } else {
-//            if ($value) {
-//                $where_array = [$field, $condition, $value, $where_logic];
-//                # 检测条件数组 下角标 必须为数字
-//                $this->checkWhereArray($where_array, 0);
-//                # 检测条件数组 检测第二个元素必须是限定的 条件操作符
-//                $this->checkConditionString($where_array);
-//                $this->wheres[] = $where_array;
-//            } else {
-//                $this->wheres[] = [$field];
-//            }
             if (is_array($value)) {
-                $last  = array_key_last($value);
-                foreach ($value as $k=>$item) {
-                    if($k === $last) {
-                        $where_logic = 'AND';
+                if ($where_logic === 'AND') {
+                    $last_key = array_key_last($value);
+                    foreach ($value as $kv => $item) {
+                        if ($last_key === $kv) {
+                            $array_where_logic_type = $where_logic;
+                        }
+                        # 判断字段是否为同一个
+                        $where_array = [$field, $condition, $item, $array_where_logic_type];
+                        # 检测条件数组 下角标 必须为数字
+                        $this->checkWhereArray($where_array, 0);
+                        # 检测条件数组 检测第二个元素必须是限定的 条件操作符
+                        $this->checkConditionString($where_array);
+                        $this->wheres[] = $where_array;
                     }
-                    $where_array = [$field, $condition, $item, $where_logic];
-                    # 检测条件数组 下角标 必须为数字
-                    $this->checkWhereArray($where_array, 0);
-                    # 检测条件数组 检测第二个元素必须是限定的 条件操作符
-                    $this->checkConditionString($where_array);
-                    $this->wheres[] = $where_array;
+                } else {
+                    if ($condition === 'IN' || $condition === 'NOT IN') {
+                        $value_data  = implode("','", $value);
+                        $where_array = [$field, $condition, $value_data, $array_where_logic_type];
+                        # 检测条件数组 下角标 必须为数字
+                        $this->checkWhereArray($where_array, 0);
+                        # 检测条件数组 检测第二个元素必须是限定的 条件操作符
+                        $this->checkConditionString($where_array);
+                        $this->wheres[] = $where_array;
+                    } else {
+                        $last_key = array_key_last($value);
+                        foreach ($value as $kv => $item) {
+                            if ($last_key === $kv) {
+                                $array_where_logic_type = $where_logic;
+                            }
+                            # 判断字段是否为同一个
+                            $where_array = [$field, $condition, $item, $array_where_logic_type];
+                            # 检测条件数组 下角标 必须为数字
+                            $this->checkWhereArray($where_array, 0);
+                            # 检测条件数组 检测第二个元素必须是限定的 条件操作符
+                            $this->checkConditionString($where_array);
+                            $this->wheres[] = $where_array;
+                        }
+                    }
                 }
             } else {
                 $where_array = [$field, $condition, $value, $where_logic];
@@ -313,8 +331,8 @@ abstract class Query implements QueryInterface
     public function query(string $sql): QueryInterface
     {
         $this->reset();
-        $this->sql        = $sql;
-        $this->fetch_type = __FUNCTION__;
+        $this->sql          = $sql;
+        $this->fetch_type   = __FUNCTION__;
         $this->PDOStatement = $this->connection->getLink()->prepare($sql);
         return $this;
     }
@@ -327,7 +345,7 @@ abstract class Query implements QueryInterface
 
     public function fetch(string $model_class = ''): mixed
     {
-        $result = $this->PDOStatement->execute($this->bound_values);
+        $result      = $this->PDOStatement->execute($this->bound_values);
         $origin_data = $this->PDOStatement->fetchAll(PDO::FETCH_ASSOC);
 
         $data = [];

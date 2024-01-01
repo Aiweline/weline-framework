@@ -154,22 +154,21 @@ trait QueryTrait
         if (!empty($this->_index_sort_keys)) {
             $_index_sort_keys_wheres = [];
             foreach ($this->wheres as $where_key => $where) {
-                $where_cond = $where[1];
-                if($where_cond=='='){
-                    $where_field = $where[0];
-                    if (str_contains($where_field, '.')) {
-                        $where_field_arr = explode('.', $where_field);
-                        $where_field     = array_pop($where_field_arr);
-                    }
-                    if (in_array($where_field, $this->_index_sort_keys)) {
-                        $_index_sort_keys_wheres[array_search($where_field, $this->_index_sort_keys)] = $where;
-                        unset($this->wheres[$where_key]);
-                    }
+                $where_cond  = $where[1];
+                $where_field = $where[0];
+                if (str_contains($where_field, '.')) {
+                    $where_field_arr = explode('.', $where_field);
+                    $where_field     = array_pop($where_field_arr);
+                }
+                if (in_array($where_field, $this->_index_sort_keys)) {
+                    $_index_sort_keys_wheres[array_search($where_field, $this->_index_sort_keys)][] = $where;
+                    unset($this->wheres[$where_key]);
                 }
             }
             if ($_index_sort_keys_wheres) {
-                sort($_index_sort_keys_wheres);
-                $this->wheres = $_index_sort_keys_wheres + $this->wheres;
+                foreach ($_index_sort_keys_wheres as $index => $index_sort_keys_where) {
+                    array_unshift($this->wheres, ...$index_sort_keys_where);
+                }
             }
         }
         if ($this->wheres) {
@@ -213,7 +212,7 @@ trait QueryTrait
                             $this->bound_values[$param] = (string)$where[2];
                             $where[2]                   = match (strtolower($where[1])) {
                                 'in', 'find_in_set' => '(' . $param . ')',
-                                default             => $param,
+                                default => $param,
                             };
                             $wheres                     .= '(' . implode(' ', $where) . ') ' . $logic;
                         }

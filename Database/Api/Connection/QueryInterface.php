@@ -176,11 +176,12 @@ interface QueryInterface
      *                                      就不需要多个where链接查询条件了
      * @param mixed|null $value 条件值
      * @param string $condition 逻辑符： < | = | like | > 等常规逻辑
-     * @param string $where_logic 下一个where使用的逻辑 值：and | or 默认
+     * @param string $where_logic 下一个where使用的逻辑 值：and | or 默认 and
+     * @param string $array_where_logic_type 当值给的是一个数组时，下一个where使用的逻辑 值：and | or 默认 and
      *
      * @return QueryInterface
      */
-    public function where(array|string $field, mixed $value = null, string $condition = '=', string $where_logic = 'AND'): QueryInterface;
+    public function where(array|string $field, mixed $value = null, string $condition = '=', string $where_logic = 'AND', string $array_where_logic_type = 'AND'): QueryInterface;
 
     /**
      * @DESC          # 限制查询
