@@ -64,6 +64,9 @@ class PcController extends Core
             if ($this->_url->isLink($url)) {
                 $this->request->getResponse()->redirect($url . (str_contains($url, '?') ? '&' : '') . http_build_query($params));
             } else {
+                if(str_starts_with($url,'/')){
+                    $this->request->getResponse()->redirect($this->_url->getUrl($url, $params, $merge_params));
+                }
                 $this->request->getResponse()->redirect($this->request->isBackend() ? $this->_url->getBackendUrl($url, $params, $merge_params) :
                     $this->_url->getUrl($url, $params, $merge_params));
             }
