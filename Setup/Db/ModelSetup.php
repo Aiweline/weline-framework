@@ -36,7 +36,7 @@ class ModelSetup
      * Setup constructor.
      *
      * @param \Weline\Framework\Output\Cli\Printing $printing
-     * @param DdlFactory                            $ddl_table
+     * @param DdlFactory $ddl_table
      *
      * @throws \ReflectionException
      * @throws \Weline\Framework\App\Exception
@@ -81,8 +81,8 @@ class ModelSetup
     public function createTable(string $comment = '', string $table = ''): Table\Create
     {
         return $this->ddl_table->setConnection($this->model->getConnection())
-                               ->createTable()
-                               ->createTable($table ?: $this->model->getOriginTableName(), $comment);
+            ->createTable()
+            ->createTable($table ?: $this->model->getOriginTableName(), $comment);
     }
 
     /**
@@ -90,7 +90,7 @@ class ModelSetup
      *
      * 参数区：
      *
-     * @param string $comment        留空不修改表注释
+     * @param string $comment 留空不修改表注释
      * @param string $new_table_name 留空不修改表名
      *
      * @return Alter
@@ -219,6 +219,16 @@ class ModelSetup
     public function query(string $sql): mixed
     {
         return $this->model->getConnection()->query($sql)->fetch();
+    }
+
+    public function getVersion(): string
+    {
+        return $this->model->getConnection()->getVersion();
+    }
+    
+    public function getConnection(): ConnectionFactory
+    {
+        return $this->model->getConnection();
     }
 
     /**
