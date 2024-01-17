@@ -104,12 +104,12 @@ class Core implements Data\DataInterface
     }
 
 
-    protected function success(string $msg = '请求成功！', mixed $data = '', int $code = 200): mixed
+    protected function success(string $msg = '请求成功！', mixed $data = '', int $code = 200)
     {
         return ['msg' => $msg, 'data' => $data, 'code' => $code];
     }
 
-    protected function error(string $msg = '请求失败！', mixed $data = '', int $code = 404): mixed
+    protected function error(string $msg = '请求失败！', mixed $data = '', int $code = 404)
     {
         return ['msg' => $msg, 'data' => $data, 'code' => $code];
     }
