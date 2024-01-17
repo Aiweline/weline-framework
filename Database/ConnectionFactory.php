@@ -245,4 +245,14 @@ class ConnectionFactory
         $driver_type = $this->configProvider->getDbType() ?: $driver_type;
         return "Weline\\Framework\\Database\\Connection\\Query\\Adapter\\" . ucfirst($driver_type);
     }
+
+    public function getVersion(): string
+    {
+        // 查询数据库版本号
+        $query = 'SELECT VERSION() AS version';
+        $stmt  = $this->getQuery()->getConnection()->getLink()->prepare($query);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['version'];
+    }
 }
