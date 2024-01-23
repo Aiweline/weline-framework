@@ -111,7 +111,7 @@ abstract class Query implements QueryInterface
         }
         # 单条记录更新
         if (is_string($field)) {
-            $this->single_updates[$field] = "'{$value_or_condition_field}'";
+            $this->single_updates[$field] = $value_or_condition_field;
         } else {
             // 设置数据更新依赖条件主键
             if ($this->identity_field !== $value_or_condition_field) {
