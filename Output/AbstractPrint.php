@@ -9,34 +9,154 @@
 
 namespace Weline\Framework\Output;
 
-use Weline\Framework\System\File\Io\File;
+use Weline\Framework\App\Env;
 
 abstract class AbstractPrint implements PrintInterface
 {
-    public bool $out = true;
+    public $out;
+    public bool $printing = true;
 
-    private ?File $file=null;
-
-    public function error(mixed $data = 'Error!', string $message = '', string $color = self::ERROR, int $pad_length = 25)
+    /**
+     * @DESC         |错误
+     *
+     * @Author       秋枫雁飞
+     * @Email        aiweline@qq.com
+     * @Forum        https://bbs.aiweline.com
+     * @Description  此文件源码由Aiweline（秋枫雁飞）开发，请勿随意修改源码！
+     *
+     * 参数区：
+     *
+     * @param array|string $data
+     * @param string $message
+     * @param string $color
+     * @param int $pad_length
+     *
+     * @return mixed|void
+     */
+    public function error($data = 'Error!', string $message = '', string $color = self::ERROR, int $pad_length = 25): mixed
     {
-        return $this->printing('Error!');
+        return $this->doPrint($data, $message, $color, $pad_length, 3);
     }
 
-    public function success(string $data = 'Success!', string $message = '', string $color = self::ERROR, int $pad_length = 25)
+    /**
+     * @DESC         |成功
+     *
+     * @Author       秋枫雁飞
+     * @Email        aiweline@qq.com
+     * @Forum        https://bbs.aiweline.com
+     * @Description  此文件源码由Aiweline（秋枫雁飞）开发，请勿随意修改源码！
+     *
+     * 参数区：
+     *
+     * @param string $data
+     * @param string $message
+     * @param string $color
+     * @param int $pad_length
+     *
+     * @return mixed|void
+     */
+    public function success(string $data = 'Success!', string $message = '', string $color = self::SUCCESS, int $pad_length = 25): mixed
     {
+        return $this->doPrint($data, $message, $color, $pad_length);
     }
 
-    public function warning(string $data = 'Warning!', string $message = '', string $color = self::ERROR, int $pad_length = 25)
+    /**
+     * @DESC         |警告
+     *
+     * @Author       秋枫雁飞
+     * @Email        aiweline@qq.com
+     * @Forum        https://bbs.aiweline.com
+     * @Description  此文件源码由Aiweline（秋枫雁飞）开发，请勿随意修改源码！
+     *
+     * 参数区：
+     *
+     * @param string $data
+     * @param string $message
+     * @param string $color
+     * @param int $pad_length
+     *
+     * @return mixed|void
+     */
+    public function warning(string $data = 'Warning!', string $message = '', string $color = self::WARNING, int $pad_length = 25): mixed
     {
+        return $this->doPrint($data, $message, $color, $pad_length);
     }
 
-    public function note(string $data = 'Note!', string $message = '', string $color = self::ERROR, int $pad_length = 25)
+    /**
+     * @DESC         |提示
+     *
+     * @Author       秋枫雁飞
+     * @Email        aiweline@qq.com
+     * @Forum        https://bbs.aiweline.com
+     * @Description  此文件源码由Aiweline（秋枫雁飞）开发，请勿随意修改源码！
+     *
+     * 参数区：
+     *
+     * @param string $data
+     * @param string $message
+     * @param string $color
+     * @param int $pad_length
+     *
+     * @return mixed|void
+     */
+    public function note(string $data = 'Note!', string $message = '', string $color = self::NOTE, int $pad_length = 25): mixed
     {
+        return $this->doPrint($data, $message, $color, $pad_length);
     }
 
     /**
      * ----------------辅助方法-------------------
+     *
+     * @param mixed $data
+     * @param mixed $message
+     * @param mixed $color
+     * @param mixed $pad_length
      */
+
+    /**
+     * @DESC         |方法描述
+     *
+     * @Author       秋枫雁飞
+     * @Email        aiweline@qq.com
+     * @Forum        https://bbs.aiweline.com
+     * @Description  此文件源码由Aiweline（秋枫雁飞）开发，请勿随意修改源码！
+     *
+     * 参数区：
+     *
+     * @param array|string $data
+     * @param string $message
+     * @param string $color
+     * @param int $pad_length
+     */
+    public function doPrint(array|string $data, string $message, string $color, int $pad_length = 0, int $message_type = 0, string $filename = 'dev'): mixed
+    {
+        $message = empty($message)?__('系统'):$message;
+        if ($message_type == 3) {
+            $log_file = BP . DS . 'var' . DS . 'log' . DS . $filename . '.log';
+            if (!is_dir(BP . DS . 'var' . DS . 'log')) {
+                mkdir(BP . DS . 'var' . DS . 'log', 0777, true);
+            }
+            if (!is_file($log_file)) {
+                touch($log_file);
+            }
+            ini_set('error_log', $log_file);
+            if (is_string($data)) {
+                error_log($data . ($message ? ' | ' . $message : ''), 0, empty($file) ? $log_file : $file);
+            } else {
+                error_log(($message ? $message .PHP_EOL : '') . var_export($data, true), 0, empty($file) ? $log_file : $file);
+            }
+        }
+        if($this->printing){
+            if (is_array($data)) {
+                foreach ($data as $msg) {
+                    $this->printing($msg, $message, $color, $pad_length);
+                }
+            }else{
+                $this->printing($data, $message, $color, $pad_length);
+            }
+        }
+        return '';
+    }
 
     /**
      * @DESC         |打印消息
@@ -48,33 +168,67 @@ abstract class AbstractPrint implements PrintInterface
      *
      * 参数区：
      *
+     * @param string $data
      * @param string $message
-     *
-     * @return mixed|string
+     * @param string $color
+     * @param int $pad_length
      */
-    public function printing(string $message = 'Printing!')
+    public function printing(string $data = 'Printing!', string $message = '', string $color = self::NOTE, int $pad_length = 0): void
     {
-        return $message;
+        $doc_tmp = $this->colorize('【' .$message. '】：' , self::NOTE) . $this->colorize(($pad_length ? str_pad($data, $pad_length) : $data), $color);
+        $doc     = <<<COMMAND_LIST
+
+$doc_tmp
+
+COMMAND_LIST;
+        exit($doc);
     }
 
     /**
-     * @DESC         |方法描述
+     * @DESC         |终端输出颜色字体
+     *
+     * @Author       秋枫雁飞
+     * @Email        aiweline@qq.com
+     * @Forum        https://bbs.aiweline.com
+     * @Description  此文件源码由Aiweline（秋枫雁飞）开发，请勿随意修改源码！
      *
      * 参数区：
      *
-     * @param string $log_path
-     * @param string $content
-     * @param int    $type
+     * @param string $text
+     * @param string $status
      *
-     * @throws \Weline\Framework\App\Exception
+     * @return string
      */
-    protected function write(string $log_path, string $content, int $type)
+    public function colorize($text, $status): string
     {
-        if (!isset($this->file)) {
-            $this->file = new File();
+        switch ($status) {
+            case self::SUCCESS:
+            case 'Green':
+                $this->out = '[32m'; //Green
+
+                break;
+            case self::ERROR:
+            case self::FAILURE:
+            case 'Red':
+                $this->out = '[31m'; //Red
+
+                break;
+            case self::WARNING:
+            case 'Yellow':
+                $this->out = '[33m'; //Yellow
+
+                break;
+            case self::NOTE:
+            case 'Blue':
+                $this->out = '[34m'; //Blue
+
+                break;
+            default:
+                $this->out = '[31m'; //默认错误信息
+
+                break;
         }
-        $this->file->open($log_path);
-        $this->file->write("【{$type}】" . $content . PHP_EOL);
-        $this->file->close();
+
+        return chr(27) . "{$this->out}" . "{$text}" . chr(27) . '[0m';
     }
 }
