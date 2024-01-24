@@ -13,7 +13,8 @@ use Weline\Framework\App\Env;
 
 abstract class AbstractPrint extends \Weline\Framework\Output\AbstractPrint implements PrintInterface
 {
-    public const PRINT_TEXT = false;
+    public $out;
+    public bool $printing = true;
 
     /**
      * @DESC         |错误
@@ -34,7 +35,7 @@ abstract class AbstractPrint extends \Weline\Framework\Output\AbstractPrint impl
      */
     public function error($data = 'Error!', string $message = '', string $color = self::ERROR, int $pad_length = 25): mixed
     {
-        $this->doPrint($data, $message, self::ERROR, $pad_length, 3);
+       return $this->doPrint($data, $message, $color, $pad_length, 3);
     }
 
     /**
@@ -56,7 +57,7 @@ abstract class AbstractPrint extends \Weline\Framework\Output\AbstractPrint impl
      */
     public function success(string $data = 'Success!', string $message = '', string $color = self::SUCCESS, int $pad_length = 25): mixed
     {
-        $this->doPrint($data, $message, $color, $pad_length);
+        return $this->doPrint($data, $message, $color, $pad_length);
     }
 
     /**
@@ -78,7 +79,7 @@ abstract class AbstractPrint extends \Weline\Framework\Output\AbstractPrint impl
      */
     public function warning(string $data = 'Warning!', string $message = '', string $color = self::WARNING, int $pad_length = 25): mixed
     {
-        $this->doPrint($data, $message, $color, $pad_length);
+        return $this->doPrint($data, $message, $color, $pad_length);
     }
 
     /**
@@ -100,7 +101,7 @@ abstract class AbstractPrint extends \Weline\Framework\Output\AbstractPrint impl
      */
     public function note(string $data = 'Note!', string $message = '', string $color = self::NOTE, int $pad_length = 25): mixed
     {
-        $this->doPrint($data, $message, $color, $pad_length);
+        return $this->doPrint($data, $message, $color, $pad_length);
     }
 
     /**
@@ -129,6 +130,7 @@ abstract class AbstractPrint extends \Weline\Framework\Output\AbstractPrint impl
      */
     public function doPrint(array|string $data, string $message, string $color, int $pad_length = 0, int $message_type = 0, string $filename = 'dev'): mixed
     {
+        $message = empty($message)?__('系统'):$message;
         if ($message_type == 3) {
             $log_file = BP . DS . 'var' . DS . 'log' . DS . $filename . '.log';
             if (!is_dir(BP . DS . 'var' . DS . 'log')) {
@@ -144,7 +146,7 @@ abstract class AbstractPrint extends \Weline\Framework\Output\AbstractPrint impl
                 error_log(($message ? $message .PHP_EOL : '') . var_export($data, true), 0, empty($file) ? $log_file : $file);
             }
         }
-        if($this->out){
+        if($this->printing){
             if (is_array($data)) {
                 foreach ($data as $msg) {
                     $this->printing($msg, $message, $color, $pad_length);
@@ -153,6 +155,7 @@ abstract class AbstractPrint extends \Weline\Framework\Output\AbstractPrint impl
                 $this->printing($data, $message, $color, $pad_length);
             }
         }
+        return '';
     }
 
     /**
@@ -172,7 +175,7 @@ abstract class AbstractPrint extends \Weline\Framework\Output\AbstractPrint impl
      */
     public function printing(string $data = 'Printing!', string $message = '', string $color = self::NOTE, int $pad_length = 0): void
     {
-        $doc_tmp = '【' . $message . '】：' . $this->colorize(($pad_length ? str_pad($data, $pad_length) : $data), $color);
+        $doc_tmp = $this->colorize('【' .$message. '】：' , self::NOTE) . $this->colorize(($pad_length ? str_pad($data, $pad_length) : $data), $color);
         $doc     = <<<COMMAND_LIST
 
 $doc_tmp
