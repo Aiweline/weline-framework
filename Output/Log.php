@@ -17,7 +17,7 @@ use Weline\Framework\Output\Debug\AbstractPrint;
 
 class Log extends Debug\AbstractPrint
 {
-    public bool $out = false;
+    public bool $printing = false;
 
     /**
      * @DESC         |日志记录
