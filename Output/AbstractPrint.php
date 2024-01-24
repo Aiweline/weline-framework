@@ -13,9 +13,9 @@ use Weline\Framework\System\File\Io\File;
 
 abstract class AbstractPrint implements PrintInterface
 {
-    protected $out;
+    public bool $out = true;
 
-    private File $file;
+    private ?File $file=null;
 
     public function error(mixed $data = 'Error!', string $message = '', string $color = self::ERROR, int $pad_length = 25)
     {
