@@ -127,9 +127,9 @@ class ObjectManager implements ManagerInterface
         } else {
             $arguments = self::getMethodParams($new_class);
         }
-        //        if (str_contains($new_class, 'Aiweline\Bbs\Controller\Account\BaseController')) {
-        //            p($arguments);
-        //        }
+//        if (str_contains($new_class, 'Weline\Cron\Console\Cron\Listing')) {
+//            p($arguments);
+//        }
         $refClass = self::$reflections[$class] ?? self::$reflections[$class] = new ReflectionClass($new_class);
         //        if ($refClass->isAbstract()) {
         //            throw new Exception(__('抽象类无法被实例化：%1', $class));
@@ -426,12 +426,15 @@ class ObjectManager implements ManagerInterface
             }
             // 判断构造函数是否有参数
             $params = $construct->getParameters();
+//            if (str_contains($className, 'Weline\Cron\Console\Cron\Listing')) {
+//                p($params);
+//            }
             if (count($params) > 0) {
                 // 判断参数类型
                 foreach ($params as $key => $param) {
-                    //                    if($instance_or_class=='Aiweline\Bbs\Controller\Index'){
-                    //                        p($param->getType()->getName());
-                    //                    }
+//                    if (str_contains($param->getType()->getName(), 'Weline\Cron\Console\Cron\Listing')) {
+//                        p($param);
+//                    }
                     if ($param->getType() && class_exists($param->getType()->getName())) {
                         // 获得参数类型名称
                         $paramTypeName = $param->getType()->getName();
@@ -465,8 +468,10 @@ class ObjectManager implements ManagerInterface
                         try {
                             if ($param->isDefaultValueAvailable()) {
                                 $paramArr[] = $param->getDefaultValue();
+                            }else{
+                                throw new Exception(__('参数：%1 实例类找不到！ ,参数详情：%2', [$param->getName(),$param]));
                             }
-                        } catch (\ReflectionException $e) {
+                        } catch (\Exception $e) {
                             if (CLI or DEV) {
                                 echo('无法实例化该类：' . $className . '，错误：' . $e->getMessage());
                             }
