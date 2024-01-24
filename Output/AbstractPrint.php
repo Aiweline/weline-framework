@@ -141,9 +141,9 @@ abstract class AbstractPrint implements PrintInterface
             }
             ini_set('error_log', $log_file);
             if (is_string($data)) {
-                error_log($data . ($message ? ' | ' . $message : ''), 0, empty($file) ? $log_file : $file);
+                error_log('[' . $message . ']' . '|' . $data, 0, empty($file) ? $log_file : $file);
             } else {
-                error_log(($message ? $message .PHP_EOL : '') . var_export($data, true), 0, empty($file) ? $log_file : $file);
+                error_log('[' . $message . ']' . '|' . var_export($data, true), 0, empty($file) ? $log_file : $file);
             }
         }
         if($this->printing){
