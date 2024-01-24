@@ -468,8 +468,6 @@ class ObjectManager implements ManagerInterface
                         try {
                             if ($param->isDefaultValueAvailable()) {
                                 $paramArr[] = $param->getDefaultValue();
-                            }else{
-                                throw new Exception(__('参数：%1 实例类找不到！ ,参数详情：%2', [$param->getName(),$param]));
                             }
                         } catch (\Exception $e) {
                             if (CLI or DEV) {
