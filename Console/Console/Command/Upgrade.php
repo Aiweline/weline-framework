@@ -175,6 +175,7 @@ class Upgrade extends CommandAbstract
                         }
                     } catch (\Exception $exception) {
                         // 异常的类不加入命令
+                        d($exception->getMessage());
                     }
                 }
             }
