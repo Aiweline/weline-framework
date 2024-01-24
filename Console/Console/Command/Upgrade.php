@@ -163,9 +163,9 @@ class Upgrade extends CommandAbstract
                             array_pop($file_array);
                             $command_prefix                                           = strtolower(implode(':', $file_array));
                             $commands[$command_prefix . '#' . $module_name][$command] = [
-                                'tip'    => $command_class->tip(),
-                                'class'  => $class,
-                                'type'   => 'module',
+                                'tip' => $command_class->tip(),
+                                'class' => $class,
+                                'type' => 'module',
                                 'module' => $module['name']
                             ];
                         } else {
@@ -175,7 +175,7 @@ class Upgrade extends CommandAbstract
                         }
                     } catch (\Exception $exception) {
                         // 异常的类不加入命令
-                        d($exception->getMessage());
+                        $this->printer->warning($exception->getMessage());
                     }
                 }
             }
@@ -220,9 +220,9 @@ class Upgrade extends CommandAbstract
                         array_pop($class_array);
                         $command_prefix                                                                 = strtolower(implode(':', $class_array));
                         $commands[$command_prefix . '#Weline_Framework_' . $framework_module][$command] = [
-                            'tip'    => $command_class->tip(),
-                            'class'  => $class,
-                            'type'   => 'framework',
+                            'tip' => $command_class->tip(),
+                            'class' => $class,
+                            'type' => 'framework',
                             'module' => 'Weline_Framework'
                         ];
                     } else {
@@ -232,6 +232,7 @@ class Upgrade extends CommandAbstract
                     }
                 } catch (\Exception $exception) {
                     // 异常的类不加入命令
+                    $this->printer->warning($exception->getMessage());
                 }
             }
         }
