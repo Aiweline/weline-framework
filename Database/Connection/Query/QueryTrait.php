@@ -189,7 +189,8 @@ trait QueryTrait
                         break;
                     # 默认where逻辑连接符为AND
                     default:
-                        $param = ':' . trim($where[0], '`');
+                        $where[0] = str_replace(' ','_',$where[0]);
+                        $param = ':' . str_replace( '`','_',$where[0]);
                         # 是sql的字段不添加字段引号(没有值则是sql)
                         if (null === $where[2]) {
                             $wheres .= '(' . $where[0] . ') ' . $logic;
