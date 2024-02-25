@@ -312,6 +312,8 @@ trait QueryTrait
                         foreach ($this->updates[0] as $update_field => $field_value) {
                             $update_key                      = ':' . md5($update_field);
                             $update_field                    = $this->parserFiled($update_field);
+                            $field_value                     = $field_value === null ? 'null' : $field_value;
+                            $field_value                     = $field_value === '' ? "''" : $field_value;
                             $this->bound_values[$update_key] = $field_value;
                             $updates                         .= "$update_field = $update_key,";
                         }
@@ -319,6 +321,8 @@ trait QueryTrait
                 } elseif ($this->single_updates) {
                     foreach ($this->single_updates as $update_field => $update_value) {
                         $update_field = $this->parserFiled($update_field);
+                        $update_value = $update_value === null ? 'null' : $update_value;
+                        $update_value = $update_value === '' ? "''" : $update_value;
                         $updates      .= "$update_field=$update_value,";
                     }
                 } else {
