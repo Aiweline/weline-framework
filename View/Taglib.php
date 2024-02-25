@@ -57,7 +57,11 @@ class Taglib
         if (str_contains($name, $filter)) {
             $name_arr = explode('|', $name);
             $name     = $name_arr[0];
-            $default  = $this->varParser($name_arr[1]);
+            if(w_get_string_between_quotes($name_arr[1])){
+                $default  = $name_arr[1];
+            }else{
+                $default  = $this->varParser($name_arr[1]);
+            }
         }
         return [$name, $default];
     }
