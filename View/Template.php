@@ -124,19 +124,22 @@ class Template extends DataObject
 
     public function init()
     {
-        $this->theme ?? $this->theme = Env::getInstance()->getConfig('theme', Env::default_theme_DATA);
-        $this->eventsManager ?? $this->eventsManager = ObjectManager::getInstance(EventsManager::class);
-        $this->viewCache ?? $this->viewCache = ObjectManager::getInstance(ViewCache::class)->create();
+            $this->theme ?? $this->theme = Env::getInstance()->getConfig('theme', Env::default_theme_DATA);
+            $this->eventsManager ?? $this->eventsManager = ObjectManager::getInstance(EventsManager::class);
+            $this->viewCache ?? $this->viewCache = ObjectManager::getInstance(ViewCache::class)->create();
         $this->request = ObjectManager::getInstance(Request::class);
 
         if (!CLI) {
             if (empty($this->view_dir)) {
                 $this->view_dir = $this->request->getRouterData('module_path') . DataInterface::dir . DS;
             }
-            $this->getData('title') ?? $this->setData('title', $this->request->getModuleName());
-            $this->getData('req') ?? $this->setData('req', $this->request->getParams());
-            $this->getData('env') ?? $this->setData('env', Env::getInstance()->getConfig());
-            $this->getData('local') ?? $this->setData('local', ['code' => Cookie::getLangLocal(), 'lang' => Cookie::getLang()]);
+                $this->getData('title') ?? $this->setData('title', $this->request->getModuleName());
+            $this->request->setData('url', $this->request->getUrlBuilder()->getCurrentUrl());
+                $this->getData('req') ?? $this->setData('req', array_merge($this->request->getParams(), [
+                'url' => $this->request->getUrlBuilder()->getCurrentUrl(),
+            ]));
+                $this->getData('env') ?? $this->setData('env', Env::getInstance()->getConfig());
+                $this->getData('local') ?? $this->setData('local', ['code' => Cookie::getLangLocal(), 'lang' => Cookie::getLang()]);
         }
 
         if (empty($this->statics_dir)) {
@@ -197,7 +200,7 @@ class Template extends DataObject
      * 参数区：
      *
      * @param string|array $key 键值
-     * @param null         $value
+     * @param null $value
      *
      * @return Template
      */
@@ -216,13 +219,13 @@ class Template extends DataObject
     public function convertFetchFileName(string $fileName): array
     {
         $comFileName_cache_key = $this->view_dir . $fileName . '_comFileName' . Cookie::getLangLocal();
-        $tplFile_cache_key     = $this->view_dir . $fileName . '_tplFile' . Cookie::getLangLocal();
-        $comFileName           = '';
-        $tplFile               = '';
+        $tplFile_cache_key = $this->view_dir . $fileName . '_tplFile' . Cookie::getLangLocal();
+        $comFileName = '';
+        $tplFile = '';
         # 让非生产环境实时读取文件
         if (PROD) {
             $comFileName = $this->viewCache->get($comFileName_cache_key);
-            $tplFile     = $this->viewCache->get($tplFile_cache_key);
+            $tplFile = $this->viewCache->get($tplFile_cache_key);
         }
         # 测试
         //        file_put_contents(__DIR__ . '/test.txt', $comFileName . PHP_EOL, FILE_APPEND);
@@ -233,13 +236,13 @@ class Template extends DataObject
                 $fileName = str_replace('/', DS, $fileName);
             }
             $file_name_dir_arr = explode(DS, $fileName);
-            $file_dir          = '';
-            $file_name         = '';
+            $file_dir = '';
+            $file_name = '';
 
             // 如果给的文件名字有路径
             if (count($file_name_dir_arr) > 1) {
                 $file_name = array_pop($file_name_dir_arr);
-                $file_dir  = implode(DS, $file_name_dir_arr);
+                $file_dir = implode(DS, $file_name_dir_arr);
                 if ($file_dir) {
                     $file_dir .= DS;
                 }
@@ -260,8 +263,8 @@ class Template extends DataObject
             //            p($tplFile);
 
             if (!file_exists($tplFile)) {
-                $msg = __('获取操作：%1', $fileName).PHP_EOL;
-                $msg .= __('模板文件不存在！：%1 ', $tplFile).PHP_EOL;
+                $msg = __('获取操作：%1', $fileName) . PHP_EOL;
+                $msg .= __('模板文件不存在！：%1 ', $tplFile) . PHP_EOL;
                 $msg .= __('源文件：%1', $fileName);
                 throw new Exception($msg);
             }
@@ -305,18 +308,18 @@ class Template extends DataObject
         # 检测编译文件，如果不符合条件则重新进行文件编译
         if (DEV || !file_exists($comFileName) || (filemtime($comFileName) < filemtime($tplFile))) {
             //如果缓存文件不存在则 编译 或者文件修改了也编译
-            $content    = file_get_contents($tplFile);
+            $content = file_get_contents($tplFile);
             $repContent = $this->tmp_replace($content, $comFileName);                   //得到模板文件 并替换占位符 并得到替换后的文件
             if (DEV) {
                 $tpl_pad_file_name = __('模板文件：%1 START', $tplFile);
-                $tpl_str_len       = strlen($tpl_pad_file_name);
-                $tpl_str_pad_all   = str_pad('', $tpl_str_len, '=', STR_PAD_BOTH);
-                $tpl_str_pad_file  = str_pad($tpl_pad_file_name, $tpl_str_len, '=', STR_PAD_BOTH);
+                $tpl_str_len = strlen($tpl_pad_file_name);
+                $tpl_str_pad_all = str_pad('', $tpl_str_len, '=', STR_PAD_BOTH);
+                $tpl_str_pad_file = str_pad($tpl_pad_file_name, $tpl_str_len, '=', STR_PAD_BOTH);
                 $com_pad_file_name = __('模板文件：%1 END', $comFileName);
-                $com_str_len       = strlen($com_pad_file_name);
-                $com_str_pad_all   = str_pad('', $com_str_len, '=', STR_PAD_BOTH);
-                $com_str_pad_file  = str_pad($com_pad_file_name, $com_str_len, '=', STR_PAD_BOTH);
-                $repContent        = "<!--" . PHP_EOL . "$tpl_str_pad_all " . PHP_EOL . $tpl_str_pad_file . PHP_EOL . $tpl_str_pad_all . PHP_EOL . ' -->'
+                $com_str_len = strlen($com_pad_file_name);
+                $com_str_pad_all = str_pad('', $com_str_len, '=', STR_PAD_BOTH);
+                $com_str_pad_file = str_pad($com_pad_file_name, $com_str_len, '=', STR_PAD_BOTH);
+                $repContent = "<!--" . PHP_EOL . "$tpl_str_pad_all " . PHP_EOL . $tpl_str_pad_file . PHP_EOL . $tpl_str_pad_all . PHP_EOL . ' -->'
                     . PHP_EOL . $repContent . PHP_EOL
                     . '<!--' . PHP_EOL . $com_str_pad_all . PHP_EOL . $com_str_pad_file . PHP_EOL . $com_str_pad_all . PHP_EOL . '-->';
             }
@@ -330,8 +333,8 @@ class Template extends DataObject
      *
      * 参数区：
      *
-     * @param string $fileName   获取的模板名
-     * @param array  $dictionary 参数绑定
+     * @param string $fileName 获取的模板名
+     * @param array $dictionary 参数绑定
      *
      * @return bool|void
      * @throws \Exception
@@ -347,8 +350,8 @@ class Template extends DataObject
      *
      * 参数区：
      *
-     * @param string $fileName   获取的模板名
-     * @param array  $dictionary 参数绑定
+     * @param string $fileName 获取的模板名
+     * @param array $dictionary 参数绑定
      *
      * @return bool|void
      * @throws \Exception
@@ -364,8 +367,8 @@ class Template extends DataObject
      *
      * 参数区：
      *
-     * @param string $fileName   获取的模板名
-     * @param array  $dictionary 参数绑定
+     * @param string $fileName 获取的模板名
+     * @param array $dictionary 参数绑定
      *
      * @return bool|void
      * @throws \Exception
@@ -401,7 +404,7 @@ class Template extends DataObject
      *
      * 参数区：
      *
-     * @param string $content  文本
+     * @param string $content 文本
      * @param string $fileName 模板文件
      *
      * @return string|string[]|null
@@ -447,13 +450,12 @@ class Template extends DataObject
     public function getHook(string $name): string
     {
         /**@var Hooker $hooker */
-        $hooker         = ObjectManager::getInstance(Hooker::class);
-        $hookers        = $hooker->getHook($name);
+        $hooker = ObjectManager::getInstance(Hooker::class);
+        $hookers = $hooker->getHook($name);
         $hooker_content = '';
         foreach ($hookers as $module => $hooker_file) {
             if (DEV) {
-                $content = "<!-- 来自模组 $module 的钩子实现{$name}代码 起-->" . $this->fetchTagHtml('hooks', $hooker_file) . "<!-- 来自模组 $module 的钩子实现{$name}代码 止-->";
-                ;
+                $content = "<!-- 来自模组 $module 的钩子实现{$name}代码 起-->" . $this->fetchTagHtml('hooks', $hooker_file) . "<!-- 来自模组 $module 的钩子实现{$name}代码 止-->";;
             } else {
                 $content = $this->fetchTagHtml('hooks', $hooker_file);
             }
