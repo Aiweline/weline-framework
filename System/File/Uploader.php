@@ -23,15 +23,42 @@ class Uploader
     private string $module_name = '';
     private array $accepted_origins = ['http://localhost', 'http://127.0.0.1'];
     private array $ext = ['gif', 'jpg', 'png', 'jpeg'];
+    private bool $headerResponse = false;
+    private $headers = [];
+
+    function setExt(array $ext): self
+    {
+        $this->ext = $ext;
+        return $this;
+    }
+
+    function headerResponse(bool $allow = false): self
+    {
+        $this->headerResponse = $allow;
+        return $this;
+    }
+
+    function getHeaders():array
+    {
+        return $this->headers;
+    }
 
     public function checkDomain(): void
     {
         if (isset($_SERVER['HTTP_ORIGIN'])) {
             // 验证来源是否在白名单内
             if (in_array($_SERVER['HTTP_ORIGIN'], $this->accepted_origins)) {
-                header('Access-Control-Allow-Origin: ' . $_SERVER['HTTP_ORIGIN']);
+                if($this->headerResponse){
+                    header('Access-Control-Allow-Origin: ' . $_SERVER['HTTP_ORIGIN']);
+                }else{
+                    $this->headers['Access-Control-Allow-Origin'] = $_SERVER['HTTP_ORIGIN'];
+                }
             } else {
-                header('HTTP/1.1 403 Origin Denied');
+                if($this->headerResponse){
+                    header('HTTP/1.1 403 Origin Denied');
+                }else{
+                    $this->headers['HTTP/1.1 403 Origin Denied'] = 'Origin Denied';
+                }
                 throw new Exception('Origin Denied');
             }
         }
@@ -90,7 +117,11 @@ class Uploader
         // 简单的过滤一下文件名是否合格
         if (preg_match('/[\x{4e00}-\x{9fa5}:：,，。…、~`＠＃￥％＆×＋｜｛｝＝－＊＾＄～｀!@#$%^&*()\+=（）！￥{}【】\[\]\|\"\'’‘“”；;《》<>\?\？\·]/u', $filename, $matches)) {
             if (!CLI) {
-                header('HTTP/1.1 400 Invalid file name.');
+                if ($this->headerResponse){
+                    header('HTTP/1.1 400 Invalid file name.');
+                }else{
+                    $this->headers['HTTP/1.1 400 Invalid file name.'] = 'Invalid file name.';
+                }
             }
             throw new Exception(__('无效文件名。'));
         }
@@ -98,7 +129,11 @@ class Uploader
         // 验证扩展名
         if (!in_array(strtolower(pathinfo($filename, PATHINFO_EXTENSION)), $this->ext)) {
             if (!CLI) {
-                header('HTTP/1.1 400 Invalid extension.');
+                if ($this->headerResponse){
+                    header('HTTP/1.1 400 Invalid extension.');
+                }else{
+                    $this->headers['HTTP/1.1 400 Invalid extension.'] = 'Invalid extension.';
+                }
             }
             throw new Exception(__('无效拓展名。'));
         }
