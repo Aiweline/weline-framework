@@ -530,7 +530,6 @@ abstract class AbstractModel extends DataObject
      * @param string|null $sequence
      *
      * @return bool
-     * @throws NUll
      */
     public function save(array|bool|AbstractModel $data = [], string|array $sequence = null): bool|int
     {
