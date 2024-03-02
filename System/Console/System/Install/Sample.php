@@ -24,7 +24,7 @@ class Sample extends CommandAbstract
 --db-username=weline ' . $line_break . '
 --db-password=weline ' . $line_break . '
 --db-charset=utf8mb4 ' . $line_break . '
---db-collate=utf8mb4_0900_ai_ci ' . $line_break . '
+--db-collate=utf8mb4_general_ci' . $line_break . '
 --sandbox_db-type=mysql ' . $line_break . '
 --sandbox_db-hostname=127.0.0.1 ' . $line_break . '
 --sandbox_db-database=sandbox_weline ' . $line_break . '
