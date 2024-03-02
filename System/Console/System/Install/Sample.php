@@ -31,10 +31,10 @@ class Sample extends CommandAbstract
 --sandbox_db-username=sandbox_weline ' . $line_break . '
 --sandbox_db-password=sandbox_weline ' . $line_break . '
 --sandbox_db-charset=utf8mb4 ' . $line_break . '
---sandbox_db-collate=utf8mb4_0900_ai_ci
+--sandbox_db-collate=utf8mb4_general_ci
             ');
         $this->printer->note('如果你是Windows11：');
-        $this->printer->success('php bin/m system:install  --db-type=mysql  --db-hostname=127.0.0.1  --db-database=weline  --db-username=weline  --db-password=weline --db-charset=utf8 --db-collate=utf8_general_ci --sandbox_db-type=mysql  --sandbox_db-hostname=127.0.0.1  --sandbox_db-database=sandbox_weline  --sandbox_db-username=sandbox_weline  --sandbox_db-password=sandbox_weline --db-charset=utf8mb4 --sandbox_db-collate=utf8mb4_0900_ai_ci');
+        $this->printer->success('php bin/m system:install  --db-type=mysql  --db-hostname=127.0.0.1  --db-database=weline  --db-username=weline  --db-password=weline --db-charset=utf8 --db-collate=utf8_general_ci --sandbox_db-type=mysql  --sandbox_db-hostname=127.0.0.1  --sandbox_db-database=sandbox_weline  --sandbox_db-username=sandbox_weline  --sandbox_db-password=sandbox_weline --db-charset=utf8mb4 --sandbox_db-collate=utf8mb4_general_ci');
         exit();
     }
 

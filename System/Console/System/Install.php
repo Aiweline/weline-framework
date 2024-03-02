@@ -104,7 +104,7 @@ class Install extends \Weline\Framework\Console\CommandAbstract
             $db_config['hostport'] ?? $db_config['hostport'] = '3306';
             $db_config['prefix'] ?? $db_config['prefix'] = 'w_';
             $db_config['charset'] ?? $db_config['charset'] = 'utf8mb4';
-            $db_config['collate'] ?? $db_config['collate'] = 'utf8mb4_0900_ai_ci';
+            $db_config['collate'] ?? $db_config['collate'] = 'utf8mb4_general_ci';
         foreach ($db_keys as $db_key => $v) {
             if (!isset($db_config[$db_key])) {
                 $this->printer->error('数据库' . $db_key . '配置不能为空！示例：bin/m system:install --db-' . $db_key . '=demo', '系统');
@@ -120,7 +120,7 @@ class Install extends \Weline\Framework\Console\CommandAbstract
             $sandbox_db_config['hostport'] ?? $sandbox_db_config['hostport'] = '3306';
             $sandbox_db_config['prefix'] ?? $sandbox_db_config['prefix'] = 'w_';
             $sandbox_db_config['charset'] ?? $sandbox_db_config['charset'] = 'utf8mb4';
-            $sandbox_db_config['collate'] ?? $sandbox_db_config['collate'] = 'utf8mb4_0900_ai_ci';
+            $sandbox_db_config['collate'] ?? $sandbox_db_config['collate'] = 'utf8mb4_general_ci';
         foreach ($db_keys as $db_key => $v) {
             if (!isset($sandbox_db_config[$db_key])) {
                 $this->printer->error('数据库' . $db_key . '配置不能为空！示例：bin/m system:install --sandbox_db-' . $db_key . '=demo', '系统');

@@ -149,7 +149,7 @@ class Create extends TableAbstract implements CreateInterface
             $foreign_key_str .= ',';
         }
         $comment = $this->comment ? "COMMENT '{$this->comment}'" : '';
-        # 没有additional时默认配置default charset utf8mb4 collate utf8mb4_0900_ai_ci
+        # 没有additional时默认配置default charset utf8mb4 collate utf8mb4_general_ci
         if (!empty($this->additional)) {
             $this->additional = str_replace(';', '', $this->additional);
             if (!str_contains($this->additional, strtolower('default')) and !str_contains($this->additional, strtoupper('default'))) {
