@@ -102,7 +102,7 @@ trait QueryTrait
     {
         foreach ($where_array as $f_item_key => $f_item_value) {
             if (!is_numeric($f_item_key)) {
-                $this->$this->exceptionHandle(__('Where查询异常：%1,%2,%3', ["第{$f_key}个条件数组错误", '出错的数组：["' . implode('","', $where_array) . '"]', "示例：where([['name','like','%张三%','or'],['name','like','%李四%']])"]));
+                $this->exceptionHandle(__('Where查询异常：%1,%2,%3', ["第{$f_key}个条件数组错误", '出错的数组：["' . implode('","', $where_array) . '"]', "示例：where([['name','like','%张三%','or'],['name','like','%李四%']])"]));
             }
         }
     }
@@ -318,10 +318,8 @@ trait QueryTrait
                     }
                 } elseif ($this->single_updates) {
                     foreach ($this->single_updates as $update_field => $update_value) {
-                        $update_key   = ':' . md5($update_field);
                         $update_field = $this->parserFiled($update_field);
-                        $this->bound_values[$update_key] = $update_value;
-                        $updates      .= "$update_field=$update_key,";
+                        $updates      .= "$update_field=$update_value,";
                     }
                 } else {
                     throw new QueryException(__('无法解析更新数据！多记录更新数据：%1，单记录更新数据：%2', [var_export($this->updates, true), var_export($this->single_updates, true)]));

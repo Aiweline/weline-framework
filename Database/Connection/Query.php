@@ -158,9 +158,9 @@ abstract class Query implements QueryInterface
 
     public function where(array|string $field, mixed $value = null, string $condition = '=', string $where_logic = 'AND', string $array_where_logic_type = 'AND'): QueryInterface
     {
-        $where_logic = trim(strtoupper($where_logic));
-        $condition   = trim(strtoupper($condition));
-        $array_where_logic_type   = trim(strtoupper($array_where_logic_type));
+        $where_logic            = trim(strtoupper($where_logic));
+        $condition              = trim(strtoupper($condition));
+        $array_where_logic_type = trim(strtoupper($array_where_logic_type));
         if (is_array($field)) {
             foreach ($field as $f_key => $where_array) {
                 if (!is_array($where_array)) {
@@ -184,6 +184,9 @@ abstract class Query implements QueryInterface
         } else {
             if (is_array($value)) {
                 if ($condition === 'IN' || $condition === 'NOT IN') {
+                    if (empty($value)) {
+                        throw new Exception(__('IN 条件无法匹配空值数组。数组值：[]'));
+                    }
                     $where_array = [$field, $condition, $value, $where_logic];
                     # 检测条件数组 下角标 必须为数字
                     $this->checkWhereArray($where_array, 0);
