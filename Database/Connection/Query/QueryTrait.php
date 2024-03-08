@@ -55,10 +55,6 @@ trait QueryTrait
     {
         if(str_contains($table_name, ' ')){
             $table_name =  preg_replace_callback('/\s+/', function ($matches) {
-<<<<<<< HEAD
-=======
-                // 回调函数只返回一个空格
->>>>>>> refs/remotes/origin/master
                 return ' ';
             }, $table_name);
             $table_names = explode(' ', $table_name);
