@@ -53,6 +53,16 @@ trait QueryTrait
 
     public function getTable($table_name): string
     {
+        if(str_contains($table_name, ' ')){
+            $table_name =  preg_replace_callback('/\s+/', function ($matches) {
+                return ' ';
+            }, $table_name);
+            $table_names = explode(' ', $table_name);
+            $table_name  = $table_names[0];
+            $alias_name  = $table_names[1]??'main_table';
+            $this->alias($alias_name);
+            return "`{$this->db_name}`.`{$table_name}`";
+        }
         return "`{$this->db_name}`.`{$table_name}`";
     }
 
