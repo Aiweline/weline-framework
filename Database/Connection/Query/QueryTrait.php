@@ -53,18 +53,20 @@ trait QueryTrait
 
     public function getTable($table_name): string
     {
-        if(str_contains($table_name, ' ')){
-            $table_name =  preg_replace_callback('/\s+/', function ($matches) {
+        if (str_contains($table_name, ' ')) {
+            $table_name   = preg_replace_callback('/\s+/', function ($matches) {
                 return ' ';
             }, $table_name);
-            $table_names = explode(' ', $table_name);
-            $table_name  = $table_names[0];
-            $alias_name  = $table_names[1]??'main_table';
+            $table_names  = explode(' ', $table_name);
+            $table_name   = $table_names[0];
+            $alias_name   = $table_names[1] ?? $this->table_alias;
+            $this->fields = $alias_name . '.*';
             $this->alias($alias_name);
             return "`{$this->db_name}`.`{$table_name}`";
         }
         return "`{$this->db_name}`.`{$table_name}`";
     }
+
 
     /**
      * @DESC          | 获取链接
@@ -199,8 +201,8 @@ trait QueryTrait
                         break;
                     # 默认where逻辑连接符为AND
                     default:
-                        $param = ':' . str_replace( '`','_',$where[0]);
-                        $param = str_replace(' ','_',$param);
+                        $param = ':' . str_replace('`', '_', $where[0]);
+                        $param = str_replace(' ', '_', $param);
                         # 是sql的字段不添加字段引号(没有值则是sql)
                         if (null === $where[2]) {
                             $wheres .= '(' . $where[0] . ') ' . $logic;
@@ -221,7 +223,7 @@ trait QueryTrait
                             }
                             $where[0] = $quote . (($quote === '`') ? str_replace('.', '`.`', $where[0]) : $where[0]) . $quote;
                             # 处理带别名的参数键
-                            $param                      = str_replace('.', '__', $param) . $key;
+                            $param = str_replace('.', '__', $param) . $key;
                             switch (strtolower($where[1])) {
                                 case 'in':
                                 case 'find_in_set' :
@@ -237,7 +239,7 @@ trait QueryTrait
                                     }
                                 default:
                                     $this->bound_values[$param] = (string)$where[2];
-                                    $where[2] = $param;
+                                    $where[2]                   = $param;
                             };
                             $wheres .= '(' . implode(' ', $where) . ') ' . $logic;
                         }

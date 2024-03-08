@@ -145,7 +145,7 @@ abstract class Query implements QueryInterface
 
     public function fields(string $fields): QueryInterface
     {
-        if ($this->fields === '*' || $this->fields === 'main_table.*') {
+        if ($this->fields === '*' || $this->fields === $this->table_alias . '.*') {
             $this->fields = $fields;
         } else {
             $this->fields = $fields . ',' . $this->fields;
@@ -447,8 +447,11 @@ abstract class Query implements QueryInterface
      *
      * @return $this
      */
-    public function period(string $period, string $field = 'main_table.create_time'): static
+    public function period(string $period, string $field = 'create_time'): static
     {
+        if (!is_int(strpos($field, '.'))) {
+            $field = $this->table_alias . '.' . $field;
+        }
         switch ($period) {
             case 'all':
                 break;
