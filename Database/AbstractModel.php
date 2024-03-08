@@ -456,7 +456,7 @@ abstract class AbstractModel extends DataObject
         // load之前事件
         $this->getEvenManager()->dispatch($this->getOriginTableName() . '_model_load_before', ['model' => $this]);
         if (is_null($value)) {
-            $data = $this->getQuery()->where('main_table.' . $this->_primary_key, $field_or_pk_value)->find()->fetch();
+            $data = $this->getQuery()->where($this->getQuery()->table_alias.'.' . $this->_primary_key, $field_or_pk_value)->find()->fetch();
         } else {
             $data = $this->getQuery()->where($field_or_pk_value, $value)->find()->fetch();
         }
@@ -850,8 +850,11 @@ abstract class AbstractModel extends DataObject
      *
      * @return $this
      */
-    public function period(string $period, string $field = 'main_table.create_time'): static
+    public function period(string $period, string $field = 'create_time'): static
     {
+        if (!is_int(strpos($field, '.'))) {
+            $field = $this->getQuery()->table_alias . '.' . $field;
+        }
         switch ($period) {
             case 'all':
                 break;
@@ -1502,7 +1505,7 @@ PAGINATION;
         # 自动设置条件
         $model_table = $model->getTable();
         if (empty($condition)) {
-            $condition = "`main_table`.`{$model->getIdField()}`=`{$alias}`.`{$model->getIdField()}`";
+            $condition = "`{$model->getQuery()->table_alias}`.`{$model->getIdField()}`=`{$alias}`.`{$model->getIdField()}`";
         }
         if (empty($this->_join_model_fields)) {
             $this->_join_model_fields = $this->getModelFields();

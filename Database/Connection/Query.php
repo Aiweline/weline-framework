@@ -145,7 +145,7 @@ abstract class Query implements QueryInterface
 
     public function fields(string $fields): QueryInterface
     {
-        if ($this->fields === '*' || $this->fields === $this->table_alias . '.*') {
+        if ($this->fields === '*' || $this->fields === $this->table_alias . '.*' || 'main_table.*' === $this->fields) {
             $this->fields = $fields;
         } else {
             $this->fields = $fields . ',' . $this->fields;
