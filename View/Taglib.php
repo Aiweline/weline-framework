@@ -36,6 +36,7 @@ class Taglib
         # 逻辑
         '&&',
         '||',
+        '|',
         '!',
         ' and ',
         ' or ',
@@ -47,6 +48,44 @@ class Taglib
         '*',
         '-',
         '+',
+        # 位运算
+        '<<',
+        '>>',
+        '&',
+        '^^',
+        '^',
+        '|',
+        # 赋值运算
+        '=',
+        '+=',
+        '-=',
+        '*=',
+        '/=',
+        '%=',
+        '<<=',
+        '>>=',
+        '&=',
+        '^^=',
+        '^=',
+        '|='
+    ];
+
+    const operators_symbols_to_lang = [
+        '||' => ' or ',
+        '&&' => ' and ',
+//        '|'=>' or ', 已当做过滤器使用
+        '&' => ' and ',
+        'xor' => ' xor ',
+        ' neq ' => ' !== ',
+        ' eq ' => ' == ',
+        ' gt ' => ' > ',
+        ' lt ' => ' < ',
+        ' gte ' => ' >= ',
+        ' lte ' => ' <= '
+    ];
+
+    const special_lang_symbols = [
+        'null', 'and', 'or', 'xor', '||', 'neq', 'eq', 'gt', 'lt', 'gte', 'lte'
     ];
 
     public function checkFilter(string $name, string $filter = '|', $default = '\'\''): array
@@ -73,9 +112,8 @@ class Taglib
             return $name;
         }
         # 有字母的，且不是字符串，不存在特殊字符内的，可以加$
-        $special = ['null', 'and', 'or', 'xor'];
-        if (preg_match('/^[a-zA-Z]/', $name)) {
-            if (!in_array($name, $special) and !str_starts_with($name, '"') and !str_starts_with($name, "'")) {
+        if (preg_match('/^[a-zA-Z|\|\|]/', $name)) {
+            if (!in_array($name, self::special_lang_symbols) and !str_starts_with($name, '"') and !str_starts_with($name, "'")) {
                 $name = $name ? '$' . $name : $name;
             }
         }
