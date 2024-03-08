@@ -60,7 +60,7 @@ trait QueryTrait
             $table_names  = explode(' ', $table_name);
             $table_name   = $table_names[0];
             $alias_name   = $table_names[1] ?? $this->table_alias;
-            $this->fields = $alias_name . '.*';
+            $this->fields = str_replace('main_table.', $this->table_alias.'.', $this->fields);
             $this->alias($alias_name);
             return "`{$this->db_name}`.`{$table_name}`";
         }
