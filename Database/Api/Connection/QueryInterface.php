@@ -297,7 +297,7 @@ interface QueryInterface
      *
      * @return QueryInterface
      */
-    public function select(): QueryInterface;
+    public function select(string $fields = ''): QueryInterface;
 
     /**
      * @DESC         |插入 作为批量使用更新插入时请将表引擎设置为 ENGINE=InnoDB;改成ENGINE=MyIsam;可以解决这个问题，或者自行设置批量插入sql

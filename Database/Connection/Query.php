@@ -301,8 +301,11 @@ abstract class Query implements QueryInterface
         return intval($result);
     }
 
-    public function select(): QueryInterface
+    public function select(string $fields=''): QueryInterface
     {
+        if($fields){
+            $this->fields($fields);
+        }
         $this->fetch_type = __FUNCTION__;
         $this->prepareSql(__FUNCTION__);
         return $this;
