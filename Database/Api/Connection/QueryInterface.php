@@ -480,6 +480,28 @@ interface QueryInterface
     public function period(string $period, string $field = 'main_table.create_time'): static;
 
     /**
+     * @DESC          # 截断清理整个表
+     *
+     * @AUTH  秋枫雁飞
+     * @EMAIL aiweline@qq.com
+     * @DateTime: 18/3/2024 上午10:43
+     * 参数区：
+     * @return mixed
+     */
+    public function truncate(string $table = '', string $backup_file = ''): static;
+
+    /**
+     * @DESC          # 备份表【未指定表时备份默认表】
+     *
+     * @AUTH  秋枫雁飞
+     * @EMAIL aiweline@qq.com
+     * @DateTime: 18/3/2024 上午11:04
+     * 参数区：
+     * @return $this
+     */
+    public function backup(string $table = '', string $backup_file = ''): static;
+
+    /**
      * @DESC          # 读取最终的sql
      *
      * @AUTH    秋枫雁飞

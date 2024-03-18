@@ -13,6 +13,7 @@ namespace Weline\Framework\Database\Connection;
 
 use PDO;
 use PDOStatement;
+use Weline\Framework\App\Env;
 use Weline\Framework\App\Exception;
 use Weline\Framework\Database\AbstractModel;
 use Weline\Framework\Database\Api\Connection\QueryInterface;
@@ -301,9 +302,9 @@ abstract class Query implements QueryInterface
         return intval($result);
     }
 
-    public function select(string $fields=''): QueryInterface
+    public function select(string $fields = ''): QueryInterface
     {
-        if($fields){
+        if ($fields) {
             $this->fields($fields);
         }
         $this->fetch_type = __FUNCTION__;
@@ -529,5 +530,64 @@ abstract class Query implements QueryInterface
             return \SqlFormatter::format($this->sql);
         }
         return $this->sql;
+    }
+
+    public function truncate(string $table = '', string $backup_file = ''): static
+    {
+        if (empty($table)) {
+            $table = $this->table;
+        }
+        $this->backup($table, $backup_file);
+        # 清理表
+        $this->query("TRUNCATE TABLE {$table}")->fetch();
+        return $this;
+    }
+
+    public function backup(string $table = '', string $backup_file = ''): static
+    {
+        if (empty($table)) {
+            $table = $this->table;
+        }
+        // 获取表的创建语句
+        $createTableQuery  = "SHOW CREATE TABLE $table";
+        $createTableResult = $this->query($createTableQuery)->fetch();
+        $createTableSql    = $createTableResult[0]['Create Table'];
+        if (!empty($createTableSql)) {
+            $createTableSql = str_replace('CREATE TABLE', 'CREATE TABLE IF NOT EXISTS', $createTableSql);
+            // 定义备份文件路径和名称
+            if (empty($backup_file)) {
+                $originTable = str_replace('`', '', $table);
+                $originTable = explode('.', $originTable) ?: [$table];
+                $originTable = end($originTable);
+                $backupFile  = Env::backup_dir . 'db' . DS . $table . DS . $originTable . '_' . date('Y-m-d H:i:s') . '.sql';
+            } else {
+                $backup_file = str_replace('\\', DS, $backup_file);
+                $backup_file = str_replace('/', DS, $backup_file);
+                if (!str_starts_with($backup_file, BP)) {
+                    $backupFile = BP . $backup_file;
+                } else {
+                    $backupFile = $backup_file;
+                }
+            }
+            if (!is_dir(dirname($backupFile))) {
+                mkdir(dirname($backupFile), 0777, true);
+            }
+            // 将表的创建语句写入备份文件
+            $file = fopen($backupFile, 'w');
+            fwrite($file, "-- $table 建表语句" . PHP_EOL);
+            fwrite($file, $createTableSql . ";" . PHP_EOL);
+            // 获取表的数据并写入备份文件
+            $dataQuery = "SELECT * FROM $table";
+            $results   = $this->query($dataQuery)->fetch();
+            fwrite($file, PHP_EOL);
+            fwrite($file, "-- $table 数据 " . PHP_EOL);
+            foreach ($results as $result) {
+                $values = implode("','", array_values($result));
+                fwrite($file, "INSERT INTO $table VALUES ('$values');" . PHP_EOL);
+            }
+            // 关闭备份文件和数据库连接
+            fclose($file);
+        }
+        return $this;
     }
 }

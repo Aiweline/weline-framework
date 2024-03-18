@@ -114,6 +114,9 @@ class Env extends DataObject
     // 拓展目录
     public const extend_dir = BP . 'extend' . DS;
 
+    // 拓展目录
+    public const backup_dir = self::VAR_DIR . DS . 'backup' . DS;
+
     // 主题设计
     public const path_THEME_DESIGN_DIR = BP . 'app' . DS . 'design' . DS;
     // 主题设计
@@ -293,9 +296,9 @@ class Env extends DataObject
     public function setConfig(string $key, $value = null): bool
     {
         $this->hasGetConfig[$key] = $value;
-        $config = $this->getConfig();
-        $config[$key] = $value;
-        $this->config[$key] = $value;
+        $config                   = $this->getConfig();
+        $config[$key]             = $value;
+        $this->config[$key]       = $value;
 
         try {
             $file = new File();
@@ -380,7 +383,7 @@ class Env extends DataObject
         if (!$reget && $this->active_module_list) {
             return $this->active_module_list;
         }
-        $modules = $this->getModuleList($reget);
+        $modules        = $this->getModuleList($reget);
         $active_modules = [];
         foreach ($modules as $module) {
             if ($module['status']) {

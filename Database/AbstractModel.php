@@ -50,6 +50,8 @@ use Weline\Framework\Output\Debug\Printing;
  * @method AbstractModel|QueryInterface beginTransaction()
  * @method AbstractModel|QueryInterface rollBack()
  * @method AbstractModel|QueryInterface commit()
+ * @method AbstractModel|QueryInterface truncate(string $table = ''): static
+ * @method AbstractModel|QueryInterface backup(string $table = ''): static
  * @method AbstractModel|QueryInterface getLastSql()
  * @method AbstractModel|QueryInterface getPrepareSql()
  * @package Weline\Framework\Database
