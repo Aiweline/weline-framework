@@ -231,4 +231,25 @@ COMMAND_LIST;
 
         return chr(27) . "{$this->out}" . "{$text}" . chr(27) . '[0m';
     }
+
+    /**
+     * @DESC         |方法描述
+     *
+     * 参数区：
+     *
+     * @param string $log_path
+     * @param string $content
+     * @param int    $type
+     *
+     * @throws \Weline\Framework\App\Exception
+     */
+    protected function write(string $log_path, string $content, int $type)
+    {
+        if (!isset($this->file)) {
+            $this->file = new File();
+        }
+        $this->file->open($log_path);
+        $this->file->write("【{$type}】" . $content . PHP_EOL);
+        $this->file->close();
+    }
 }
