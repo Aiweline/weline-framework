@@ -10,6 +10,7 @@
 namespace Weline\Framework\Output\Debug;
 
 use Weline\Framework\App\Env;
+use Weline\Framework\System\File\Io\File;
 
 abstract class AbstractPrint extends \Weline\Framework\Output\AbstractPrint implements PrintInterface
 {
