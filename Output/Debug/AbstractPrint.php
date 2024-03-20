@@ -15,6 +15,7 @@ use Weline\Framework\System\File\Io\File;
 abstract class AbstractPrint extends \Weline\Framework\Output\AbstractPrint implements PrintInterface
 {
     public $out;
+    private ?File $file=null;
     public bool $printing = true;
 
     /**
