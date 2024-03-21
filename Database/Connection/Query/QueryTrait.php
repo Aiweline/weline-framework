@@ -331,7 +331,9 @@ trait QueryTrait
                 } elseif ($this->single_updates) {
                     foreach ($this->single_updates as $update_field => $update_value) {
                         $update_field = $this->parserFiled($update_field);
-                        $updates      .= "$update_field=$update_value,";
+                        $update_key                      = ':' . md5($update_field);
+                        $this->bound_values[$update_key] = $update_value;
+                        $updates      .= "$update_field=$update_key,";
                     }
                 } else {
                     throw new QueryException(__('无法解析更新数据！多记录更新数据：%1，单记录更新数据：%2', [var_export($this->updates, true), var_export($this->single_updates, true)]));
