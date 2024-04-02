@@ -394,7 +394,7 @@ interface QueryInterface
      *
      * @return array
      */
-    public function fetchOrigin(): array;
+    public function fetchOrigin(): mixed;
 
     /**
      * @DESC          # 清理特定条件

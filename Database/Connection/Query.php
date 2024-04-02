@@ -23,8 +23,6 @@ use Weline\Framework\Database\Exception\SqlParserException;
 use Weline\Framework\Database\Model;
 use Weline\Framework\Manager\ObjectManager;
 
-use function DeepCopy\deep_copy;
-
 abstract class Query implements QueryInterface
 {
     use QueryTrait;
@@ -73,6 +71,9 @@ abstract class Query implements QueryInterface
 
     public function insert(array $data, array|string $exist_update_fields = []): QueryInterface
     {
+        if(empty($data)){
+            throw new DbException('插入数据不能为空！');
+        }
         if ($exist_update_fields) {
             $this->exist_update_sql = 'ON DUPLICATE KEY UPDATE ';
             if (is_string($exist_update_fields)) {
@@ -378,12 +379,9 @@ abstract class Query implements QueryInterface
         return $result;
     }
 
-    public function fetchOrigin(): array
+    public function fetchOrigin(): mixed
     {
-        $this->PDOStatement->execute($this->bound_values);
-        $origin_data = $this->PDOStatement->fetchAll(PDO::FETCH_ASSOC);
-        $this->clearQuery();
-        return $origin_data;
+        return $this->fetch();
     }
 
 
