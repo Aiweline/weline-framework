@@ -19,6 +19,7 @@ class Request extends Request\RequestAbstract implements RequestInterface
     private static Request $instance;
 
     private string $module_name = '';
+    private string $request_id = '';
 
     private bool $check_param = false;
 
@@ -28,6 +29,14 @@ class Request extends Request\RequestAbstract implements RequestInterface
         if (is_array($this->getBodyParams())) {
             $this->setData(array_merge($this->getParams(), $this->getBodyParams()));
         }
+    }
+
+    function getId()
+    {
+        if (!$this->request_id) {
+            $this->request_id = uniqid('request_id::',true);
+        }
+        return $this->request_id;
     }
 
     /**
