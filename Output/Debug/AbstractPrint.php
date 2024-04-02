@@ -37,7 +37,7 @@ abstract class AbstractPrint extends \Weline\Framework\Output\AbstractPrint impl
      */
     public function error($data = 'Error!', string $message = '', string $color = self::ERROR, int $pad_length = 25): mixed
     {
-        return $this->doPrint($data, $message, $color, $pad_length, 3);
+        return $this->doPrint($data, $message, $color, $pad_length, 3,'error');
     }
 
     /**
@@ -59,7 +59,7 @@ abstract class AbstractPrint extends \Weline\Framework\Output\AbstractPrint impl
      */
     public function success(string $data = 'Success!', string $message = '', string $color = self::SUCCESS, int $pad_length = 25): mixed
     {
-        return $this->doPrint($data, $message, $color, $pad_length);
+        return $this->doPrint($data, $message, $color, $pad_length,3,'success');
     }
 
     /**
@@ -81,7 +81,7 @@ abstract class AbstractPrint extends \Weline\Framework\Output\AbstractPrint impl
      */
     public function warning(string $data = 'Warning!', string $message = '', string $color = self::WARNING, int $pad_length = 25): mixed
     {
-        return $this->doPrint($data, $message, $color, $pad_length);
+        return $this->doPrint($data, $message, $color, $pad_length,3,'warning');
     }
 
     /**
@@ -103,7 +103,7 @@ abstract class AbstractPrint extends \Weline\Framework\Output\AbstractPrint impl
      */
     public function note(string $data = 'Note!', string $message = '', string $color = self::NOTE, int $pad_length = 25): mixed
     {
-        return $this->doPrint($data, $message, $color, $pad_length);
+        return $this->doPrint($data, $message, $color, $pad_length,3,'note');
     }
 
     /**
