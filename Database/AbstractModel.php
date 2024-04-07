@@ -10,6 +10,7 @@
 namespace Weline\Framework\Database;
 
 use http\Cookie;
+use Weline\BackendActivity\Model\BackendActivityLog;
 use Weline\Framework\App\Exception;
 use Weline\Framework\Cache\CacheInterface;
 use Weline\Framework\Database\Api\Connection\QueryInterface;
@@ -575,7 +576,8 @@ abstract class AbstractModel extends DataObject
         // 保存前
         $this->save_before();
         // save之前事件
-        $this->getEvenManager()->dispatch($this->getTable() . '_model_save_before', ['model' => $this]);
+        $model_event_name = str_replace('\\', '_', $this::class) ;
+        $this->getEvenManager()->dispatch($model_event_name . '_model_save_before', ['model' => $this]);
         $this->getQuery()->beginTransaction();
         try {
             // 如果强制检测更新，但是没有任何条件则使用联合主键的方式进行条件装配
@@ -605,7 +607,7 @@ abstract class AbstractModel extends DataObject
         }
 
         // save之后事件
-        $this->getEvenManager()->dispatch($this->processTable() . '_model_save_after', ['model' => $this]);
+        $this->getEvenManager()->dispatch($model_event_name. '_model_save_after', ['model' => $this]);
         // 保存后
         $this->save_after();
         return $save_result;
@@ -1580,7 +1582,7 @@ PAGINATION;
     private function checkUpdateOrInsert(): mixed
     {
         if ($this->unique_data) {
-            $check_result = $this->getQuery()->where($this->unique_data)->find()->fetchOrigin()[0] ?? [];
+            $check_result = $this->getQuery()->where($this->unique_data)->find()->fetchOrigin() ?? [];
         } else {
             $check_result = $this->unique_data;
         }
