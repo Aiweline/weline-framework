@@ -59,7 +59,7 @@ interface CreateInterface extends TableInterface
      *
      * @return CreateInterface
      */
-    public function addColumn(string $field_name, string $type, ?int $length, string $options, string $comment): CreateInterface;
+    public function addColumn(string $field_name, string $type, int|string|null $length, string $options, string $comment): CreateInterface;
 
     /**
      * @DESC          # 添加索引

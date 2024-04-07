@@ -24,7 +24,7 @@ class Create extends TableAbstract implements CreateInterface
         return $this;
     }
 
-    public function addColumn(string $field_name, string $type, ?int $length, string $options, string $comment): CreateInterface
+    public function addColumn(string $field_name, string $type, int|string|null $length, string $options, string $comment): CreateInterface
     {
         # 数字字段
         if ($type === TableInterface::column_type_INTEGER || $type === TableInterface::column_type_SMALLINT) {
