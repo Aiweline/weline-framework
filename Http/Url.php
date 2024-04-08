@@ -127,14 +127,18 @@ class Url implements UrlInterface
         if (empty($url)) {
             $url = $this->request->getBaseUrl();
         }
+        $param_split_string = '?';
+        if (strpos($url, '?') !== false) {
+            $param_split_string = '&';
+        }
         if ($params) {
             if ($merge_params) {
-                $url .= '?' . http_build_query(array_merge($this->request->getGet(), $params));
+                $url .= $param_split_string . http_build_query(array_merge($this->request->getGet(), $params));
             } else {
-                $url .= '?' . http_build_query($params);
+                $url .= $param_split_string . http_build_query($params);
             }
         } else {
-            $url .= ($this->request->getGet() && $merge_params) ? '?' . http_build_query($this->request->getGet()) : '';
+            $url .= ($this->request->getGet() && $merge_params) ? $param_split_string . http_build_query($this->request->getGet()) : '';
         }
         return $url;
     }
