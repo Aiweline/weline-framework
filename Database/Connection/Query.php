@@ -539,7 +539,8 @@ abstract class Query implements QueryInterface
         }
         $this->backup($backup_file, $table);
         # 清理表
-        $this->query('TRUNCATE TABLE ' . $table)->fetch();
+        $PDOStatement = $this->connection->getLink()->prepare("TRUNCATE TABLE $table");
+        $PDOStatement->execute();
         return $this;
     }
 
@@ -549,46 +550,47 @@ abstract class Query implements QueryInterface
             $table = $this->table;
         }
         // 获取表的创建语句
-        $createTableQuery  = "SHOW CREATE TABLE $table";
-        $createTableResult = $this->query($createTableQuery)->fetch();
+        $PDOStatement = $this->connection->getLink()->prepare("SHOW CREATE TABLE $table");
+        $PDOStatement->execute();
+        $createTableResult = $PDOStatement->fetchAll(PDO::FETCH_ASSOC);
         $createTableSql    = $createTableResult[0]['Create Table'];
-        if (!empty($createTableSql)) {
-            $createTableSql = str_replace('CREATE TABLE', 'CREATE TABLE IF NOT EXISTS', $createTableSql);
-            // 定义备份文件路径和名称
-            if (empty($backup_file)) {
-                $originTable = str_replace('`', '', $table);
-                $originTable = explode('.', $originTable) ?: [$table];
-                $originTable = end($originTable);
-                $backupFile  = Env::backup_dir . 'db' . DS . $table . DS . $originTable . '_' . date('Y-m-d H:i:s') . '.sql';
+        $createTableSql    = str_replace('CREATE TABLE', 'CREATE TABLE IF NOT EXISTS', $createTableSql);
+        // 定义备份文件路径和名称
+        if (empty($backup_file)) {
+            $originTable = str_replace('`', '', $table);
+            $originTable = explode('.', $originTable) ?: [$table];
+            $originTable = end($originTable);
+            $backupFile  = Env::backup_dir . 'db' . DS . $table . DS . $originTable . '_' . date('Y-m-d H:i:s') . '.sql';
+        } else {
+            if (!str_starts_with($backup_file, BP)) {
+                $backupFile = BP . $backup_file;
             } else {
-                $backup_file = str_replace('\\', DS, $backup_file);
-                $backup_file = str_replace('/', DS, $backup_file);
-                if (!str_starts_with($backup_file, BP)) {
-                    $backupFile = BP . $backup_file;
-                } else {
-                    $backupFile = $backup_file;
-                }
+                $backupFile = $backup_file;
             }
-            if (!is_dir(dirname($backupFile))) {
-                mkdir(dirname($backupFile), 0777, true);
-            }
-            // 将表的创建语句写入备份文件
-            $this->backup_file = $backupFile;
-            $file              = fopen($backupFile, 'w');
-            fwrite($file, "-- $table 建表语句" . PHP_EOL);
-            fwrite($file, $createTableSql . ";" . PHP_EOL);
-            // 获取表的数据并写入备份文件
-            $dataQuery = "SELECT * FROM $table";
-            $results   = $this->query($dataQuery)->fetch();
-            fwrite($file, PHP_EOL);
-            fwrite($file, "-- $table 数据 " . PHP_EOL);
-            foreach ($results as $result) {
-                $values = implode("','", array_values($result));
-                fwrite($file, "INSERT INTO $table VALUES ('$values');" . PHP_EOL);
-            }
-            // 关闭备份文件和数据库连接
-            fclose($file);
         }
+        if (!is_dir(dirname($backupFile))) {
+            mkdir(dirname($backupFile), 0777, true);
+        }
+        // 将表的创建语句写入备份文件
+        $backupFile        = str_replace('\\', DS, $backupFile);
+        $backupFile        = str_replace('/', DS, $backupFile);
+        $backupFile        = str_replace('//', DS, $backupFile);
+        $this->backup_file = $backupFile;
+        $file              = fopen($backupFile, 'w');
+        fwrite($file, "-- $table 建表语句" . PHP_EOL);
+        fwrite($file, $createTableSql . ';' . PHP_EOL);
+        // 获取表的数据并写入备份文件
+        $PDOStatement = $this->connection->getLink()->prepare("SELECT * FROM $table");
+        $PDOStatement->execute();
+        $results = $PDOStatement->fetchAll(PDO::FETCH_ASSOC);
+        fwrite($file, PHP_EOL);
+        fwrite($file, "-- $table 数据 " . PHP_EOL);
+        foreach ($results as $result) {
+            $values = implode("','", array_values($result));
+            fwrite($file, "INSERT INTO $table VALUES ('$values');" . PHP_EOL);
+        }
+        // 关闭备份文件和数据库连接
+        fclose($file);
         return $this;
     }
 }
