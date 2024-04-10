@@ -586,6 +586,12 @@ abstract class Query implements QueryInterface
         fwrite($file, PHP_EOL);
         fwrite($file, "-- $table 数据 " . PHP_EOL);
         foreach ($results as $result) {
+            # 单引号转义
+            foreach ($result as $key=>$item) {
+                if(is_string($item)){
+                    $result[$key] = str_replace("'", "\\'", $item);
+                }
+            }
             $values = implode("','", array_values($result));
             fwrite($file, "INSERT INTO $table VALUES ('$values');" . PHP_EOL);
         }
