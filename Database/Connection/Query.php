@@ -56,6 +56,8 @@ abstract class Query implements QueryInterface
 
     public array $pagination = ['page' => 1, 'pageSize' => 20, 'totalSize' => 0, 'lastPage' => 0];
 
+    public string $backup_file = '';
+
 
     public function identity(string $field): QueryInterface
     {
@@ -71,7 +73,7 @@ abstract class Query implements QueryInterface
 
     public function insert(array $data, array|string $exist_update_fields = []): QueryInterface
     {
-        if(empty($data)){
+        if (empty($data)) {
             throw new DbException('插入数据不能为空！');
         }
         if ($exist_update_fields) {
@@ -530,18 +532,18 @@ abstract class Query implements QueryInterface
         return $this->sql;
     }
 
-    public function truncate(string $table = '', string $backup_file = ''): static
+    public function truncate(string $backup_file = '', string $table = ''): static
     {
         if (empty($table)) {
             $table = $this->table;
         }
-        $this->backup($table, $backup_file);
+        $this->backup($backup_file, $table);
         # 清理表
-        $this->query("TRUNCATE TABLE {$table}")->fetch();
+        $this->query('TRUNCATE TABLE ' . $table)->fetch();
         return $this;
     }
 
-    public function backup(string $table = '', string $backup_file = ''): static
+    public function backup(string $backup_file = '', string $table = ''): static
     {
         if (empty($table)) {
             $table = $this->table;
@@ -571,7 +573,8 @@ abstract class Query implements QueryInterface
                 mkdir(dirname($backupFile), 0777, true);
             }
             // 将表的创建语句写入备份文件
-            $file = fopen($backupFile, 'w');
+            $this->backup_file = $backupFile;
+            $file              = fopen($backupFile, 'w');
             fwrite($file, "-- $table 建表语句" . PHP_EOL);
             fwrite($file, $createTableSql . ";" . PHP_EOL);
             // 获取表的数据并写入备份文件

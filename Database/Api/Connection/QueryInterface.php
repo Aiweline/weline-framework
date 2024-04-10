@@ -488,7 +488,7 @@ interface QueryInterface
      * 参数区：
      * @return mixed
      */
-    public function truncate(string $table = '', string $backup_file = ''): static;
+    public function truncate(string $backup_file = '', string $table = ''): static;
 
     /**
      * @DESC          # 备份表【未指定表时备份默认表】
@@ -499,7 +499,7 @@ interface QueryInterface
      * 参数区：
      * @return $this
      */
-    public function backup(string $table = '', string $backup_file = ''): static;
+    public function backup(string $backup_file = '', string $table = ''): static;
 
     /**
      * @DESC          # 读取最终的sql
