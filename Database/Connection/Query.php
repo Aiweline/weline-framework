@@ -537,6 +537,9 @@ abstract class Query implements QueryInterface
         if (empty($table)) {
             $table = $this->table;
         }
+        if(empty($table)){
+            throw new Exception(__('请先指定要操作的表，表名不能为空!'));
+        }
         $this->backup($backup_file, $table);
         # 清理表
         $PDOStatement = $this->connection->getLink()->prepare("TRUNCATE TABLE $table");
@@ -548,6 +551,9 @@ abstract class Query implements QueryInterface
     {
         if (empty($table)) {
             $table = $this->table;
+        }
+        if(empty($table)){
+            throw new Exception(__('请先指定要操作的表，表名不能为空!'));
         }
         // 获取表的创建语句
         $PDOStatement = $this->connection->getLink()->prepare("SHOW CREATE TABLE $table");
