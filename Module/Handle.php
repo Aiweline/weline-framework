@@ -304,12 +304,6 @@ class Handle implements HandleInterface, RegisterInterface
                     # 升级模块的模型
                     $modelManager->update($module, $setup_context, 'upgrade');
                 }
-                if($module->getName()=='Weline_Queue'){
-                    d($old_version);
-                    d($module->getVersion());
-                    dd($this->helper->isUpgrade($old_version, $module->getVersion()));
-                }
-
                 # 升级模块的模型
                 if (DEV) {
                     $this->printer->setup($module->getName() . '：模型升级...', '开发');
