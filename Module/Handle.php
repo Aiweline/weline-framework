@@ -35,6 +35,7 @@ class Handle implements HandleInterface, RegisterInterface
     private Printing $printer;
 
     private array $modules;
+    private array $old_modules;
 
     /**
      * @var Data
@@ -69,29 +70,30 @@ class Handle implements HandleInterface, RegisterInterface
     /**
      * Handle 初始函数...
      *
-     * @param Data        $helper
-     * @param Printing    $printer
-     * @param System      $system
+     * @param Data $helper
+     * @param Printing $printer
+     * @param System $system
      * @param SetupHelper $setup_helper
-     * @param SetupData   $setup_data
-     * @param Compress    $compress
+     * @param SetupData $setup_data
+     * @param Compress $compress
      */
     public function __construct(
-        Data     $helper,
-        Printing $printer,
-        System   $system,
-        Compress $compress,
+        Data        $helper,
+        Printing    $printer,
+        System      $system,
+        Compress    $compress,
         SetupHelper $setup_helper,
-        SetupData $setup_data,
+        SetupData   $setup_data,
     )
     {
-        $this->modules  = Env::getInstance()->getModuleList();
-        $this->helper   = $helper;
-        $this->system   = $system;
-        $this->printer  = $printer;
-        $this->compress = $compress;
+        $this->modules      = Env::getInstance()->getModuleList();
+        $this->old_modules  = $this->modules;
+        $this->helper       = $helper;
+        $this->system       = $system;
+        $this->printer      = $printer;
+        $this->compress     = $compress;
         $this->setup_helper = $setup_helper;
-        $this->setup_data = $setup_data;
+        $this->setup_data   = $setup_data;
     }
 
     /**
@@ -144,11 +146,11 @@ class Handle implements HandleInterface, RegisterInterface
      *
      * 参数区：
      *
-     * @param string       $type
-     * @param string       $module_name
+     * @param string $type
+     * @param string $module_name
      * @param array|string $param
-     * @param string       $version
-     * @param string       $description
+     * @param string $version
+     * @param string $description
      *
      * @return Module
      * @throws Exception
@@ -228,15 +230,16 @@ class Handle implements HandleInterface, RegisterInterface
             if ($this->helper->isDisabled($this->modules, $module->getName())) {
                 $module->setStatus(false);
                 $this->printer->warning(str_pad($module->getName(), 45) . __('已禁用！'));
-            }else{
-                $module['upgrading'] = true;
+            } else {
+                $old_version = $this->modules[$module->getName()]['version']??'1.0.0';
+                $module['upgrading'] = $this->helper->isUpgrade($old_version, $module->getVersion());
                 $this->setupModel($module);
             }
         } else {
             $this->printer->setup("扩展{$module->getName()}安装中...");
             // 全新安装
             $module->setStatus(true);
-            $module['installing'] = true;
+            $module['installing']              = true;
             $this->modules[$module->getName()] = $module->getData();
             $this->printer->success(str_pad($module->getName(), 45) . __('已安装！'));
         }
@@ -255,7 +258,7 @@ class Handle implements HandleInterface, RegisterInterface
      * 参数区：
      *
      * @param Module $module
-     * @param array  $env
+     * @param array $env
      *
      * @return array
      */
@@ -281,25 +284,30 @@ class Handle implements HandleInterface, RegisterInterface
     public function setupModel(Module $module): Module
     {
         $setup_context = ObjectManager::make(SetupContext::class, [
-            'module_name'        => $module->getName(),
-            'module_version'     => $module->getVersion(),
+            'module_name' => $module->getName(),
+            'module_version' => $module->getVersion(),
             'module_description' => $module->getDescription()
-        ],                                   '__construct');
+        ], '__construct');
         $modelManager  = $this->getModuleManager();
         // 已经存在模块则更新
-        if ($this->helper->isInstalled($this->modules, $module->getName())) {
+        if ($this->helper->isInstalled($this->old_modules, $module->getName())) {
             if ($this->helper->isDisabled($this->modules, $module->getName())) {
                 $module->setStatus(false);
                 $this->printer->warning(str_pad($module->getName(), 45) . __('已禁用！'));
             } else {
                 // 是否更新模块：是则加载模块下的Setup模块下的文件进行更新
-                $old_version = $this->modules[$module->getName()]['version'];
-                if ($this->helper->isUpgrade($this->modules, $module->getName(), $module->getVersion())) {
+                $old_version = $this->old_modules[$module->getName()]['version']??'1.0.0';
+                if ($this->helper->isUpgrade($old_version, $module->getVersion())) {
                     $this->printer->note(__('扩展 %1 升级中...', $module->getName()));
                     $this->printer->setup(__('升级 %1 到 %2', [$old_version, $module->getVersion()]));
 
                     # 升级模块的模型
                     $modelManager->update($module, $setup_context, 'upgrade');
+                }
+                if($module->getName()=='Weline_Queue'){
+                    d($old_version);
+                    d($module->getVersion());
+                    dd($this->helper->isUpgrade($old_version, $module->getVersion()));
                 }
 
                 # 升级模块的模型
@@ -337,25 +345,25 @@ class Handle implements HandleInterface, RegisterInterface
     public function setupInstall(Module $module): Module
     {
         $setup_context   = ObjectManager::make(SetupContext::class, [
-            'module_name'        => $module->getName(),
-            'module_version'     => $module->getVersion(),
+            'module_name' => $module->getName(),
+            'module_version' => $module->getVersion(),
             'module_description' => $module->getDescription()
-        ],                                     '__construct');
+        ], '__construct');
         $setup_dir       = $module->getBasePath() . \Weline\Framework\Setup\Data\DataInterface::dir;
         $setup_namespace = $module->getNamespacePath() . '\\' . ucfirst(\Weline\Framework\Setup\Data\DataInterface::dir) . '\\';
         if (is_dir($setup_dir) && DEV) {
             $this->printer->setup($setup_dir . '：升级目录...', '开发');
         }
         # 检测是否禁用
-        if($this->helper->isDisabled($this->modules, $module->getName())){
+        if ($this->helper->isDisabled($this->modules, $module->getName())) {
             $this->printer->warning(str_pad($module->getName(), 45) . __('已禁用！'));
             return $module;
         }
         # 更新
-        if(isset($module['upgrading']) and $module['upgrading']){
+        if (isset($module['upgrading']) and $module['upgrading']) {
             // 是否更新模块：是则加载模块下的Setup模块下的文件进行更新
-            $old_version = $this->modules[$module->getName()]['version'];
-            if ($this->helper->isUpgrade($this->modules, $module->getName(), $module->getVersion())) {
+            $old_version = $this->old_modules[$module->getName()]['version']??'1.0.0';
+            if ($this->helper->isUpgrade($old_version, $module->getVersion())) {
                 $this->printer->note(__('扩展 %1 升级中...', $module->getName()));
                 $this->printer->setup(__('升级 %1 到 %2', [$old_version, $module->getVersion()]));
 
@@ -374,7 +382,7 @@ class Handle implements HandleInterface, RegisterInterface
             $this->printer->success(str_pad($module->getName(), 45) . __('已更新！'));
         }
         # 安装
-        if(isset($module['installing']) and $module['installing']){
+        if (isset($module['installing']) and $module['installing']) {
             $this->printer->setup("扩展{$module->getName()}安装中...");
             $module->setStatus(true);
             // 安装模块：加载模块下的Setup模块下的安装文件进行安装

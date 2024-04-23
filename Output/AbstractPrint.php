@@ -183,7 +183,7 @@ abstract class AbstractPrint implements PrintInterface
 $doc_tmp
 
 COMMAND_LIST;
-        exit($doc);
+        echo($doc);
     }
 
     /**

@@ -50,9 +50,7 @@ class ModelManager
         $modelSetup = ObjectManager::getInstance(ModelSetup::class);
         $model_files_data = array_reverse($this->moduleReader->readClass($module, 'Model'));
         foreach ($model_files_data as $key => $model_class) {
-            if (PROD) {
-                $this->printing->printing($model_class);
-            }
+            $this->printing->note($model_class,__('Model升级'));
             if (class_exists($model_class)) {
                 $model = ObjectManager::getInstance($model_class);
                 if ($model instanceof AbstractModel) {
@@ -66,6 +64,8 @@ class ModelManager
                     $model->$type($modelSetup, $context);
                     $this->getEvenManager()->dispatch('Framework_Database::model_update_after', ['data' => $data, 'type' => $type, 'object' => $this, 'module' => $module]);
                 }
+            }else{
+                $this->printing->error($model_class,__('Model升级'));
             }
         }
     }
