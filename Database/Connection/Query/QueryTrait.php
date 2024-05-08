@@ -60,7 +60,7 @@ trait QueryTrait
             $table_names  = explode(' ', $table_name);
             $table_name   = $table_names[0];
             $alias_name   = $table_names[1] ?? $this->table_alias;
-            $this->fields = str_replace('main_table.', $alias_name.'.', $this->fields);
+            $this->fields = str_replace('main_table.', $alias_name . '.', $this->fields);
             $this->alias($alias_name);
             return "`{$this->db_name}`.`{$table_name}`";
         }
@@ -282,10 +282,14 @@ trait QueryTrait
                 # 设置where条件
                 $identity_values = array_column($this->updates, $this->identity_field);
                 if ($identity_values) {
-                    $identity_values_key                      = ':' . md5('identity_values_key');
-                    $identity_values_str                      = implode('\',\'', $identity_values);
-                    $this->bound_values[$identity_values_key] = $identity_values_str;
-                    $wheres                                   .= ($wheres ? ' AND ' : 'WHERE ') . "$this->identity_field IN ( $identity_values_key )";
+                    $identity_values_str = '';
+                    foreach ($identity_values as $key=>$identityValue) {
+                        $identity_values_key                      = ':' . md5('update_identity_values_key'.$key);
+                        $identity_values_str                     .= $identity_values_key. ',';
+                        $this->bound_values[$identity_values_key] = $identityValue;
+                    }
+                    $identity_values_str = rtrim($identity_values_str, ',');
+                    $wheres .= ($wheres ? ' AND ' : 'WHERE ') . "$this->identity_field IN ($identity_values_str)";
                 }
 
                 # 排除没有条件值的更新
@@ -330,10 +334,10 @@ trait QueryTrait
                     }
                 } elseif ($this->single_updates) {
                     foreach ($this->single_updates as $update_field => $update_value) {
-                        $update_field = $this->parserFiled($update_field);
+                        $update_field                    = $this->parserFiled($update_field);
                         $update_key                      = ':' . md5($update_field);
                         $this->bound_values[$update_key] = $update_value;
-                        $updates      .= "$update_field=$update_key,";
+                        $updates                         .= "$update_field=$update_key,";
                     }
                 } else {
                     throw new QueryException(__('无法解析更新数据！多记录更新数据：%1，单记录更新数据：%2', [var_export($this->updates, true), var_export($this->single_updates, true)]));
