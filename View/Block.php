@@ -140,9 +140,6 @@ class Block extends Template implements BlockInterface
     {
         $vars = $this->getData('vars');
         $attribute_param_keys = $this->getData($attribute_param_key);
-        if (empty($vars)) {
-            return $attribute_param_keys;
-        }
         if (empty($vars) || empty($attribute_param_keys)) {
             return [];
         }
