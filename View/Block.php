@@ -136,7 +136,7 @@ class Block extends Template implements BlockInterface
      * @return array|string
      * @throws Exception
      */
-    protected function getParseVarsParams(string $attribute_param_key, array|string|null $default): array|string|null
+    protected function getParseVarsParams(string $attribute_param_key, array|string|null $default=[]): array|string|null
     {
         $vars                 = $this->getData('vars');
         $attribute_param_keys = $this->getData($attribute_param_key);
