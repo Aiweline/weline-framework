@@ -541,22 +541,23 @@ abstract class AbstractModel extends DataObject
             $this->setModelFieldsData($data);
         } elseif (is_bool($data)) {
             $this->force_check_flag = $data;
-            if ($sequence) {
-                if (is_array($sequence)) {
-                    $this->force_check_fields = $sequence;
-                } else {
-                    $this->force_check_fields = [$sequence => $sequence];
-                }
-            } elseif (empty($this->force_check_fields)) {
-                if ($this->_primary_key) {
-                    $this->force_check_fields = [$this->_primary_key];
-                }
-                if ($this->_unit_primary_keys) {
-                    $this->force_check_fields = array_unique($this->_unit_primary_keys + $this->force_check_fields);
-                }
-            }
         } elseif (is_array($data)) {
             $this->setModelFieldsData($data);
+        }
+        # 检测是否检查更新
+        if ($sequence) {
+            if (is_array($sequence)) {
+                $this->force_check_fields = $sequence;
+            } else {
+                $this->force_check_fields = [$sequence => $sequence];
+            }
+        } elseif (empty($this->force_check_fields)) {
+            if ($this->_primary_key) {
+                $this->force_check_fields = [$this->_primary_key];
+            }
+            if ($this->_unit_primary_keys) {
+                $this->force_check_fields = array_unique($this->_unit_primary_keys + $this->force_check_fields);
+            }
         }
 
         # 有要检测更新的字段
@@ -571,6 +572,16 @@ abstract class AbstractModel extends DataObject
         # 如果主键有值
         if ($this->_primary_key and $this->getId()) {
             $this->unique_data[$this->_primary_key] = $this->getId();
+        }
+        // 如果强制检测更新，但是没有任何条件则使用联合主键的方式进行条件装配
+        if ($this->force_check_flag && empty($this->unique_data)) {
+            foreach ($this->_unit_primary_keys as $unit_primary_key) {
+                if ($this->getData($unit_primary_key)) {
+                    $this->unique_data[$unit_primary_key] = $this->getData($unit_primary_key);
+                }
+            }
+        }
+        if($this->unique_data){
             $this->force_check_flag = true;
         }
         // 保存前
@@ -580,15 +591,6 @@ abstract class AbstractModel extends DataObject
         $this->getEvenManager()->dispatch($model_event_name . '_model_save_before', ['model' => $this]);
         $this->getQuery()->beginTransaction();
         try {
-            // 如果强制检测更新，但是没有任何条件则使用联合主键的方式进行条件装配
-            if ($this->force_check_flag && empty($this->unique_data)) {
-                foreach ($this->_unit_primary_keys as $unit_primary_key) {
-                    if ($this->getData($unit_primary_key)) {
-                        $this->unique_data[$unit_primary_key] = $this->getData($unit_primary_key);
-                    }
-                }
-            }
-
             if ($this->force_check_flag) {
                 $save_result = $this->checkUpdateOrInsert();
                 //                $save_result = $this->getQuery()->clearQuery()->insert($this->getModelData(), $this->_unit_primary_keys)->fetch();
