@@ -538,7 +538,7 @@ abstract class AbstractModel extends DataObject
     {
         if (is_object($data)) {
             $data = $data->getModelData();
-            $this->setModelData($data);
+            $this->setModelFieldsData($data);
         } elseif (is_bool($data)) {
             $this->force_check_flag = $data;
             if ($sequence) {
@@ -556,7 +556,7 @@ abstract class AbstractModel extends DataObject
                 }
             }
         } elseif (is_array($data)) {
-            $this->setModelData($data);
+            $this->setModelFieldsData($data);
         }
 
         # 有要检测更新的字段
