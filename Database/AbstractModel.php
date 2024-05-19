@@ -86,6 +86,8 @@ abstract class AbstractModel extends DataObject
     public string $_primary_key_default = 'id';
     /*联合主键排序*/
     public array $_unit_primary_keys = [];
+    /*联合唯一字段*/
+    public array $_unit_unique_fields = []; # 用于save保存数据时检查是否update还是insert  示例：['username','password']
     /*索引字段排序*/
     public array $_index_sort_keys = [];
     public array $_fields = [];
@@ -395,7 +397,7 @@ abstract class AbstractModel extends DataObject
             }
         }
         // 联合主键索引对where条件进行排序提升查询速度
-        $query->_index_sort_keys = array_unique([$this->_primary_key,...$this->_unit_primary_keys,...$this->_index_sort_keys]);
+        $query->_index_sort_keys = array_unique([$this->_primary_key, ...$this->_unit_primary_keys, ...$this->_index_sort_keys]);
         return $query;
     }
 
@@ -459,7 +461,7 @@ abstract class AbstractModel extends DataObject
         // load之前事件
         $this->getEvenManager()->dispatch($this->getOriginTableName() . '_model_load_before', ['model' => $this]);
         if (is_null($value)) {
-            $data = $this->getQuery()->where($this->getQuery()->table_alias.'.' . $this->_primary_key, $field_or_pk_value)->find()->fetch();
+            $data = $this->getQuery()->where($this->getQuery()->table_alias . '.' . $this->_primary_key, $field_or_pk_value)->find()->fetch();
         } else {
             $data = $this->getQuery()->where($field_or_pk_value, $value)->find()->fetch();
         }
@@ -581,13 +583,20 @@ abstract class AbstractModel extends DataObject
                 }
             }
         }
-        if($this->unique_data){
+        if ($this->_unit_unique_fields) {
+            foreach ($this->_unit_unique_fields as $unit_unique_field) {
+                if($this->getData($unit_unique_field)){
+                    $this->unique_data[$unit_unique_field] = $this->getData($unit_unique_field);
+                }
+            }
+        }
+        if ($this->unique_data) {
             $this->force_check_flag = true;
         }
         // 保存前
         $this->save_before();
         // save之前事件
-        $model_event_name = str_replace('\\', '_', $this::class) ;
+        $model_event_name = str_replace('\\', '_', $this::class);
         $this->getEvenManager()->dispatch($model_event_name . '_model_save_before', ['model' => $this]);
         $this->getQuery()->beginTransaction();
         try {
@@ -609,7 +618,7 @@ abstract class AbstractModel extends DataObject
         }
 
         // save之后事件
-        $this->getEvenManager()->dispatch($model_event_name. '_model_save_after', ['model' => $this]);
+        $this->getEvenManager()->dispatch($model_event_name . '_model_save_after', ['model' => $this]);
         // 保存后
         $this->save_after();
         return $save_result;
@@ -1074,7 +1083,7 @@ abstract class AbstractModel extends DataObject
      */
     public function getId(mixed $default = 0)
     {
-        if(!$this->_primary_key) {
+        if (!$this->_primary_key) {
             return $default;
         }
         return $this->getData($this->_primary_key) ?: $default;
@@ -1481,7 +1490,7 @@ PAGINATION;
 
     public function bindQuery(QueryInterface &$query): static
     {
-        $query->_index_sort_keys = array_unique([...$query->_index_sort_keys ,...$this->_unit_primary_keys , ...$this->_index_sort_keys]);
+        $query->_index_sort_keys = array_unique([...$query->_index_sort_keys, ...$this->_unit_primary_keys, ...$this->_index_sort_keys]);
         $this->_bind_query = $query;
         return $this;
     }
