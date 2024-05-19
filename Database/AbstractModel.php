@@ -540,11 +540,11 @@ abstract class AbstractModel extends DataObject
     {
         if (is_object($data)) {
             $data = $data->getModelData();
-            $this->setModelFieldsData($data);
+            $this->setModelData($data);
         } elseif (is_bool($data)) {
             $this->force_check_flag = $data;
         } elseif (is_array($data)) {
-            $this->setModelFieldsData($data);
+            $this->setModelData($data);
         }
         # 检测是否检查更新
         if ($sequence) {
@@ -585,7 +585,7 @@ abstract class AbstractModel extends DataObject
         }
         if ($this->_unit_unique_fields) {
             foreach ($this->_unit_unique_fields as $unit_unique_field) {
-                if($this->getData($unit_unique_field)){
+                if ($this->getData($unit_unique_field)) {
                     $this->unique_data[$unit_unique_field] = $this->getData($unit_unique_field);
                 }
             }
@@ -1057,9 +1057,25 @@ abstract class AbstractModel extends DataObject
         foreach ($data as $key => $value) {
             if (in_array($key, $modelFields)) {
                 $this->setData($key, $value);
+                $this->_model_fields_data[$key] = $value;
             }
         }
         return $this;
+    }
+
+    function getModelFieldsData(bool $filter_origin_model_data = false): array
+    {
+        if (!$filter_origin_model_data) {
+            return $this->_model_fields_data;
+        }
+        $modelFields = $this->getModelFields();
+        $modelFieldsData = [];
+        foreach ($this->_model_fields_data as $key => $value) {
+            if (!in_array($key, $modelFields)) {
+                $modelFieldsData[$key] = $this->_model_fields_data[$key];
+            }
+        }
+        return $modelFieldsData;
     }
 
     public function set_data_before(mixed $key, mixed $value = null)
@@ -1262,11 +1278,10 @@ abstract class AbstractModel extends DataObject
             }
             //            $this->clearDataObject();# 清空数据
             $this->setData($key);
-            $this->_model_fields_data = $this->getModelData();
         } else {
-            $this->_model_fields_data[$key] = $value;
             $this->setData($key, $value);
         }
+        $this->_model_fields_data = $this->getModelData();
         return $this;
     }
 
