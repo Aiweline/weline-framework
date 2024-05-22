@@ -20,6 +20,7 @@ class Cookie
         if ($options) {
             $_options = array_merge($_options, $options);
         }
+        $_COOKIE[$key] = $value;
         setcookie($key, $value, time() + $expire, ...$_options);
     }
 

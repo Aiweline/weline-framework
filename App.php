@@ -14,6 +14,8 @@ use Weline\Framework\App\Env;
 use Weline\Framework\App\Exception;
 use Weline\Framework\App\Helper;
 use Weline\Framework\Cache\CacheFactory;
+use Weline\Framework\DataObject\DataObject;
+use Weline\Framework\Event\EventsManager;
 use Weline\Framework\Http\Cookie;
 use Weline\Framework\Manager\Cache\ObjectCache;
 use Weline\Framework\Manager\ObjectManager;
@@ -32,7 +34,7 @@ class App
      * 参数区：
      *
      * @param string|null $key
-     * @param null        $value
+     * @param null $value
      *
      * @return mixed
      */
@@ -123,7 +125,7 @@ class App
         \Weline\Framework\Common\Loader::load();
         // ############################# 环境配置 #####################
         // 环境
-        $config       = [];
+        $config = [];
         $env_filename = APP_PATH . 'etc/env.php';
         if (is_file($env_filename)) {
             $config = require $env_filename;
@@ -236,23 +238,27 @@ class App
      */
     public static function run(): string
     {
+        # ----------事件：run之前 开始------------
         self::init();
+        /**@var EventsManager $eventManager */
+        $eventManager = ObjectManager::getInstance(EventsManager::class);
+        $eventManager->dispatch('App::run_before');
+        $result = '';
         if (!CLI) {
             if (PROD) {
                 try {
                     $result = ObjectManager::getInstance(\Weline\Framework\Router\Core::class)->start();
-                    exit($result);
                 } catch (\ReflectionException|App\Exception $e) {
                     throw new Exception(__('系统错误：%1', $e->getMessage()));
                 }
             } else {
-                // FIXME 可以尝试缓存所有容器内容
                 $result = ObjectManager::getInstance(\Weline\Framework\Router\Core::class)->start();
-                exit($result);
             }
         }
-
-        return '';
+        $data = new DataObject(['result' => $result]);
+        $eventManager->dispatch('App::run_after', ['data' => &$data]);
+        $result = $data->getData('result');
+        exit($result);
     }
 
     /**
