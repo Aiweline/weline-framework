@@ -258,7 +258,10 @@ class App
         $data = new DataObject(['result' => $result]);
         $eventManager->dispatch('App::run_after', ['data' => &$data]);
         $result = $data->getData('result');
-        exit($result);
+        if (!CLI) {
+            exit($result);
+        }
+        return $result;
     }
 
     /**
