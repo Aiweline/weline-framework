@@ -35,7 +35,7 @@ class Url implements UrlInterface
                     $path = str_replace('*', $router, $path);
                     $path = str_replace('//', '/', $path);
                 }
-                $url = $this->request->getBaseHost() . '/' . Env::getInstance()->getConfig('api_admin') . '/' . $path;
+                $url = $this->request->getBaseHost() . '/' . Env::getInstance()->getConfig('api_admin') . '/' . Cookie::getLang() . '/' . $path;
             } else {
                 $url = $path;
             }
@@ -55,7 +55,7 @@ class Url implements UrlInterface
                     $path = str_replace('*', $router, $path);
                     $path = str_replace('//', '/', $path);
                 }
-                $url = $this->request->getBaseHost() . '/' . ltrim($path, '/');
+                $url = $this->request->getBaseHost() . '/' .Cookie::getLang().'/'. ltrim($path, '/');
             } else {
                 $url = $path;
             }
@@ -75,7 +75,7 @@ class Url implements UrlInterface
                     $path = str_replace('*', $router, $path);
                     $path = str_replace('//', '/', $path);
                 }
-                $url = $this->request->getBaseHost() . '/' . Env::getInstance()->getConfig('admin') . (('/' === $path) ? '' : '/' . ltrim($path, '/'));
+                $url = $this->request->getBaseHost() . '/' . Env::getInstance()->getConfig('admin') . (('/' === $path) ? Cookie::getLang() : '/' . Cookie::getLang() . '/' . ltrim($path, '/'));
             } else {
                 $url = $path;
             }
@@ -116,8 +116,8 @@ class Url implements UrlInterface
      * @DateTime: 2022/2/8 23:27
      * 参数区：
      *
-     * @param array  $params
-     * @param bool   $merge_params
+     * @param array $params
+     * @param bool $merge_params
      * @param string $url
      *
      * @return string
@@ -153,23 +153,23 @@ class Url implements UrlInterface
 
     public function getUrlOrigin($s, $use_forwarded_host = false): string
     {
-        $ssl      = (!empty($s['HTTPS']) && $s['HTTPS'] == 'on');
-        $sp       = strtolower($s['SERVER_PROTOCOL']);
+        $ssl = (!empty($s['HTTPS']) && $s['HTTPS'] == 'on');
+        $sp = strtolower($s['SERVER_PROTOCOL']);
         $protocol = substr($sp, 0, strpos($sp, '/')) . (($ssl) ? 's' : '');
-        $port     = $s['SERVER_PORT'];
-        $port     = ((!$ssl && $port == '80') || ($ssl && $port == '443')) ? '' : ':' . $port;
-        $host     = ($use_forwarded_host && isset($s['HTTP_X_FORWARDED_HOST'])) ? $s['HTTP_X_FORWARDED_HOST'] : ($s['HTTP_HOST'] ?? null);
-        $host     = $host ?? $s['SERVER_NAME'] . $port;
+        $port = $s['SERVER_PORT'];
+        $port = ((!$ssl && $port == '80') || ($ssl && $port == '443')) ? '' : ':' . $port;
+        $host = ($use_forwarded_host && isset($s['HTTP_X_FORWARDED_HOST'])) ? $s['HTTP_X_FORWARDED_HOST'] : ($s['HTTP_HOST'] ?? null);
+        $host = $host ?? $s['SERVER_NAME'] . $port;
         return $protocol . '://' . $host;
     }
 
     public function getFullUrl($s, $use_forwarded_host = false): string
     {
-        return $this->getUrlOrigin($s, $use_forwarded_host) . $s['REQUEST_URI'];
+        return $this->getUrlOrigin($s, $use_forwarded_host) . $s['ORIGIN_REQUEST_URI']??$s['REQUEST_URI'];
     }
 
     public function getCurrentUrl(): string
     {
-        return $this->getUrlOrigin($_SERVER, false) .$_SERVER['REQUEST_URI'];
+        return $this->getUrlOrigin($_SERVER, false) . $_SERVER['ORIGIN_REQUEST_URI']??$_SERVER['REQUEST_URI'];
     }
 }
