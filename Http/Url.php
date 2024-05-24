@@ -35,7 +35,7 @@ class Url implements UrlInterface
                     $path = str_replace('*', $router, $path);
                     $path = str_replace('//', '/', $path);
                 }
-                $url = $this->request->getBaseHost() . '/' . Env::getInstance()->getConfig('api_admin') . '/' . $path;
+                $url = $this->request->getBaseHost() . '/' . Env::getInstance()->getConfig('api_admin') . '/' . Cookie::getLang() . '/' . $path;
             } else {
                 $url = $path;
             }
@@ -55,7 +55,7 @@ class Url implements UrlInterface
                     $path = str_replace('*', $router, $path);
                     $path = str_replace('//', '/', $path);
                 }
-                $url = $this->request->getBaseHost() . '/' . ltrim($path, '/');
+                $url = $this->request->getBaseHost() . '/' . Cookie::getLang() . '/' . ltrim($path, '/');
             } else {
                 $url = $path;
             }
@@ -75,7 +75,7 @@ class Url implements UrlInterface
                     $path = str_replace('*', $router, $path);
                     $path = str_replace('//', '/', $path);
                 }
-                $url = $this->request->getBaseHost() . '/' . Env::getInstance()->getConfig('admin') . (('/' === $path) ? '' : '/' . ltrim($path, '/'));
+                $url = $this->request->getBaseHost() . '/' . Env::getInstance()->getConfig('admin') . (('/' === $path) ? Cookie::getLang() : '/' . Cookie::getLang() . '/' . ltrim($path, '/'));
             } else {
                 $url = $path;
             }
@@ -116,8 +116,8 @@ class Url implements UrlInterface
      * @DateTime: 2022/2/8 23:27
      * 参数区：
      *
-     * @param array  $params
-     * @param bool   $merge_params
+     * @param array $params
+     * @param bool $merge_params
      * @param string $url
      *
      * @return string
@@ -170,6 +170,6 @@ class Url implements UrlInterface
 
     public function getCurrentUrl(): string
     {
-        return $this->getUrlOrigin($_SERVER, false) .$_SERVER['REQUEST_URI'];
+        return $this->getUrlOrigin($_SERVER, false) . $_SERVER['REQUEST_URI'];
     }
 }
