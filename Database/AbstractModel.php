@@ -86,6 +86,8 @@ abstract class AbstractModel extends DataObject
     public string $_primary_key_default = 'id';
     /*联合主键排序*/
     public array $_unit_primary_keys = [];
+    /*联合唯一字段*/
+    public array $_unit_unique_fields = []; # 用于save保存数据时检查是否update还是insert  示例：['username','password']
     /*索引字段排序*/
     public array $_index_sort_keys = [];
     public array $_fields = [];
@@ -395,7 +397,7 @@ abstract class AbstractModel extends DataObject
             }
         }
         // 联合主键索引对where条件进行排序提升查询速度
-        $query->_index_sort_keys = array_unique([$this->_primary_key,...$this->_unit_primary_keys,...$this->_index_sort_keys]);
+        $query->_index_sort_keys = array_unique([$this->_primary_key, ...$this->_unit_primary_keys, ...$this->_index_sort_keys]);
         return $query;
     }
 
@@ -459,7 +461,7 @@ abstract class AbstractModel extends DataObject
         // load之前事件
         $this->getEvenManager()->dispatch($this->getOriginTableName() . '_model_load_before', ['model' => $this]);
         if (is_null($value)) {
-            $data = $this->getQuery()->where($this->getQuery()->table_alias.'.' . $this->_primary_key, $field_or_pk_value)->find()->fetch();
+            $data = $this->getQuery()->where($this->getQuery()->table_alias . '.' . $this->_primary_key, $field_or_pk_value)->find()->fetch();
         } else {
             $data = $this->getQuery()->where($field_or_pk_value, $value)->find()->fetch();
         }
@@ -538,25 +540,26 @@ abstract class AbstractModel extends DataObject
     {
         if (is_object($data)) {
             $data = $data->getModelData();
-            $this->setModelFieldsData($data);
+            $this->setModelData($data);
         } elseif (is_bool($data)) {
             $this->force_check_flag = $data;
-            if ($sequence) {
-                if (is_array($sequence)) {
-                    $this->force_check_fields = $sequence;
-                } else {
-                    $this->force_check_fields = [$sequence => $sequence];
-                }
-            } elseif (empty($this->force_check_fields)) {
-                if ($this->_primary_key) {
-                    $this->force_check_fields = [$this->_primary_key];
-                }
-                if ($this->_unit_primary_keys) {
-                    $this->force_check_fields = array_unique($this->_unit_primary_keys + $this->force_check_fields);
-                }
-            }
         } elseif (is_array($data)) {
-            $this->setModelFieldsData($data);
+            $this->setModelData($data);
+        }
+        # 检测是否检查更新
+        if ($sequence) {
+            if (is_array($sequence)) {
+                $this->force_check_fields = $sequence;
+            } else {
+                $this->force_check_fields = [$sequence => $sequence];
+            }
+        } elseif (empty($this->force_check_fields)) {
+            if ($this->_primary_key) {
+                $this->force_check_fields = [$this->_primary_key];
+            }
+            if ($this->_unit_primary_keys) {
+                $this->force_check_fields = array_unique($this->_unit_primary_keys + $this->force_check_fields);
+            }
         }
 
         # 有要检测更新的字段
@@ -571,24 +574,32 @@ abstract class AbstractModel extends DataObject
         # 如果主键有值
         if ($this->_primary_key and $this->getId()) {
             $this->unique_data[$this->_primary_key] = $this->getId();
+        }
+        // 如果强制检测更新，但是没有任何条件则使用联合主键的方式进行条件装配
+        if ($this->force_check_flag && empty($this->unique_data)) {
+            foreach ($this->_unit_primary_keys as $unit_primary_key) {
+                if ($this->getData($unit_primary_key)) {
+                    $this->unique_data[$unit_primary_key] = $this->getData($unit_primary_key);
+                }
+            }
+        }
+        if ($this->_unit_unique_fields) {
+            foreach ($this->_unit_unique_fields as $unit_unique_field) {
+                if ($this->getData($unit_unique_field)) {
+                    $this->unique_data[$unit_unique_field] = $this->getData($unit_unique_field);
+                }
+            }
+        }
+        if ($this->unique_data) {
             $this->force_check_flag = true;
         }
         // 保存前
         $this->save_before();
         // save之前事件
-        $model_event_name = str_replace('\\', '_', $this::class) ;
+        $model_event_name = str_replace('\\', '_', $this::class);
         $this->getEvenManager()->dispatch($model_event_name . '_model_save_before', ['model' => $this]);
         $this->getQuery()->beginTransaction();
         try {
-            // 如果强制检测更新，但是没有任何条件则使用联合主键的方式进行条件装配
-            if ($this->force_check_flag && empty($this->unique_data)) {
-                foreach ($this->_unit_primary_keys as $unit_primary_key) {
-                    if ($this->getData($unit_primary_key)) {
-                        $this->unique_data[$unit_primary_key] = $this->getData($unit_primary_key);
-                    }
-                }
-            }
-
             if ($this->force_check_flag) {
                 $save_result = $this->checkUpdateOrInsert();
                 //                $save_result = $this->getQuery()->clearQuery()->insert($this->getModelData(), $this->_unit_primary_keys)->fetch();
@@ -607,7 +618,7 @@ abstract class AbstractModel extends DataObject
         }
 
         // save之后事件
-        $this->getEvenManager()->dispatch($model_event_name. '_model_save_after', ['model' => $this]);
+        $this->getEvenManager()->dispatch($model_event_name . '_model_save_after', ['model' => $this]);
         // 保存后
         $this->save_after();
         return $save_result;
@@ -1046,9 +1057,25 @@ abstract class AbstractModel extends DataObject
         foreach ($data as $key => $value) {
             if (in_array($key, $modelFields)) {
                 $this->setData($key, $value);
+                $this->_model_fields_data[$key] = $value;
             }
         }
         return $this;
+    }
+
+    function getModelFieldsData(bool $filter_origin_model_data = false): array
+    {
+        if (!$filter_origin_model_data) {
+            return $this->_model_fields_data;
+        }
+        $modelFields = $this->getModelFields();
+        $modelFieldsData = [];
+        foreach ($this->_model_fields_data as $key => $value) {
+            if (!in_array($key, $modelFields)) {
+                $modelFieldsData[$key] = $this->_model_fields_data[$key];
+            }
+        }
+        return $modelFieldsData;
     }
 
     public function set_data_before(mixed $key, mixed $value = null)
@@ -1072,7 +1099,7 @@ abstract class AbstractModel extends DataObject
      */
     public function getId(mixed $default = 0)
     {
-        if(!$this->_primary_key) {
+        if (!$this->_primary_key) {
             return $default;
         }
         return $this->getData($this->_primary_key) ?: $default;
@@ -1251,11 +1278,10 @@ abstract class AbstractModel extends DataObject
             }
             //            $this->clearDataObject();# 清空数据
             $this->setData($key);
-            $this->_model_fields_data = $this->getModelData();
         } else {
-            $this->_model_fields_data[$key] = $value;
             $this->setData($key, $value);
         }
+        $this->_model_fields_data = $this->getModelData();
         return $this;
     }
 
@@ -1479,7 +1505,7 @@ PAGINATION;
 
     public function bindQuery(QueryInterface &$query): static
     {
-        $query->_index_sort_keys = array_unique([...$query->_index_sort_keys ,...$this->_unit_primary_keys , ...$this->_index_sort_keys]);
+        $query->_index_sort_keys = array_unique([...$query->_index_sort_keys, ...$this->_unit_primary_keys, ...$this->_index_sort_keys]);
         $this->_bind_query = $query;
         return $this;
     }
