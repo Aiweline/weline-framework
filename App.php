@@ -85,6 +85,10 @@ class App
         if (!defined('PUB')) {
             define('PUB', BP . 'pub' . DS);
         }
+        // SERVER 整理
+        if(!CLI){
+            $_SERVER['ORIGIN_REQUEST_URI'] = $_SERVER['REQUEST_URI'];
+        }
         // ############################# 应用相关配置 #####################
         // 应用 目录 (默认访问 web)
         if (!defined('APP_PATH')) {
