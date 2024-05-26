@@ -48,6 +48,25 @@ class Cookie
         }
         return $lang;
     }
+    /**
+     * @DESC          # 获取语言
+     *
+     * @AUTH    秋枫雁飞
+     * @EMAIL aiweline@qq.com
+     * @DateTime: 2022/6/24 22:47
+     * 参数区：
+     * @return string
+     */
+    public static function getCurrency(): string
+    {
+        // 用户货币优先
+        $currency = $_COOKIE['WELINE-USER-CURRENCY'] ?? null;
+        // 默认网站语言
+        if (empty($currency)) {
+            $currency = self::get('WELINE-WEBSITE-CURRENCY', '');
+        }
+        return $currency;
+    }
 
     /**
      * @DESC          # 获取语言

@@ -35,7 +35,7 @@ class Url implements UrlInterface
                     $path = str_replace('*', $router, $path);
                     $path = str_replace('//', '/', $path);
                 }
-                $url = $this->request->getBaseHost() . '/' . Env::getInstance()->getConfig('api_admin') . '/' . Cookie::getLang() . '/' . $path;
+                $url = $this->request->getBaseHost() . '/' . Env::getInstance()->getConfig('api_admin') . '/' . $path;
             } else {
                 $url = $path;
             }
@@ -55,7 +55,7 @@ class Url implements UrlInterface
                     $path = str_replace('*', $router, $path);
                     $path = str_replace('//', '/', $path);
                 }
-                $url = $this->request->getBaseHost() . '/' . Cookie::getLang() . '/' . ltrim($path, '/');
+                $url = $this->request->getBaseHost() . self::getPrefix() . '/' . ltrim($path, '/');
             } else {
                 $url = $path;
             }
@@ -63,6 +63,11 @@ class Url implements UrlInterface
             $url = $this->request->getBaseUrl();
         }
         return $this->extractedUrl($params, $merge_params, $url);
+    }
+
+    static function getPrefix()
+    {
+        return (Cookie::getCurrency() ? '/' . Cookie::getCurrency() : '') . (Cookie::getLang() ? '/' . Cookie::getLang() : '');
     }
 
     public function getBackendUrl(string $path = '', array $params = [], bool $merge_params = false): string
@@ -75,7 +80,7 @@ class Url implements UrlInterface
                     $path = str_replace('*', $router, $path);
                     $path = str_replace('//', '/', $path);
                 }
-                $url = $this->request->getBaseHost() . '/' . Env::getInstance()->getConfig('admin') . (('/' === $path) ? Cookie::getLang() : '/' . Cookie::getLang() . '/' . ltrim($path, '/'));
+                $url = $this->request->getBaseHost() . self::getPrefix() . '/' . Env::getInstance()->getConfig('admin') . (('/' === $path) ? '' : '/' . ltrim($path, '/'));
             } else {
                 $url = $path;
             }
