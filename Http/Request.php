@@ -67,7 +67,12 @@ class Request extends Request\RequestAbstract implements RequestInterface
 
     public function getRouteUrlPath(string $url = ''): string
     {
-        return str_replace('/' . $this->getAreaRouter() . '/', '', $this->getUrlPath($url));
+        $path = $this->getUrlPath($url);
+        if (!$this->isBackend()) {
+            return $path;
+        }
+        $path =  str_replace($this->getAreaRouter() . '/', '', $this->getUrlPath($url));
+        return ltrim($path,'//');
     }
 
     /**
