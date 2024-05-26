@@ -50,7 +50,7 @@ class BackendController extends PcController
                 $whitelist_url = $whitelistUrlData->getData('whitelist_url');
                 $this->cache->set($whitelist_url_cache_key, $whitelist_url);
             }
-            if (!in_array($this->_url->getUrl(), $whitelist_url)) {
+            if (!in_array($this->request->getRouteUrlPath(), $whitelist_url)) {
                 $no_login_url_cache_key = 'no_login_redirect_url';
                 $no_login_redirect_url  = $this->cache->get($no_login_url_cache_key);
                 if (!$no_login_redirect_url) {
