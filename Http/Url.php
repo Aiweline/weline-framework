@@ -170,11 +170,11 @@ class Url implements UrlInterface
 
     public function getFullUrl($s, $use_forwarded_host = false): string
     {
-        return $this->getUrlOrigin($s, $use_forwarded_host) . ($s['ORIGIN_REQUEST_URI'] ?? $s['REQUEST_URI']);
+        return $this->getUrlOrigin($s, $use_forwarded_host) . '/' . ($s['ORIGIN_REQUEST_URI'] ?? $s['REQUEST_URI']);
     }
 
     public function getCurrentUrl(): string
     {
-        return $this->getUrlOrigin($_SERVER, false) . ($_SERVER['ORIGIN_REQUEST_URI'] ?? $_SERVER['REQUEST_URI']);
+        return $this->getUrlOrigin($_SERVER, false) . '/' . ($_SERVER['ORIGIN_REQUEST_URI'] ?? $_SERVER['REQUEST_URI']);
     }
 }
