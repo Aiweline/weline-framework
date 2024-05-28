@@ -88,7 +88,7 @@ class App
             define('PUB', BP . 'pub' . DS);
         }
         // SERVER 整理
-        if(!CLI){
+        if (!CLI) {
             $_SERVER['ORIGIN_REQUEST_URI'] = $_SERVER['REQUEST_URI'];
         }
         // ############################# 应用相关配置 #####################
@@ -244,11 +244,49 @@ class App
     {
         # ----------事件：run之前 开始------------
         self::init();
+        $_SERVER['ORIGIN_REQUEST_URI'] = $_SERVER['REQUEST_URI'];
         /**@var EventsManager $eventManager */
         $eventManager = ObjectManager::getInstance(EventsManager::class);
         $eventManager->dispatch('App::run_before');
         $result = '';
         if (!CLI) {
+            # 路径预处理
+            $_SERVER['WELINE-USER-LANG'] = Cookie::get('WELINE-USER-LANG');
+            # 处理第一级语言代码
+            $uri = ltrim($_SERVER['REQUEST_URI'], '/');
+            if ($uri) {
+                # 获取路由前缀，可能是货币码或者语言码
+                $uri_arr = explode('/', $uri);
+                if ($uri_arr) {
+                    # 如果还有路由
+                    $pre_path_1 = $uri_arr[0] ?? '';
+                    $pre_path_2 = $uri_arr[1] ?? '';
+                    $has_currency = false;
+                    $has_language = false;
+                    # 检查是否是货币
+                    if (strlen($pre_path_1) === 3) {
+                        $has_currency = self::detectCurrency($pre_path_1, $uri_arr, $eventManager);
+                    }
+                    if (!$has_currency) {
+                        if (strlen($pre_path_1) > 3 and ctype_lower(substr($pre_path_1, 0, 2)) and $pre_path_1[2] === '_') {
+                            # 必须有前两个字符是否都是小写字母,且第三个字符必须是_
+                            $has_language = self::detectLanguage($pre_path_1, $uri_arr, $eventManager);
+                        }
+                    }
+                    # 第一次未能探测到语言包，并且存在第二个路由时，必须有前两个字符是否都是小写字母,且第三个字符必须是_
+                    if (!$has_language and $pre_path_2 and strlen($pre_path_2) > 3 and ctype_lower(substr($pre_path_2, 0, 2)) and $pre_path_2[2] === '_') {
+                        # 如果查询得到属于语言包，则删除此路由
+                        $has_language = self::detectLanguage($pre_path_2, $uri_arr, $eventManager);
+                    }
+                    if (!$has_language and Cookie::get('WELINE-USER-LANG')) {
+                        self::detectLanguage(Cookie::get('WELINE-USER-LANG'), $uri_arr, $eventManager);
+                    }
+                    if (!$has_currency and Cookie::get('WELINE-USER-CURRENCY')) {
+                        self::detectCurrency(Cookie::get('WELINE-USER-CURRENCY'), $uri_arr, $eventManager);
+                    }
+                    $_SERVER['REQUEST_URI'] = '/' . implode('/', $uri_arr);
+                }
+            }
             if (PROD) {
                 try {
                     $result = ObjectManager::getInstance(\Weline\Framework\Router\Core::class)->start();
@@ -266,6 +304,45 @@ class App
             exit($result);
         }
         return $result;
+    }
+
+    /**
+     * @param array $uri_arr
+     * @param EventsManager $eventManager
+     * @return array
+     */
+    public static function detectCurrency(string $code, array &$uri_arr, EventsManager &$eventManager): bool
+    {
+        # 如果查询得到属于货币，则删除此路由
+        $data = new DataObject([
+            'result' => false,
+            'uri_arr' => $uri_arr,
+            'code' => $code
+        ]);
+        $eventManager->dispatch('App::detect_currency', ['data' => &$data]);
+        if ($data->getData('result')) {
+            array_shift($uri_arr);
+            Cookie::set('WELINE-USER-CURRENCY', $code, 3600 * 24 * 30);
+            return true;
+        }
+        return false;
+    }
+
+    public static function detectLanguage(string $code, array &$uri_arr, EventsManager &$eventManager): bool
+    {
+        # 如果查询得到属于货币，则删除此路由
+        $data = new DataObject([
+            'result' => false,
+            'uri_arr' => $uri_arr,
+            'code' => $code
+        ]);
+        $eventManager->dispatch('App::detect_language', ['data' => &$data]);
+        if ($data->getData('result')) {
+            array_shift($uri_arr);
+            Cookie::set('WELINE-USER-LANG', $code, 3600 * 24 * 30);
+            return true;
+        }
+        return false;
     }
 
     /**
