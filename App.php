@@ -250,9 +250,8 @@ class App
         $eventManager->dispatch('App::run_before');
         $result = '';
         if (!CLI) {
-            # 路径预处理
-            $_SERVER['WELINE-USER-LANG'] = Cookie::get('WELINE-USER-LANG');
             # 处理第一级语言代码
+            self::detectStore($eventManager);
             $uri = ltrim($_SERVER['REQUEST_URI'], '/');
             if ($uri) {
                 # 获取路由前缀，可能是货币码或者语言码
@@ -304,6 +303,29 @@ class App
             exit($result);
         }
         return $result;
+    }
+
+    /**
+     * @param EventsManager $eventManager
+     * @return void
+     */
+    public static function detectStore(EventsManager &$eventManager): void
+    {
+        # 如果查询得到店铺，则处理店铺URI
+        $data = new DataObject([
+            'store_url' => '',
+            'store_id' => '',
+        ]);
+        $eventManager->dispatch('App::detect_store', ['data' => &$data]);
+        if ($store_url = $data->getData('store_url') and $store_id = $data->getData('store_id')) {
+            # 截取非店铺路径
+            $_SERVER['REQUEST_URI'] = substr($_SERVER['REQUEST_URI'], strlen($store_url));
+            $_SERVER['WELINE-STORE-ID'] = $store_id;
+            $_SERVER['WELINE-STORE-URL'] = $store_url;
+        } else {
+            $_SERVER['WELINE-STORE-ID'] = 0;
+            $_SERVER['WELINE-STORE-URL'] = $_SERVER['HTTP_HOST'];
+        }
     }
 
     /**
