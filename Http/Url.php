@@ -70,8 +70,11 @@ class Url implements UrlInterface
         return (Cookie::getCurrency() ? '/' . Cookie::getCurrency() : '') . (Cookie::getLang() ? '/' . Cookie::getLang() : '');
     }
 
-    public static function removeExtraDoubleSlashes($url)
+    public static function removeExtraDoubleSlashes(?string $url = null): string
     {
+        if (null === $url) {
+            return '';
+        }
         $parts = parse_url($url);
         $scheme = isset($parts['scheme']) ? $parts['scheme'] . '://' : '';
         $rest = str_replace('//', '/', substr($url, strlen($scheme)));
