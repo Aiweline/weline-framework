@@ -70,6 +70,14 @@ class Url implements UrlInterface
         return (Cookie::getCurrency() ? '/' . Cookie::getCurrency() : '') . (Cookie::getLang() ? '/' . Cookie::getLang() : '');
     }
 
+    public static function removeExtraDoubleSlashes($url)
+    {
+        $parts = parse_url($url);
+        $scheme = isset($parts['scheme']) ? $parts['scheme'] . '://' : '';
+        $rest = str_replace('//', '/', substr($url, strlen($scheme)));
+        return $scheme . $rest;
+    }
+
     public function getBackendUrl(string $path = '', array $params = [], bool $merge_params = false): string
     {
         if ($path) {
@@ -145,7 +153,7 @@ class Url implements UrlInterface
         } else {
             $url .= ($this->request->getGet() && $merge_params) ? $param_split_string . http_build_query($this->request->getGet()) : '';
         }
-        return $url;
+        return self::removeExtraDoubleSlashes($url);
     }
 
     public function isLink($path): bool
@@ -170,11 +178,11 @@ class Url implements UrlInterface
 
     public function getFullUrl($s, $use_forwarded_host = false): string
     {
-        return $this->getUrlOrigin($s, $use_forwarded_host) . '/' . ($s['ORIGIN_REQUEST_URI'] ?? $s['REQUEST_URI']);
+        return self::removeExtraDoubleSlashes($this->getUrlOrigin($s, $use_forwarded_host) . '/' . ($s['ORIGIN_REQUEST_URI'] ?? $s['REQUEST_URI']));
     }
 
     public function getCurrentUrl(): string
     {
-        return $this->getUrlOrigin($_SERVER, false) . '/' . ($_SERVER['ORIGIN_REQUEST_URI'] ?? $_SERVER['REQUEST_URI']);
+        return self::removeExtraDoubleSlashes($this->getUrlOrigin($_SERVER, false) . '/' . ($_SERVER['ORIGIN_REQUEST_URI'] ?? $_SERVER['REQUEST_URI']));
     }
 }
