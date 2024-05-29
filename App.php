@@ -284,6 +284,7 @@ class App
                         self::detectCurrency(Cookie::get('WELINE-USER-CURRENCY'), $uri_arr, $eventManager);
                     }
                     $_SERVER['REQUEST_URI'] = '/' . implode('/', $uri_arr);
+                    dd($_SERVER);
                 }
             }
             if (PROD) {
@@ -319,12 +320,12 @@ class App
         $eventManager->dispatch('App::detect_store', ['data' => &$data]);
         if ($store_url = $data->getData('store_url') and $store_id = $data->getData('store_id')) {
             # 截取非店铺路径
-            $_SERVER['REQUEST_URI'] = substr($_SERVER['REQUEST_URI'], strlen($store_url));
+            $_SERVER['REQUEST_URI'] = substr($_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'], strlen($store_url));
             $_SERVER['WELINE-STORE-ID'] = $store_id;
             $_SERVER['WELINE-STORE-URL'] = $store_url;
         } else {
             $_SERVER['WELINE-STORE-ID'] = 0;
-            $_SERVER['WELINE-STORE-URL'] = $_SERVER['HTTP_HOST'];
+            $_SERVER['WELINE-STORE-URL'] = $_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['HTTP_HOST'];
         }
     }
 
