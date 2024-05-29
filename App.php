@@ -244,13 +244,13 @@ class App
     {
         # ----------事件：run之前 开始------------
         self::init();
-        $_SERVER['ORIGIN_REQUEST_URI'] = $_SERVER['REQUEST_URI'];
         /**@var EventsManager $eventManager */
         $eventManager = ObjectManager::getInstance(EventsManager::class);
         $eventManager->dispatch('App::run_before');
         $result = '';
         if (!CLI) {
             # 处理第一级语言代码
+            $_SERVER['ORIGIN_REQUEST_URI'] = $_SERVER['REQUEST_URI'];
             self::detectStore($eventManager);
             $uri = ltrim($_SERVER['REQUEST_URI'], '/');
             if ($uri) {
