@@ -252,8 +252,8 @@ class App
             # 处理第一级语言代码
             $_SERVER['ORIGIN_REQUEST_URI'] = $_SERVER['REQUEST_URI'];
             self::detectStore($eventManager);
-            $uri = ltrim($_SERVER['REQUEST_URI'], '/');
-            if ($uri) {
+            $uri = $_SERVER['REQUEST_URI'];
+            if ($uri and '/' !== $uri) {
                 # 获取路由前缀，可能是货币码或者语言码
                 $uri_arr = explode('/', $uri);
                 if ($uri_arr) {
@@ -264,27 +264,26 @@ class App
                     $has_language = false;
                     # 检查是否是货币
                     if (strlen($pre_path_1) === 3) {
-                        $has_currency = self::detectCurrency($pre_path_1, $uri_arr, $eventManager);
+                        $has_currency = self::detectCurrency($pre_path_1, $uri, $eventManager);
                     }
                     if (!$has_currency) {
                         if (strlen($pre_path_1) > 3 and ctype_lower(substr($pre_path_1, 0, 2)) and $pre_path_1[2] === '_') {
                             # 必须有前两个字符是否都是小写字母,且第三个字符必须是_
-                            $has_language = self::detectLanguage($pre_path_1, $uri_arr, $eventManager);
+                            $has_language = self::detectLanguage($pre_path_1, $uri, $eventManager);
                         }
                     }
                     # 第一次未能探测到语言包，并且存在第二个路由时，必须有前两个字符是否都是小写字母,且第三个字符必须是_
                     if (!$has_language and $pre_path_2 and strlen($pre_path_2) > 3 and ctype_lower(substr($pre_path_2, 0, 2)) and $pre_path_2[2] === '_') {
                         # 如果查询得到属于语言包，则删除此路由
-                        $has_language = self::detectLanguage($pre_path_2, $uri_arr, $eventManager);
+                        $has_language = self::detectLanguage($pre_path_2, $uri, $eventManager);
                     }
                     if (!$has_language and Cookie::get('WELINE-USER-LANG')) {
-                        self::detectLanguage(Cookie::get('WELINE-USER-LANG'), $uri_arr, $eventManager);
+                        self::detectLanguage(Cookie::get('WELINE-USER-LANG'), $uri, $eventManager);
                     }
                     if (!$has_currency and Cookie::get('WELINE-USER-CURRENCY')) {
-                        self::detectCurrency(Cookie::get('WELINE-USER-CURRENCY'), $uri_arr, $eventManager);
+                        self::detectCurrency(Cookie::get('WELINE-USER-CURRENCY'), $uri, $eventManager);
                     }
-                    $_SERVER['REQUEST_URI'] = '/' . implode('/', $uri_arr);
-                    dd($_SERVER);
+                    $_SERVER['REQUEST_URI'] = $uri;
                 }
             }
             if (PROD) {
@@ -320,12 +319,12 @@ class App
         $eventManager->dispatch('App::detect_store', ['data' => &$data]);
         if ($store_url = $data->getData('store_url') and $store_id = $data->getData('store_id')) {
             # 截取非店铺路径
-            $_SERVER['REQUEST_URI'] = substr($_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'], strlen($store_url));
+            $_SERVER['REQUEST_URI'] = substr($_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], strlen($store_url));
             $_SERVER['WELINE-STORE-ID'] = $store_id;
             $_SERVER['WELINE-STORE-URL'] = $store_url;
         } else {
             $_SERVER['WELINE-STORE-ID'] = 0;
-            $_SERVER['WELINE-STORE-URL'] = $_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['HTTP_HOST'];
+            $_SERVER['WELINE-STORE-URL'] = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'];
         }
     }
 
@@ -334,34 +333,38 @@ class App
      * @param EventsManager $eventManager
      * @return array
      */
-    public static function detectCurrency(string $code, array &$uri_arr, EventsManager &$eventManager): bool
+    public static function detectCurrency(string $code, string &$uri, EventsManager &$eventManager): bool
     {
         # 如果查询得到属于货币，则删除此路由
         $data = new DataObject([
             'result' => false,
-            'uri_arr' => $uri_arr,
+            'uri' => $uri,
             'code' => $code
         ]);
         $eventManager->dispatch('App::detect_currency', ['data' => &$data]);
         if ($data->getData('result')) {
-            array_shift($uri_arr);
+            if (str_starts_with($uri, '/' . $code)) {
+                $uri = substr($uri, strlen('/' . $code));
+            }
             Cookie::set('WELINE-USER-CURRENCY', $code, 3600 * 24 * 30);
             return true;
         }
         return false;
     }
 
-    public static function detectLanguage(string $code, array &$uri_arr, EventsManager &$eventManager): bool
+    public static function detectLanguage(string $code, string &$uri, EventsManager &$eventManager): bool
     {
         # 如果查询得到属于货币，则删除此路由
         $data = new DataObject([
             'result' => false,
-            'uri_arr' => $uri_arr,
+            'uri' => $uri,
             'code' => $code
         ]);
         $eventManager->dispatch('App::detect_language', ['data' => &$data]);
         if ($data->getData('result')) {
-            array_shift($uri_arr);
+            if (str_starts_with($uri, '/' . $code)) {
+                $uri = substr($uri, strlen('/' . $code));
+            }
             Cookie::set('WELINE-USER-LANG', $code, 3600 * 24 * 30);
             return true;
         }
