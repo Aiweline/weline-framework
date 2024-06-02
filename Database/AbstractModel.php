@@ -1619,19 +1619,24 @@ PAGINATION;
             }
             $data = $this->getModelData();
             # 出去条件中的唯一值
-            foreach ($this->unique_data as $f=>$v) {
-                if(isset($data[$f])){
+            foreach ($this->unique_data as $f => $v) {
+                if (isset($data[$f])) {
                     unset($data[$f]);
                 }
             }
-            $save_result = $this->getQuery()->where($this->unique_data)
+            # 条件中有主键时，去除主键
+            if ($this->force_check_fields and !in_array($this->_primary_key, $this->force_check_fields)) {
+                unset($data[$this->_primary_key]);
+            }
+            $save_result = $this->getQuery()
+                ->where($this->unique_data)
                 ->update($data)
                 ->fetch();
         } else {
             $unique_fields = array_keys($this->unique_data);
             $this->_unit_primary_keys = array_unique(array_merge($this->_unit_primary_keys, $unique_fields));
             $save_result = $this->getQuery()
-                ->insert($this->getModelData(), $this->_unit_primary_keys)
+                ->insert($this->getModelData(), $this->unique_data ? array_keys($this->unique_data) : $this->_unit_primary_keys)
                 ->fetch();
             $this->setId($save_result);
         }
