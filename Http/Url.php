@@ -65,6 +65,26 @@ class Url implements UrlInterface
         return $this->extractedUrl($params, $merge_params, $url);
     }
 
+    public function getOriginUrl(string $path = '', array $params = [], bool $merge_params = false): string
+    {
+        if ($path) {
+            if (!$this->isLink($path)) {
+                # URL自带星号处理
+                $router = $this->request->getRouterData('router');
+                if (str_contains($path, '*')) {
+                    $path = str_replace('*', $router, $path);
+                    $path = str_replace('//', '/', $path);
+                }
+                $url = $this->request->getBaseHost() . '/' . ltrim($path, '/');
+            } else {
+                $url = $path;
+            }
+        } else {
+            $url = $this->request->getBaseUrl();
+        }
+        return $this->extractedUrl($params, $merge_params, $url);
+    }
+
     static function getPrefix()
     {
         return (Cookie::getCurrency() ? '/' . Cookie::getCurrency() : '') . (Cookie::getLang() ? '/' . Cookie::getLang() : '');
@@ -92,6 +112,26 @@ class Url implements UrlInterface
                     $path = str_replace('//', '/', $path);
                 }
                 $url = $this->request->getBaseHost() . self::getPrefix() . '/' . Env::getInstance()->getConfig('admin') . (('/' === $path) ? '' : '/' . ltrim($path, '/'));
+            } else {
+                $url = $path;
+            }
+        } else {
+            $url = $this->request->getBaseUrl();
+        }
+        return $this->extractedUrl($params, $merge_params, $url);
+    }
+
+    public function getOriginBackendUrl(string $path = '', array $params = [], bool $merge_params = false): string
+    {
+        if ($path) {
+            if (!$this->isLink($path)) {
+                # URL自带星号处理
+                $router = $this->request->getRouterData('router');
+                if (str_contains($path, '*')) {
+                    $path = str_replace('*', $router, $path);
+                    $path = str_replace('//', '/', $path);
+                }
+                $url = $this->request->getBaseHost() . '/' . Env::getInstance()->getConfig('admin') . (('/' === $path) ? '' : '/' . ltrim($path, '/'));
             } else {
                 $url = $path;
             }
