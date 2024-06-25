@@ -9,6 +9,8 @@
 
 namespace Weline\Framework\Http;
 
+use Weline\Framework\DataObject\DataObject;
+use Weline\Framework\Event\EventsManager;
 use Weline\Framework\Manager\ObjectManager;
 use Weline\I18n\Model\I18n;
 
@@ -80,6 +82,11 @@ class Cookie
      */
     public static function getLangLocal(): string
     {
-        return ObjectManager::getInstance(I18n::class)->getLocalByCode(self::getLang());
+        $data = new DataObject();
+        $data->setData('lang', self::getLang());
+        $data->setData('currency', self::getCurrency());
+        $data->setData('lang_local', self::getLang());
+        ObjectManager::getInstance(EventsManager::class)->dispatch('Framework_Cookie::lang_local', ['data' => $data]);
+        return $data->getData('lang_local');
     }
 }
