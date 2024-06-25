@@ -57,7 +57,7 @@ class ObjectManager implements ManagerInterface
                 $class = substr($class, 0, strrpos($class, 'Factory'));
             }
             if (!class_exists($class)) {
-                throw new Exception(__("工厂类：{$class} 不存在！"));
+                throw new Exception("工厂类：{$class} 不存在！");
             }
         }
         return $class;
@@ -82,10 +82,10 @@ class ObjectManager implements ManagerInterface
      * @DateTime: 2022/3/20 13:34
      * 参数区：
      *
-     * @param string $class     类
-     * @param array  $arguments __construct()初始化参数
-     * @param bool   $shared    是否共享：共享后会多次调用存储在对象管理器中的同一个对象（上一次存储的对象）
-     * @param bool   $cache     是否缓存
+     * @param string $class 类
+     * @param array $arguments __construct()初始化参数
+     * @param bool $shared 是否共享：共享后会多次调用存储在对象管理器中的同一个对象（上一次存储的对象）
+     * @param bool $cache 是否缓存
      *
      * @return mixed
      * @throws null
@@ -132,11 +132,11 @@ class ObjectManager implements ManagerInterface
 //        }
         $refClass = self::$reflections[$class] ?? self::$reflections[$class] = new ReflectionClass($new_class);
         //        if ($refClass->isAbstract()) {
-        //            throw new Exception(__('抽象类无法被实例化：%1', $class));
+        //            throw new Exception('抽象类无法被实例化：'.$class);
         //        }
         // self::$reflections[$class] = $refClass;
         //        p($refClass->getAttributes());
-        $new_object           = $refClass->newInstanceArgs($arguments);
+        $new_object = $refClass->newInstanceArgs($arguments);
         //        $new_object->filename = $refClass->getFileName();
         /*$classAttrs = $refClass->getAttributes();
         foreach ($classAttrs as $key => $classAttr) {
@@ -171,10 +171,10 @@ class ObjectManager implements ManagerInterface
      * @DateTime: 2022/3/20 13:34
      * 参数区：
      *
-     * @param string $class     类
-     * @param array  $arguments __construct()初始化参数
-     * @param bool   $shared    是否共享：共享后会多次调用存储在对象管理器中的同一个对象（上一次存储的对象）
-     * @param bool   $cache     是否缓存
+     * @param string $class 类
+     * @param array $arguments __construct()初始化参数
+     * @param bool $shared 是否共享：共享后会多次调用存储在对象管理器中的同一个对象（上一次存储的对象）
+     * @param bool $cache 是否缓存
      *
      * @return mixed
      * @throws Exception
@@ -198,7 +198,7 @@ class ObjectManager implements ManagerInterface
         }
         // 类名规则处理
         $class_cache_key = $class . '_cache_key';
-        $new_class       = self::$cache->get($class_cache_key);
+        $new_class = self::$cache->get($class_cache_key);
         if (empty($new_class)) {
             $new_class = self::parserClass($class);
             self::$cache->set($class_cache_key, $new_class);
@@ -295,7 +295,7 @@ class ObjectManager implements ManagerInterface
      *
      * @param string $class
      * @param        $new_object
-     * @param bool   $init_factory
+     * @param bool $init_factory
      *
      * @return mixed
      */
@@ -323,7 +323,7 @@ class ObjectManager implements ManagerInterface
      * @Desc         | 创建实例并运行
      * @param        $class
      * @param string $method
-     * @param array  $params
+     * @param array $params
      *
      * @return mixed
      * @throws \ReflectionException
@@ -334,7 +334,7 @@ class ObjectManager implements ManagerInterface
         // 拦截器处理
         $new_class = self::parserClass($class);
         if ('__construct' === $method) {
-            $instance      = (new ReflectionClass($new_class));
+            $instance = (new ReflectionClass($new_class));
             $method_params = self::getMethodParams($instance, $method);
             foreach ($method_params as $key => $method_param) {
                 if (empty($method_param)) {
@@ -342,8 +342,8 @@ class ObjectManager implements ManagerInterface
                 }
             }
             $method_params = array_merge($method_params, $params);
-            $instance      = $instance->newInstanceArgs($method_params);
-            $instance      = self::initClassInstance($class, $instance);
+            $instance = $instance->newInstanceArgs($method_params);
+            $instance = self::initClassInstance($class, $instance);
         } else {
             $instance = new ReflectionClass($new_class);
             $instance = self::initClassInstance($class, $instance);
@@ -357,7 +357,7 @@ class ObjectManager implements ManagerInterface
      * @Desc         | 创建实例并运行
      * @param        $class
      * @param string $method
-     * @param array  $params
+     * @param array $params
      *
      * @return mixed
      * @throws \ReflectionException
@@ -367,7 +367,7 @@ class ObjectManager implements ManagerInterface
     {
         // 拦截器处理
         if ('__construct' === $method) {
-            $instance      = (new ReflectionClass($class));
+            $instance = (new ReflectionClass($class));
             $method_params = self::getMethodParams($instance, $method);
             foreach ($method_params as $key => $method_param) {
                 if (empty($method_param)) {
@@ -375,7 +375,7 @@ class ObjectManager implements ManagerInterface
                 }
             }
             $method_params = array_merge($method_params, $params);
-            $instance      = $instance->newInstanceArgs($method_params);
+            $instance = $instance->newInstanceArgs($method_params);
             if (method_exists($instance, '__init')) {
                 $instance->__init();
             }
@@ -403,13 +403,13 @@ class ObjectManager implements ManagerInterface
         // 通过反射获得该类
         if (is_object($instance_or_class)) {
             $className = $instance_or_class::class;
-            $class     = $instance_or_class;
+            $class = $instance_or_class;
         } else {
             $className = $instance_or_class;
             try {
                 $class = new ReflectionClass($className);
             } catch (\ReflectionException $e) {
-                throw new Exception(__('无法实例化该类：%1，错误：%2', [$className, $e->getMessage()]), $e);
+                throw new Exception('无法实例化该类：' . $className . '，错误：' . $e->getMessage());
             }
         }
         $paramArr = []; // 记录参数，和参数类型（例如：class,string等）
@@ -422,7 +422,7 @@ class ObjectManager implements ManagerInterface
                 if (CLI or DEV) {
                     echo('无法实例化该类：' . $className . '，错误：' . $e->getMessage());
                 }
-                throw new Exception(__('无法获得对象方法：%1，错误：%2', [$methodsName, $e->getMessage()]), $e);
+                throw new Exception('无法获得对象方法：' . $methodsName . '，错误：' . $e->getMessage());
             }
             // 判断构造函数是否有参数
             $params = $construct->getParameters();
@@ -451,16 +451,16 @@ class ObjectManager implements ManagerInterface
                                 if (CLI or DEV) {
                                     echo('无法实例化该类：' . $className . '，错误：' . $e->getMessage());
                                 }
-                                throw new Exception(__('无法实例化该类：%1，错误：%2', [$paramTypeName, $e->getMessage()]), $e);
+                                throw new Exception('无法实例化该类：' . $paramTypeName . '，错误：' . $e->getMessage());
                             }
-                            if(method_exists($newObj, '__init')) {
+                            if (method_exists($newObj, '__init')) {
                                 $newObj->__init();
                             }
-                            if(str_ends_with($newObj::class,'Factory')) {
-                                self::$instances[$paramTypeName]=$newObj;
-                                self::$instances[rtrim($paramTypeName, 'Factory')]=$newObj->create();;
+                            if (str_ends_with($newObj::class, 'Factory')) {
+                                self::$instances[$paramTypeName] = $newObj;
+                                self::$instances[rtrim($paramTypeName, 'Factory')] = $newObj->create();;
                             } else {
-                                self::$instances[$paramTypeName]=$newObj;
+                                self::$instances[$paramTypeName] = $newObj;
                             }
                             $paramArr[] = $newObj;
                         }
@@ -470,10 +470,7 @@ class ObjectManager implements ManagerInterface
                                 $paramArr[] = $param->getDefaultValue();
                             }
                         } catch (\Exception $e) {
-                            if (CLI or DEV) {
-                                echo('无法实例化该类：' . $className . '，错误：' . $e->getMessage());
-                            }
-                            throw new Exception(__('错误的参数：%1', [$e->getMessage()]), $e);
+                            throw new Exception('无法实例化该类：' . $className . '，错误：' . $e->getMessage());
                         }
                     }
                 }
