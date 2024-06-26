@@ -11,7 +11,7 @@ namespace Weline\Framework\System\Console\System;
 
 use Weline\Framework\App\System;
 use Weline\Framework\Database\Setup\DataInterface;
-use Weline\Installer\Runner;
+use Weline\Framework\System\Runner;
 
 class Install extends \Weline\Framework\Console\CommandAbstract
 {
@@ -51,7 +51,17 @@ class Install extends \Weline\Framework\Console\CommandAbstract
                 exit();
             }
         }
-
+        $data = [
+            'env'      => [
+                'functions' => ['exec', 'putenv'],
+                'modules'   => ['PDO', 'exif', 'fileinfo', 'xsl'],
+            ],
+            'commands' => [
+                'bin/m command:upgrade',
+                'bin/m deploy:mode:set dev',
+                'bin/m setup:upgrade',
+            ]
+        ];
         // 环境检测
         $this->printer->note('第一步：环境检测...', '系统');
         $checkResult = $this->runner->checkEnv();
