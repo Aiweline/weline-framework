@@ -106,7 +106,7 @@ class Upgrade extends CommandAbstract
         $i += 1;
         $this->printer->note($i . '、清理缓存...');
         /**@var $cacheManagerConsole \Weline\CacheManager\Console\Cache\Flush */
-        $cacheManagerConsole = ObjectManager::getInstance(\Weline\CacheManager\Console\Cache\Flush::class);
+        $cacheManagerConsole = ObjectManager::getInstance(\Weline\Framework\Cache\Console\Cache\Flush::class);
         $cacheManagerConsole->execute();
         $this->system->exec('rm -rf ' . BP . 'var' . DS . 'cache');
 
