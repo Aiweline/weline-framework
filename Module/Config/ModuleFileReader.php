@@ -38,6 +38,17 @@ class ModuleFileReader extends Scan
     {
         $files   = [];
         $base_path = $module->getBasePath();
-        return $this->globFile($base_path . $dir, $files, '.php', $base_path, $module->getNamespacePath().'\\', true, true,$base_path);
+        $this->globFile($base_path . $dir, $files, '.php', $base_path, $module->getNamespacePath().'\\', true, true, $base_path);
+//        # 框架内部
+        if('Weline_Framework' == $module->getName()) {
+            $framework_module_paths = glob($base_path.'*', GLOB_ONLYDIR);
+            foreach ($framework_module_paths as $framework_module_path) {
+                $framework_module = str_replace($base_path, '', $framework_module_path);
+                $tmp_files = [];
+                $this->globFile($framework_module_path .DS. $dir, $tmp_files, '.php', $framework_module_path.DS, 'Weline\\Framework\\'.$framework_module.'\\', true, true, $base_path);
+                $files = array_merge($files, $tmp_files);
+            }
+        }
+        return $files;
     }
 }

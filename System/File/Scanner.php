@@ -28,18 +28,18 @@ class Scanner extends \Weline\Framework\System\File\App\Scanner
      *
      * @return array|false
      */
-//    public function scanAppModules()
-//    {
-//        $vendors = $this->scanAppVendors();
-//        foreach ($vendors as $key => $vendor) {
-//            unset($vendors[$key]);
-//            if ($vendor_files = $this->scanVendorModules($vendor)) {
-//                $vendors[$vendor] = $vendor_files;
-//            }
-//        }
-//
-//        return $vendors;
-//    }
+    //    public function scanAppModules()
+    //    {
+    //        $vendors = $this->scanAppVendors();
+    //        foreach ($vendors as $key => $vendor) {
+    //            unset($vendors[$key]);
+    //            if ($vendor_files = $this->scanVendorModules($vendor)) {
+    //                $vendors[$vendor] = $vendor_files;
+    //            }
+    //        }
+    //
+    //        return $vendors;
+    //    }
 
     /**
      * @DESC         |扫描应用供应商
@@ -110,6 +110,16 @@ class Scanner extends \Weline\Framework\System\File\App\Scanner
             $position  = $module['position'];
             $name      = $module['name'];
             $base_path = $module['base_path'];
+            if('Weline_Framework' == $name) {
+                $framework_module_paths = glob($base_path.'*', GLOB_ONLYDIR);
+                foreach ($framework_module_paths as $framework_module_path) {
+                    $app_need_file_or_dir = $framework_module_path.DS . $file_or_dir;
+                    if (is_file($app_need_file_or_dir)) {
+                        $modules_files[$name] = $app_need_file_or_dir;
+                        continue;
+                    }
+                }
+            }
             // app下的代码优先度更高
             if ($position === 'app') {
                 unset($modules[$key]);
@@ -118,11 +128,11 @@ class Scanner extends \Weline\Framework\System\File\App\Scanner
                     $modules_files[$name] = $app_need_file_or_dir;
                     continue;
                 }
-//                $this->globFile($base_path.'')
-//                $file_data = $this->scanDirTree($app_need_file_or_dir);
-//                if (!empty($file_data)) {
-//                    $modules_files[$name] = $file_data;
-//                }
+                //                $this->globFile($base_path.'')
+                //                $file_data = $this->scanDirTree($app_need_file_or_dir);
+                //                if (!empty($file_data)) {
+                //                    $modules_files[$name] = $file_data;
+                //                }
             }
             if ($position === 'composer') {
                 # app模组代码没有才能添加
@@ -145,6 +155,7 @@ class Scanner extends \Weline\Framework\System\File\App\Scanner
                     $modules_files[$name] = $app_need_file_or_dir;
                     continue;
                 }
+
                 /*$file_data = $this->scanDirTree($app_need_file_or_dir);
                 if (!empty($file_data)) {
                     $modules_files[$name] = $file_data;
@@ -198,7 +209,7 @@ class Scanner extends \Weline\Framework\System\File\App\Scanner
         $core_modules    = $this->scanDirTree(VENDOR_PATH);
         $modules         = array_merge($core_modules, $app_modules);
         $vendors_modules = [];
-//        p($modules);
+        //        p($modules);
         /**@var File $file */
         foreach ($modules as $dir => $files) {
             foreach ($files as $file) {

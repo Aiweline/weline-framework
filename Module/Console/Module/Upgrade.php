@@ -84,13 +84,13 @@ class Upgrade extends CommandAbstract
         $commandManagerConsole->execute();
 
         $this->printer->note($i . '、事件清理...');
-        /**@var $cacheManagerConsole \Weline\CacheManager\Console\Cache\Clear */
+        /**@var $cacheManagerConsole \Weline\Framework\Cache\Console\Cache\Clear */
         $cacheManagerConsole = ObjectManager::getInstance(\Weline\Framework\Event\Console\Event\Cache\Clear::class);
         $cacheManagerConsole->execute();
 
         $i += 1;
         $this->printer->note($i . '、插件编译...');
-        /**@var $cacheManagerConsole \Weline\CacheManager\Console\Cache\Clear */
+        /**@var $cacheManagerConsole \Weline\Framework\Cache\Console\Cache\Clear */
         $cacheManagerConsole = ObjectManager::getInstance(\Weline\Framework\Plugin\Console\Plugin\Di\Compile::class);
         $cacheManagerConsole->execute();
         $i += 1;

@@ -45,8 +45,8 @@ class Set extends CommandAbstract
             }
         }
         $this->printer->note('清理缓存...');
-        /**@var $cacheManagerConsole \Weline\CacheManager\Console\Cache\Clear */
-        $cacheManagerConsole = ObjectManager::getInstance(\Weline\CacheManager\Console\Cache\Clear::class);
+        /**@var $cacheManagerConsole \Weline\Framework\Cache\Console\Cache\Clear */
+        $cacheManagerConsole = ObjectManager::getInstance(\Weline\Framework\Cache\Console\Cache\Clear::class);
         $cacheManagerConsole->execute();
         $this->printer->note('正在清除模组模板编译文件...');
         $this->cleanTplComDir();
