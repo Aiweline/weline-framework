@@ -21,19 +21,19 @@ class Mysql extends Query
 {
     public function reindex(string $table): void
     {
-        $this->query('REINDEX TABLE ' . $table);
-        $this->query('OPTIMIZE TABLE ' . $table);
-//        # 查看表存储引擎
-//        $index_fields = $this->query('SHOW INDEX FROM ' . $table)->fetch()?? '';
-//        foreach ($index_fields as $index_field) {
-//            switch ($index_field['Key_name']) {
-//
-//            }
-//            # 删除索引
-//            $this->query('ALTER TABLE ' . $table . ' DROP INDEX ' . $index_field['Key_name']);
-//            # 重建索引
-//
-//        }
+        $this->query('REINDEX TABLE ' . $table)->fetch();
+        $this->query('OPTIMIZE TABLE ' . $table)->fetch();
+        //        # 查看表存储引擎
+        //        $index_fields = $this->query('SHOW INDEX FROM ' . $table)->fetch()?? '';
+        //        foreach ($index_fields as $index_field) {
+        //            switch ($index_field['Key_name']) {
+        //
+        //            }
+        //            # 删除索引
+        //            $this->query('ALTER TABLE ' . $table . ' DROP INDEX ' . $index_field['Key_name']);
+        //            # 重建索引
+        //
+        //        }
     }
 
     public function getIndexFields(): QueryInterface
