@@ -64,7 +64,7 @@ class PcController extends Core
             if ($this->_url->isLink($url)) {
                 $this->request->getResponse()->redirect($url . (str_contains($url, '?') ? '&' : '') . http_build_query($params));
             } else {
-                if(str_starts_with($url,'/')){
+                if(str_starts_with($url, '/')) {
                     $this->request->getResponse()->redirect($this->_url->getUrl($url, $params, $merge_params));
                 }
                 $this->request->getResponse()->redirect($this->request->isBackend() ? $this->_url->getBackendUrl($url, $params, $merge_params) :
@@ -89,14 +89,14 @@ class PcController extends Core
     {
         /**@var Session $session */
         $session = ObjectManager::getInstance(Session::class);
-//        $session->setData('form_key_paths','');
+        //        $session->setData('form_key_paths','');
         # form表单检测
         if (!empty($form_key_paths_str = $session->getData('form_key_paths')) && !empty($form_key = $session->getData('form_key'))) {
             $form_key_paths = explode(',', $form_key_paths_str);
             if (in_array($this->_url->getCurrentUrl(), $form_key_paths) && ($form_key !== $this->request->getPost('form_key'))) {
                 $this->noRouter();
             }
-        }else{
+        } else {
             # scrf 检测
             if ($this->csrf() || ($this->request->getServer('Content-Type') === 'application/json')) {
                 # 处理form-key和token问题
@@ -213,6 +213,9 @@ class PcController extends Core
         }
         # 如果指定了模板就直接读取
         if ($fileName) {
+            if(is_int(strpos($fileName, '::'))) {
+                return $this->getTemplate()->fetch($fileName);
+            }
             return $this->getTemplate()->fetch('templates' . DS .$fileName);
         }
         $controller_class_name = $this->request->getRouterData('class/controller_name');
@@ -275,19 +278,19 @@ class PcController extends Core
     }
 
 
-//    public function success(string $msg = '请求成功！', mixed $data = '', int $code = 200,string $url=''): array
-//    {
-//
-//        return ['msg' => __($msg), 'data' => $data, 'code' => $code];
-//    }
-//
-//    #[\JetBrains\PhpStorm\ArrayShape(['msg' => 'string', 'data' => 'mixed|string', 'code' => 'int'])]
-//    public function error(string $msg = '请求失败！', mixed $data = '', int $code = 404): array
-//    {
-//        return ['msg' => __($msg), 'data' => $data, 'code' => $code];
-//    }
-//
-//
+    //    public function success(string $msg = '请求成功！', mixed $data = '', int $code = 200,string $url=''): array
+    //    {
+    //
+    //        return ['msg' => __($msg), 'data' => $data, 'code' => $code];
+    //    }
+    //
+    //    #[\JetBrains\PhpStorm\ArrayShape(['msg' => 'string', 'data' => 'mixed|string', 'code' => 'int'])]
+    //    public function error(string $msg = '请求失败！', mixed $data = '', int $code = 404): array
+    //    {
+    //        return ['msg' => __($msg), 'data' => $data, 'code' => $code];
+    //    }
+    //
+    //
     protected function exception(\Exception $exception, string $msg = '请求异常！', mixed $data = '', int $code = 403): mixed
     {
         if (!DEBUG) {
