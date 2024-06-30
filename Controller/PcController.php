@@ -212,8 +212,8 @@ class PcController extends Core
             $this->assign($data);
         }
         # 如果指定了模板就直接读取
-        if ($fileName && is_int(strpos($fileName, '::'))) {
-            return $this->getTemplate()->fetch($fileName);
+        if ($fileName) {
+            return $this->getTemplate()->fetch('templates' . DS .$fileName);
         }
         $controller_class_name = $this->request->getRouterData('class/controller_name');
         if ($fileName === null) {
