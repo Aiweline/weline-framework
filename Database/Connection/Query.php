@@ -297,7 +297,7 @@ abstract class Query implements QueryInterface
         $this->fetch_type = 'find';
         $this->fields     = "count({$field}) as `{$alias}`";
         $this->prepareSql('find');
-//        p($this->getLastSql());
+        //        p($this->getLastSql());
         $result = $this->fetch();
         if (isset($result[$alias])) {
             $result = $result[$alias];
@@ -340,16 +340,21 @@ abstract class Query implements QueryInterface
     public function fetch(string $model_class = ''): mixed
     {
         $result      = $this->PDOStatement->execute($this->bound_values);
-        $origin_data = $this->PDOStatement->fetchAll(PDO::FETCH_ASSOC);
+        do {
+            $origin_data[] = $this->PDOStatement->fetchAll(PDO::FETCH_ASSOC);
+        } while($this->PDOStatement->nextRowset());
+        if(count($origin_data) == 1) {
+            $origin_data = $origin_data[0];
+        }
 
         $data = [];
         if ($model_class) {
             foreach ($origin_data as $origin_datum) {
                 $data[] = ObjectManager::make($model_class, ['data' => $origin_datum], '__construct');
             }
-//            /** @var AbstractModel $model */
-//            $model = ObjectManager::make($model_class, ['data' => end($data)->getData()], '__construct');
-//            $data = $model->setFetchData($data);
+            //            /** @var AbstractModel $model */
+            //            $model = ObjectManager::make($model_class, ['data' => end($data)->getData()], '__construct');
+            //            $data = $model->setFetchData($data);
         } else {
             $data = $origin_data;
         }
@@ -375,9 +380,9 @@ abstract class Query implements QueryInterface
                 break;
         }
         $this->fetch_type = '';
-//        $this->clear();
+        //        $this->clear();
         $this->clearQuery();
-//        $this->reset();
+        //        $this->reset();
         return $result;
     }
 
@@ -537,7 +542,7 @@ abstract class Query implements QueryInterface
         if (empty($table)) {
             $table = $this->table;
         }
-        if(empty($table)){
+        if(empty($table)) {
             throw new Exception(__('请先指定要操作的表，表名不能为空!'));
         }
         $this->backup($backup_file, $table);
@@ -552,7 +557,7 @@ abstract class Query implements QueryInterface
         if (empty($table)) {
             $table = $this->table;
         }
-        if(empty($table)){
+        if(empty($table)) {
             throw new Exception(__('请先指定要操作的表，表名不能为空!'));
         }
         // 获取表的创建语句
@@ -593,8 +598,8 @@ abstract class Query implements QueryInterface
         fwrite($file, "-- $table 数据 " . PHP_EOL);
         foreach ($results as $result) {
             # 单引号转义
-            foreach ($result as $key=>$item) {
-                if(is_string($item)){
+            foreach ($result as $key => $item) {
+                if(is_string($item)) {
                     $result[$key] = str_replace("'", "\\'", $item);
                 }
             }

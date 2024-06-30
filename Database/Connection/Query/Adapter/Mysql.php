@@ -21,19 +21,61 @@ class Mysql extends Query
 {
     public function reindex(string $table): void
     {
-        $this->query('REINDEX TABLE ' . $table)->fetch();
-        $this->query('OPTIMIZE TABLE ' . $table)->fetch();
-        //        # 查看表存储引擎
-        //        $index_fields = $this->query('SHOW INDEX FROM ' . $table)->fetch()?? '';
-        //        foreach ($index_fields as $index_field) {
-        //            switch ($index_field['Key_name']) {
-        //
-        //            }
-        //            # 删除索引
-        //            $this->query('ALTER TABLE ' . $table . ' DROP INDEX ' . $index_field['Key_name']);
-        //            # 重建索引
-        //
-        //        }
+        $table = str_replace('`', '', $table);
+        if(str_contains($table, '.')) {
+            list($schema, $table) = explode('.', $table);
+        }
+        if(empty($schema)) {
+            $schema = $this->getConnection()->getConfigProvider()->getDatabase();
+        }
+        # 查询表的存储引擎
+        $RebuildIndexerSql = <<<REBUILD_INDEXER_SQL
+SET @rebuild_indexer_schema = '{$schema}';
+
+SET @rebuild_indexer_table = '{$table}';
+
+SET @rebuild_indexer_sql = '';
+SELECT GROUP_CONCAT(index_field.rebuild_field_sql)
+INTO @rebuild_indexer_sql
+FROM (SELECT--   i.TABLE_NAME,
+--   i.INDEX_NAME,
+--   GROUP_CONCAT( i.COLUMN_NAME ) AS COLUMN_NAME,
+            CONCAT(
+                    ' DROP ',
+                    IF
+                    (i.INDEX_NAME = 'PRIMARY', ' PRIMARY KEY ', ' INDEX '),
+                    IF
+                    (i.INDEX_NAME = 'PRIMARY', ' ', i.INDEX_NAME),
+                    ' , ADD ',
+                    IF
+                    (i.NON_UNIQUE = '0', IF(i.INDEX_NAME = 'PRIMARY', ' ', ' UNIQUE '), ''),
+                    IF
+                    (i.INDEX_NAME = 'PRIMARY', ' PRIMARY KEY ', ' INDEX '),
+                    IF
+                    (i.INDEX_NAME = 'PRIMARY', ' ', i.INDEX_NAME),
+                    '(',
+                    GROUP_CONCAT('`', i.COLUMN_NAME, '`'), IF(i.COLLATION = 'A', ' ASC ', ' DESC '),
+                    ')',
+                    ' COMMENT \'',
+                    i.INDEX_COMMENT,
+                    '\' USING ',
+                    i.INDEX_TYPE
+            ) AS rebuild_field_sql
+      FROM INFORMATION_SCHEMA.STATISTICS i
+      WHERE i.TABLE_SCHEMA = @rebuild_indexer_schema
+        AND i.TABLE_NAME = @rebuild_indexer_table
+      GROUP BY i.INDEX_NAME
+      ORDER BY i.SEQ_IN_INDEX)
+         AS index_field;
+SELECT CONCAT('ALTER TABLE `', @rebuild_indexer_schema, '`.`', @rebuild_indexer_table, '`',
+              @rebuild_indexer_sql) AS rebuild_indexer_sql;
+REBUILD_INDEXER_SQL;
+        $rebuild_indexer_sql = $this->query($RebuildIndexerSql)->fetch()[4][0]['rebuild_indexer_sql'] ?? '';
+        if(empty($rebuild_indexer_sql)) {
+            return;
+        }
+
+        $this->query($rebuild_indexer_sql)->fetch();
     }
 
     public function getIndexFields(): QueryInterface
@@ -44,35 +86,44 @@ class Mysql extends Query
     public function dev()
     {
         return "
-        #拼接删除非主键索引的语法
--- SELECT
--- 	CONCAT( 'ALTER TABLE ', i.TABLE_NAME, ' DROP INDEX ', i.INDEX_NAME, ' ;' ) AS drop_sql,
--- CONCAT( i.TABLE_NAME ) AS table_name,
--- CONCAT( i.INDEX_NAME ) AS index_name,
--- CONCAT( i.COLUMN_NAME ) AS column_name
--- 
--- FROM
--- 	INFORMATION_SCHEMA.STATISTICS i #过滤主键索引
--- 	
--- WHERE
--- 	TABLE_SCHEMA = 'weline' 
--- 	AND i.INDEX_NAME <> 'PRIMARY';
-	
+# 查询表的索引字段并拼接成索引重建SQL
+SET @rebuild_indexer_schema = 'weline';
+SET @rebuild_indexer_table = 'm_contact';
+SET @rebuild_indexer_sql = '';
 
-#拼接删除主键索引的语法
--- SELECT
--- 	CONCAT( 'ALTER TABLE ', i.TABLE_NAME, ' DROP PRIMARY KEY;' ) AS drop_sql,
--- CONCAT( i.TABLE_NAME ) AS table_name,
--- CONCAT( i.INDEX_NAME ) AS index_name,
--- CONCAT( i.COLUMN_NAME ) AS column_name,
--- CONCAT( i.INDEX_TYPE ) AS idnex_type
--- 
--- FROM
--- 	INFORMATION_SCHEMA.STATISTICS i #过滤主键索引
--- 	
--- WHERE
--- 	TABLE_SCHEMA = 'weline' 
--- 	AND i.INDEX_NAME = 'PRIMARY';
-        ";
+SELECT GROUP_CONCAT(index_field.rebuild_field_sql)
+INTO @rebuild_indexer_sql
+FROM (SELECT--   i.TABLE_NAME,
+--   i.INDEX_NAME,
+--   GROUP_CONCAT( i.COLUMN_NAME ) AS COLUMN_NAME,
+            CONCAT(
+                    ' DROP ',
+                    IF
+                    (i.INDEX_NAME = 'PRIMARY', ' PRIMARY KEY ', ' INDEX '),
+                    IF
+                    (i.INDEX_NAME = 'PRIMARY', ' ', i.INDEX_NAME),
+                    ' , ADD ',
+                    IF
+                    (i.NON_UNIQUE = '0', IF(i.INDEX_NAME = 'PRIMARY', ' ', ' UNIQUE '), ''),
+                    IF
+                    (i.INDEX_NAME = 'PRIMARY', ' PRIMARY KEY ', ' INDEX '),
+                    IF
+                    (i.INDEX_NAME = 'PRIMARY', ' ', i.INDEX_NAME),
+                    '(',
+                    GROUP_CONCAT('`', i.COLUMN_NAME, '`'), IF(i.COLLATION = 'A', ' ASC ', ' DESC '),
+                    ')',
+                    ' COMMENT \'',
+                    i.INDEX_COMMENT,
+                    '\' USING ',
+                    i.INDEX_TYPE
+            ) AS rebuild_field_sql
+      FROM INFORMATION_SCHEMA.STATISTICS i
+      WHERE i.TABLE_SCHEMA = @rebuild_indexer_schema
+        AND i.TABLE_NAME = @rebuild_indexer_table
+      GROUP BY i.INDEX_NAME
+      ORDER BY i.SEQ_IN_INDEX)
+         AS index_field;
+SELECT CONCAT('ALTER TABLE `', @rebuild_indexer_schema, '`.`', @rebuild_indexer_table, '`',
+              @rebuild_indexer_sql) AS rebuild_indexer_sql;";
     }
 }

@@ -9,7 +9,6 @@
 
 namespace Weline\Framework\Database;
 
-use http\Cookie;
 use Weline\BackendActivity\Model\BackendActivityLog;
 use Weline\Framework\App\Exception;
 use Weline\Framework\Cache\CacheInterface;
