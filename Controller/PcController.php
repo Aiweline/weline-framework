@@ -227,6 +227,8 @@ class PcController extends Core
             }
         } elseif (is_bool(strpos($fileName, '/')) || is_bool(strpos($fileName, '\\'))) {
             $fileName = $controller_class_name . DS . $fileName;
+        }else{
+            $fileName = $controller_class_name . '/' .$this->request->getRouterData('class/method') . DS . $fileName;
         }
         return $this->getTemplate()->fetch('templates' . DS . $fileName);
     }
