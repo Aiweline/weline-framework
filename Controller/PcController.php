@@ -216,7 +216,7 @@ class PcController extends Core
             if(is_int(strpos($fileName, '::'))) {
                 return $this->getTemplate()->fetch($fileName);
             }
-            return $this->getTemplate()->fetch('templates' . DS .$fileName);
+//            return $this->getTemplate()->fetch('templates' . DS .$fileName);
         }
         $controller_class_name = $this->request->getRouterData('class/controller_name');
         if ($fileName === null) {
