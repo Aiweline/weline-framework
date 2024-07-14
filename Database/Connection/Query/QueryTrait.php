@@ -33,6 +33,7 @@ trait QueryTrait
         '<>',
         'like',
         'in',
+        'not in',
         'find_in_set',
         '=',
     ];
@@ -230,7 +231,7 @@ trait QueryTrait
                                     $set_where = '(';
                                     if (is_array($where[2])) {
                                         foreach ($where[2] as $in_where_key => $item) {
-                                            $set_where_key_param                      = $param . '_' . $where[1] . '_' . $in_where_key;
+                                            $set_where_key_param                      = $param . '_' . str_replace(' ', '_', $where[1]) . '_' . $in_where_key;
                                             $this->bound_values[$set_where_key_param] = (string)$item;
                                             $set_where                                .= $set_where_key_param . ',';
                                         }
