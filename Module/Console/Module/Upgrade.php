@@ -13,6 +13,7 @@ use Weline\Framework\App\Env;
 use Weline\Framework\App\Exception;
 use Weline\Framework\App\System;
 use Weline\Framework\Console\CommandAbstract;
+use Weline\Framework\Database\Model\ModelManager;
 use Weline\Framework\Event\EventsManager;
 use Weline\Framework\Manager\ObjectManager;
 use Weline\Framework\Module\Handle;
@@ -64,6 +65,55 @@ class Upgrade extends CommandAbstract
         /**@var EventsManager $eventsManager */
         $eventsManager = ObjectManager::getInstance(EventsManager::class);
         $eventsManager->dispatch('Framework_Module::module_upgrade_before');
+        $params = $args['format'];
+        $appoint = false;
+        $argsModule = [];
+        if(!empty($params['module'])){
+            $argsModule = explode(',', $params['module']);
+        }
+        if(isset($params['model'])){
+            $appoint = true;
+            /**@var ModelManager $modelManager */
+            $modelManager = ObjectManager::getInstance(ModelManager::class);
+            /**@var Handle $module_handle */
+            $module_handle = ObjectManager::getInstance(Handle::class);
+            // 安装Setup信息
+            $this->printer->note(__('指定安装Setup信息'));
+            $modules = $module_handle->getModules();
+            foreach ($modules as $module_name => $module) {
+                if($argsModule and !in_array($module_name, $argsModule)){
+                    continue;
+                }
+                $module_handle->setupInstall(new Module($module));
+            }
+            // 注册模型数据库信息
+            $this->printer->note(__('指定注册模型数据库信息'));
+            foreach ($modules as $module_name => $module) {
+                if($argsModule and !in_array($module_name, $argsModule)){
+                    continue;
+                }
+                $module_handle->setupInstall(new Module($module));
+                $module_handle->setupModel(new Module($module));
+            }
+        }
+        if(isset($params['route'])){
+            $appoint = true;
+            // 注册路由信息
+            /**@var Handle $module_handle */
+            $module_handle = ObjectManager::getInstance(Handle::class);
+            $modules = $module_handle->getModules();
+            $this->printer->note(__('指定注册路由信息'));
+            foreach ($modules as $module_name => $module) {
+                if($argsModule and !in_array($module_name, $argsModule)){
+                    continue;
+                }
+                $module_handle->registerRoute(new Module($module));
+            }
+        }
+        if($appoint){
+            $this->printer->success(__('委托部分更新已运行！'));
+            return;
+        }
         $i = 1;
         //        // 删除路由文件
         $this->printer->warning($i . '、路由更新...', '系统');
@@ -213,7 +263,7 @@ class Upgrade extends CommandAbstract
      */
     public function tip(): string
     {
-        return '升级模块';
+        return '升级模块.'.PHP_EOL.' 1. --mode[指定升级模式为数据库模型：支持的有model, route] --module Weline_Demo 升级指定模块.';
     }
 
     /**
