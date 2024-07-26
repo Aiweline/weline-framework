@@ -32,6 +32,7 @@ trait QueryTrait
         '<=',
         '<>',
         'like',
+        'not like',
         'in',
         'not in',
         'find_in_set',
@@ -227,6 +228,7 @@ trait QueryTrait
                             $param = str_replace('.', '__', $param) . $key;
                             switch (strtolower($where[1])) {
                                 case 'in':
+                                case 'not in':
                                 case 'find_in_set' :
                                     $set_where = '(';
                                     if (is_array($where[2])) {
