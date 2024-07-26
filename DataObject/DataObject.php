@@ -506,7 +506,13 @@ class DataObject implements \ArrayAccess
     public function toString(string $format = ''): array|string
     {
         if (empty($format)) {
-            $result = implode(', ', $this->getData());
+            $data = $this->getData();
+            foreach ($data as &$datum) {
+                if(is_array($datum)){
+                    $datum = implode(', ', $datum);
+                }
+            }
+            $result = implode(', ', $data);
         } else {
             preg_match_all('/{{([a-z0-9_]+)}}/is', $format, $matches);
             foreach ($matches[1] as $var) {

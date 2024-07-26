@@ -35,6 +35,7 @@ use Weline\Framework\Output\Debug\Printing;
  * @method AbstractModel|QueryInterface limit(int $size, int $offset = 0)
  * @method AbstractModel|QueryInterface page(int $page = 1, int $pageSize = 20)
  * @method AbstractModel|QueryInterface order(string $fields, string $sort = 'ASC')
+ * @method AbstractModel|QueryInterface group(string $fields)
  * @method AbstractModel|QueryInterface find()
  * @method int total()
  * @method AbstractModel|QueryInterface select()
