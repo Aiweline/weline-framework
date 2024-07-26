@@ -33,9 +33,45 @@ class Cli extends CliAbstract
         }
         $command_class = $this->checkCommand();
 //        $this->printer->note(__('执行命令：') . $class['command'] . ' ' . (isset($this->argv[1])?$this->argv[1]:''));
-        ObjectManager::getInstance($command_class['class'])->execute($this->argv, $command_class['data']);
+        $data = $command_class['data'];
+        ObjectManager::getInstance($command_class['class'])->execute($this->parseArgs($this->argv), $data);
         $this->printer->printing("\n");
         $this->printer->note(__('执行命令：') . $command_class['command'] . ' ' . ($this->argv[1] ?? '')/*,$this->printer->colorize('CLI-System','red')*/);
+    }
+
+    function parseArgs($args): array {
+        $lastOption = null;
+        foreach ($args as $arg) {
+            # 参数名
+            if(strpos($arg, '--') !== false){
+                $lastOption = substr($arg, 2);
+                $lastOptionOrigin = $lastOption;
+                if(strpos($lastOption, '=') !== false){
+                    $lastOption = substr($lastOptionOrigin, 0, strpos($lastOptionOrigin, '='));
+                    $value = substr($lastOptionOrigin, strpos($lastOptionOrigin, '=') + 1);
+                    $args['format'][$lastOption] = $value;
+                }else{
+                    $args['format'][$lastOption] = true;
+                }
+            }elseif(strpos($arg, '-') !== false){
+                $lastOption = substr($arg, 1);
+                $lastOptionOrigin = $lastOption;
+                if(strpos($lastOption, '=') !== false){
+                    $lastOption = substr($lastOptionOrigin, 0, strpos($lastOptionOrigin, '='));
+                    $value = substr($lastOptionOrigin, strpos($lastOptionOrigin, '=') + 1);
+                    $args['format'][$lastOption] = $value;
+                }else{
+                    $args['format'][$lastOption] = true;
+                }
+            }else{
+                if($lastOption and is_bool($args['format'][$lastOption])){
+                    $args['format'][$lastOption] = $arg;
+                }else{
+                    $args['format'][] = $arg;
+                }
+            }
+        }
+        return $args;
     }
 
     /**
