@@ -42,7 +42,7 @@ abstract class CliAbstract implements CommandInterface
      * Cli 初始函数...
      *
      * @param string $msg
-     * @param array  $argv
+     * @param array $argv
      *
      * @throws \ReflectionException
      */
@@ -111,9 +111,9 @@ abstract class CliAbstract implements CommandInterface
      * @return mixed|void
      * @throws \Weline\Framework\App\Exception
      */
-    public function execute(array $args = null, array $data = [])
+    public function execute(array $args = [], array $data = [])
     {
-        $commands = isset($this->getCommandList()[$args]) ? $this->getCommandList()[$args] : $this->getCommandList();
+        $commands = $this->getCommandList();
 
         $this->printer->printList($commands);
     }
