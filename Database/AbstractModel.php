@@ -521,6 +521,7 @@ abstract class AbstractModel extends DataObject
     {
         if ($field) {
             $this->getQuery()->update($field, is_null($value_or_condition_field) ? $this->_primary_key : $value_or_condition_field);
+            $this->setModelData($field);
         } else {
             $this->getQuery()->update($this->getModelData(), is_null($value_or_condition_field) ? $this->_primary_key : $value_or_condition_field);
         }
