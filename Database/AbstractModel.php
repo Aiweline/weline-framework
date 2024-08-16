@@ -272,6 +272,9 @@ abstract class AbstractModel extends DataObject
             $class_file_name_arr = explode('Model', $this::class);
             array_shift($class_file_name_arr);
             $class_file_name = str_replace('\\', '', implode('', $class_file_name_arr));
+            if (str_ends_with($class_file_name, 'Interceptor')) {
+                $class_file_name = substr($class_file_name, 0, strpos($class_file_name, 'Interceptor'));
+            }
             if (str_ends_with($class_file_name, 'Model')) {
                 $class_file_name = substr($class_file_name, 0, strpos($class_file_name, 'Model'));
             }
