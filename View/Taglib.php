@@ -539,7 +539,7 @@ class Taglib
                                 // 变量导入
                                 $vars_string = '[';
                                 if (isset($attributes['vars'])) {
-                                    $vars = explode('|', $attributes['vars']);
+                                    $vars = explode(',', $attributes['vars']);
                                     foreach ($vars as $key => $var) {
                                         $var_name    = trim($var);
                                         $var         = '$' . $var_name;
