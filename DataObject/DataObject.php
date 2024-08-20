@@ -32,6 +32,7 @@ class DataObject implements \ArrayAccess
      * @var array
      */
     private array $_data = [];
+    private array $_changed = [];
 
     /**
      * Setter/Getter转换缓存
@@ -49,6 +50,18 @@ class DataObject implements \ArrayAccess
     public function __construct(array $data = [])
     {
         $this->_data = $data;
+    }
+
+    /**
+     * 获取变化值
+     * @return array
+     */
+    public function getChangedData(string $key=''):array|string
+    {
+        if ($key) {
+            return $this->_changed[$key] ?? [];
+        }
+        return $this->_changed;
     }
 
     /**
@@ -113,11 +126,26 @@ class DataObject implements \ArrayAccess
      *
      * @return $this
      */
-    public function setData($key, $value = null): static
+    public function setData(string|array $key, $value = null): static
     {
         if ($key === (array)$key) {
+            foreach ($key as $sub_key => $sub_val) {
+                if(!is_string($sub_key)){
+                    continue;
+                }
+                if(!isset($this->_data[$sub_key])){
+                    $this->_changed[$sub_key] = $sub_val;
+                }elseif($this->_data[$sub_key] !== $sub_val){
+                    $this->_changed[$sub_key] = $sub_val;
+                }
+            }
             $this->_data = array_merge($this->_data, $key);
         } else {
+            if(!isset($this->_data[$key])){
+                $this->_changed[$key] = $value;
+            }elseif($this->_data[$key] !== $value){
+                $this->_changed[$key] = $value;
+            }
             $this->_data[$key] = $value;
         }
 
@@ -506,13 +534,7 @@ class DataObject implements \ArrayAccess
     public function toString(string $format = ''): array|string
     {
         if (empty($format)) {
-            $data = $this->getData();
-            foreach ($data as &$datum) {
-                if(is_array($datum)){
-                    $datum = implode(', ', $datum);
-                }
-            }
-            $result = implode(', ', $data);
+            $result = implode(', ', $this->getData());
         } else {
             preg_match_all('/{{([a-z0-9_]+)}}/is', $format, $matches);
             foreach ($matches[1] as $var) {
