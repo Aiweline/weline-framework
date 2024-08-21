@@ -56,7 +56,7 @@ class DataObject implements \ArrayAccess
      * 获取变化值
      * @return array
      */
-    public function getChangedData(string $key=''):array|string
+    public function getChangedData(string $key = ''): array|string
     {
         if ($key) {
             return $this->_changed[$key] ?? [];
@@ -130,20 +130,20 @@ class DataObject implements \ArrayAccess
     {
         if ($key === (array)$key) {
             foreach ($key as $sub_key => $sub_val) {
-                if(!is_string($sub_key)){
+                if (!is_string($sub_key)) {
                     continue;
                 }
-                if(!isset($this->_data[$sub_key])){
+                if (!isset($this->_data[$sub_key])) {
                     $this->_changed[$sub_key] = $sub_val;
-                }elseif($this->_data[$sub_key] !== $sub_val){
+                } elseif ($this->_data[$sub_key] !== $sub_val) {
                     $this->_changed[$sub_key] = $sub_val;
                 }
             }
             $this->_data = array_merge($this->_data, $key);
         } else {
-            if(!isset($this->_data[$key])){
+            if (!isset($this->_data[$key])) {
                 $this->_changed[$key] = $value;
-            }elseif($this->_data[$key] !== $value){
+            } elseif ($this->_data[$key] !== $value) {
                 $this->_changed[$key] = $value;
             }
             $this->_data[$key] = $value;
@@ -224,7 +224,10 @@ class DataObject implements \ArrayAccess
 
         /* 处理 a/b/c key as ['a']['b']['c'] */
         if (str_contains($key, '/')) {
-            $data = $this->getDataByPath($key);
+            $data = $this->getDataByPath($key, '/');
+        } elseif (str_contains($key, '.')) {
+            /* 处理 a.b.c key as ['a']['b']['c'] */
+            $data = $this->getDataByPath($key, '.');
         } else {
             $data = $this->_getData($key);
         }
@@ -260,9 +263,9 @@ class DataObject implements \ArrayAccess
      *
      * @return mixed
      */
-    public function getDataByPath($path): mixed
+    public function getDataByPath($path, string $separator = '/'): mixed
     {
-        $keys = explode('/', $path);
+        $keys = explode($separator, $path);
 
         $data = $this->_data;
         foreach ($keys as $key) {
@@ -478,7 +481,8 @@ class DataObject implements \ArrayAccess
         string $rootName = 'item',
         bool   $addOpenTag = false,
         bool   $addCdata = true
-    ): string {
+    ): string
+    {
         return $this->toXml($arrAttributes, $rootName, $addOpenTag, $addCdata);
     }
 
@@ -534,7 +538,13 @@ class DataObject implements \ArrayAccess
     public function toString(string $format = ''): array|string
     {
         if (empty($format)) {
-            $result = implode(', ', $this->getData());
+            $data = $this->getData();
+            foreach ($data as &$datum) {
+                if (is_array($datum)) {
+                    $datum = implode(', ', $datum);
+                }
+            }
+            $result = implode(', ', $data);
         } else {
             preg_match_all('/{{([a-z0-9_]+)}}/is', $format, $matches);
             foreach ($matches[1] as $var) {
