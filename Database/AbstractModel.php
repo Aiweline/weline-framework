@@ -114,6 +114,7 @@ abstract class AbstractModel extends DataObject
     private mixed $_query_data = null;
     private bool $is_delete = false;
     private bool $is_update = false;
+    private bool $is_insert = false;
     public array $pagination = ['page' => 1, 'pageSize' => 20, 'totalSize' => 0, 'lastPage' => 0];
 
     # Flag
@@ -165,10 +166,10 @@ abstract class AbstractModel extends DataObject
         if (empty($this->table)) {
             $this->table = $this->processTable();
         }
-        if(empty($this->_primary_key)){
+        if (empty($this->_primary_key)) {
             if (!empty($this::primary_key)) {
                 $this->_primary_key = $this::primary_key;
-            }elseif ($this::fields_ID !== $this->_primary_key_default) {
+            } elseif ($this::fields_ID !== $this->_primary_key_default) {
                 $this->_primary_key = $this::fields_ID;
             } else {
                 $this->_primary_key = $this->_primary_key_default;
@@ -524,22 +525,22 @@ abstract class AbstractModel extends DataObject
      */
     public function update(array|string $field = null, int|string|null $value_or_condition_field = ''): static
     {
-        if(empty($value_or_condition_field)){
+        if (empty($value_or_condition_field)) {
             $value_or_condition_field = $this->_primary_key;
         }
         $query = $this->getQuery();
         if ($field) {
-            $query->update($field, $value_or_condition_field );
+            $query->update($field, $value_or_condition_field);
             $this->setModelData($field);
         } else {
             $update = $this->getModelChangedData();
             # 没有更新则不处理
-            if(empty($update)){
+            if (empty($update)) {
                 return $this;
             }
-            if(empty($query->wheres) && $id = $this->getData($value_or_condition_field)){
+            if (empty($query->wheres) && $id = $this->getData($value_or_condition_field)) {
                 $this->getQuery()->where($value_or_condition_field, $id)->update($update, $value_or_condition_field);
-            }else{
+            } else {
                 $this->getQuery()->update($update, $value_or_condition_field);
             }
         }
@@ -774,6 +775,9 @@ abstract class AbstractModel extends DataObject
             } else {
                 $query = $this->getQuery();
             }
+            if ($method == 'insert') {
+                $this->is_insert = true;
+            }
             if ($method == 'delete') {
                 $this->is_delete = true;
                 // 加载之前
@@ -815,7 +819,7 @@ abstract class AbstractModel extends DataObject
             # 拦截fetch操作 注入返回的模型
             if ('fetch' === $method) {
                 # 如果是空数据更新
-                if(!trim($this->getQuery()->getPrepareSql(false))){
+                if (!trim($this->getQuery()->getPrepareSql(false))) {
                     return $this;
                 }
                 $args[]   = $this::class;
@@ -847,8 +851,8 @@ abstract class AbstractModel extends DataObject
                 } elseif (is_array($query_data)) {
                     $this->setFetchData($query_data);
                     $this->setObjectData($query_data);
-                } else {
-                    $this->setFetchData($query_data);
+                } elseif ($this->is_insert and (is_numeric($query_data) or is_string($query_data))) {
+                    $this->setId($query_data);
                 }
                 $this->fetch_after();
                 $this->clearQuery();
@@ -1272,14 +1276,14 @@ abstract class AbstractModel extends DataObject
     public function getModelChangedData(string $field = ''): array|string
     {
         $data = $this->getModelData($field);
-        if($field) {
-            if(isset($data[$field]) && $changed_data = $this->getChangedData($field)) {
+        if ($field) {
+            if (isset($data[$field]) && $changed_data = $this->getChangedData($field)) {
                 return $changed_data;
             } else {
                 return '';
             }
         } else {
-            $changed_data = $this->getChangedData();
+            $changed_data       = $this->getChangedData();
             $changed_model_data = [];
             foreach ($data as $field => $datum) {
                 if (isset($changed_data[$field])) {
@@ -1660,7 +1664,7 @@ PAGINATION;
             }
             # 获取变更数据
             $data = $this->getModelChangedData();
-            if(!$data){
+            if (!$data) {
                 return $check_result[$this->_primary_key];
             }
             # 出去条件中的唯一值
