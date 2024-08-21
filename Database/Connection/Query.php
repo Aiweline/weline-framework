@@ -380,6 +380,16 @@ abstract class Query implements QueryInterface
                 break;
         }
         $this->fetch_type = '';
+        if(Env::get('db_log.enabled') or DEBUG) {
+            $file = Env::get('db_log.file');
+            $data = [
+                'prepare_sql' => $this->getPrepareSql(false),
+                'sql' => $this->getLastSql(false),
+                'data' => $this->bound_values,
+                'result' => $origin_data
+            ];
+            Env::log($file, json_encode($data));
+        }
         //        $this->clear();
         $this->clearQuery();
         //        $this->reset();

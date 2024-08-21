@@ -130,6 +130,11 @@ class Env extends DataObject
     private static Env $instance;
 
     public const default_CONFIG = [
+        'env' => 'local',
+        'db_log' => [
+            'enabled' => false,
+            'file' => 'var' . DS . 'log' . DS . 'db.log',
+        ],
         'cache' => self::default_CACHE,
         'session' => self::default_SESSION,
         'log' => self::default_LOG,
@@ -256,6 +261,35 @@ class Env extends DataObject
         return self::$instance;
     }
 
+    static public function get(string $name = '')
+    {
+        return self::getInstance()->getConfig($name);
+    }
+
+    static public function set(string $name, $value){
+        return self::getInstance()->setConfig($name, $value);
+    }
+
+    static function log(string $filename, string $content, bool $append = true): bool
+    {
+        $content = str_replace("\r\n", "\n", $content);
+        $content = str_replace("\r", "\n", $content);
+        $content = '-------------------'. date('Y-m-d H:i:s') .'------------------------' . "\n" . $content . "\n". '-------------------------'. date('Y-m-d H:i:s') .'------------------' . "\n";
+        if(!str_contains($filename, BP)) {
+            $filename = BP . $filename;
+        }
+        if(!is_file($filename)){
+            if(!is_dir(dirname($filename))) {
+                mkdir(dirname($filename), 0777, true);
+            }
+        }
+        if($append) {
+            return file_put_contents($filename, $content, FILE_APPEND);
+        } else {
+            return file_put_contents($filename, $content);
+        }
+    }
+
     /**
      * @DESC         |获取环境参数
      *
@@ -268,6 +302,19 @@ class Env extends DataObject
      */
     public function getConfig(string $name = '', $default = null): mixed
     {
+        # 使用.获取数组数据
+        if(str_contains($name, '.')) {
+            $config = $this->config;
+            $name = explode('.', $name);
+            foreach($name as $key) {
+                if(isset($config[$key])) {
+                    $config = $config[$key];
+                } else {
+                    return $default;
+                }
+            }
+            return $config;
+        }
         if (isset($this->hasGetConfig[$name])) {
             return $this->hasGetConfig[$name];
         }
