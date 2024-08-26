@@ -55,11 +55,10 @@ class Cli extends CliAbstract
                     $lastOption                  = substr($lastOptionOrigin, 0, strpos($lastOptionOrigin, '='));
                     $value                       = substr($lastOptionOrigin, strpos($lastOptionOrigin, '=') + 1);
                     if(strpos($value, '=') !== false) {
-                        $valueTmp = [];
-                        $valueTmp[substr($value, 0,strpos($value, '='))] = substr($value, strpos($value, '=') + 1);
-                        $value = $valueTmp;
+                        $args[$lastOption][substr($value, 0,strpos($value, '='))] = substr($value, strpos($value, '=') + 1);
+                    }else{
+                        $args[$lastOption] = $value;
                     }
-                    $args[$lastOption] = $value;
                 } else {
                     $args[$lastOption] = true;
                 }
@@ -70,11 +69,10 @@ class Cli extends CliAbstract
                     $lastOption                  = substr($lastOptionOrigin, 0, strpos($lastOptionOrigin, '='));
                     $value                       = substr($lastOptionOrigin, strpos($lastOptionOrigin, '=') + 1);
                     if(strpos($value, '=') !== false) {
-                        $valueTmp = [];
-                        $valueTmp[substr($value, 0,strpos($value, '='))] = substr($value, strpos($value, '=') + 1);
-                        $value = $valueTmp;
+                        $args[$lastOption][substr($value, 0,strpos($value, '='))] = substr($value, strpos($value, '=') + 1);
+                    }else{
+                        $args[$lastOption] = $value;
                     }
-                    $args[$lastOption] = $value;
                 } else {
                     $args[$lastOption] = true;
                 }
@@ -85,18 +83,24 @@ class Cli extends CliAbstract
                         $args[$lastOption]= [$args[$lastOption]];
                     }
                     if(strpos($arg, '=') !== false) {
-                        $argTmp = [];
-                        $argTmp[substr($arg, 0,strpos($arg, '='))] = substr($arg, strpos($arg, '=') + 1);
-                        $arg = $argTmp;
+                        $args[$lastOption][substr($arg, 0,strpos($arg, '='))]= substr($arg, strpos($arg, '=') + 1);
+                    }else{
+                        $args[$lastOption][]= $arg;
                     }
-                    $args[$lastOption][]= $arg;
+
                 } else {
                     if(strpos($arg, '=') !== false) {
-                        $argTmp = [];
-                        $argTmp[substr($arg, 0,strpos($arg, '='))] = substr($arg, strpos($arg, '=') + 1);
-                        $arg = $argTmp;
+                        if(isset($args[$lastOption])) {
+                            if(is_bool($args[$lastOption])){
+                                $args[$lastOption]= [];
+                            }else{
+                                $args[$lastOption]= [$args[$lastOption]];
+                            }
+                        }
+                        $args[$lastOption][substr($arg, 0,strpos($arg, '='))] = substr($arg, strpos($arg, '=') + 1);
+                    }else{
+                        $args[$lastOption] = $arg;
                     }
-                    $args[$lastOption] = $arg;
                 }
             }
         }
