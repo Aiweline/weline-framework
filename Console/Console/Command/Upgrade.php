@@ -159,7 +159,41 @@ class Upgrade extends CommandAbstract
                             $file_array = explode('\\', $file);
                             array_shift($file_array);
                             $file    = implode(':', $file_array);
-                            $command = str_replace('\\', ':', strtolower($file));
+                            # 处理大写字母转化成-开头
+                            $file = w_split_by_capital($file);
+                            $file_str = '';
+                            $pre_end_with = '';
+                            $pre_is_one = false;
+                            foreach ($file as $key=>&$item) {
+                                if (''===$item) {
+                                    continue;
+                                }
+                                # 如果$item长度只有1个，那么直接跳过
+                                if (1==strlen($item)) {
+                                    $file_str.=$item;
+                                    $pre_is_one = true;
+                                    $pre_end_with = $item[strlen($item)-1];
+                                    continue;
+                                }
+                                if($pre_is_one){
+                                    $file_str.=$item;
+                                    $pre_end_with = $item[strlen($item)-1];
+                                    $pre_is_one = false;
+                                    continue;
+                                }
+                                if($pre_end_with and ':'===$pre_end_with){
+                                    $file_str.=$item;
+                                    $pre_end_with = $item[strlen($item)-1];
+                                    continue;
+                                }
+                                $pre_end_with = $item[strlen($item)-1];
+                                if(':'===$pre_end_with){
+                                    $file_str.=$item;
+                                    continue;
+                                }
+                                $file_str.='-'.$item;
+                            }
+                            $command = str_replace('\\', ':', strtolower($file_str));
                             array_pop($file_array);
                             $command_prefix                                           = strtolower(implode(':', $file_array));
                             $commands[$command_prefix . '#' . $module_name][$command] = [
