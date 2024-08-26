@@ -255,7 +255,7 @@ class App
             $uri = $_SERVER['REQUEST_URI'];
             if ($uri and '/' !== $uri) {
                 # 获取路由前缀，可能是货币码或者语言码
-                $uri_arr = explode('/', $uri);
+                $uri_arr = explode('/', ltrim($uri, '/'));
                 if ($uri_arr) {
                     # 如果还有路由
                     $pre_path_1 = $uri_arr[0] ?? '';
