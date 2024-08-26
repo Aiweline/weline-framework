@@ -65,13 +65,12 @@ class Upgrade extends CommandAbstract
         /**@var EventsManager $eventsManager */
         $eventsManager = ObjectManager::getInstance(EventsManager::class);
         $eventsManager->dispatch('Framework_Module::module_upgrade_before');
-        $params = $args['format'];
         $appoint = false;
         $argsModule = [];
-        if(!empty($params['module'])){
-            $argsModule = explode(',', $params['module']);
+        if(!empty($args['module'])){
+            $argsModule = explode(',', $args['module']);
         }
-        if(isset($params['model'])){
+        if(isset($args['model'])){
             $appoint = true;
             /**@var ModelManager $modelManager */
             $modelManager = ObjectManager::getInstance(ModelManager::class);
@@ -96,7 +95,7 @@ class Upgrade extends CommandAbstract
                 $module_handle->setupModel(new Module($module));
             }
         }
-        if(isset($params['route'])){
+        if(isset($args['route'])){
             $appoint = true;
             // 注册路由信息
             /**@var Handle $module_handle */
