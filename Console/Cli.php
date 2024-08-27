@@ -56,11 +56,14 @@ class Cli extends CliAbstract
                     $value                       = substr($lastOptionOrigin, strpos($lastOptionOrigin, '=') + 1);
                     if(strpos($value, '=') !== false) {
                         $args[$lastOption][substr($value, 0,strpos($value, '='))] = substr($value, strpos($value, '=') + 1);
+                        $args[$arg][$value] = $value;
                     }else{
                         $args[$lastOption] = $value;
+                        $args[$arg] = $value;
                     }
                 } else {
                     $args[$lastOption] = true;
+                    $args[$arg] = true;
                 }
             } elseif (str_starts_with($arg, '-')) {
                 $lastOption       = substr($arg, 1);
@@ -70,11 +73,14 @@ class Cli extends CliAbstract
                     $value                       = substr($lastOptionOrigin, strpos($lastOptionOrigin, '=') + 1);
                     if(strpos($value, '=') !== false) {
                         $args[$lastOption][substr($value, 0,strpos($value, '='))] = substr($value, strpos($value, '=') + 1);
+                        $args[$arg][$value] = $value;
                     }else{
                         $args[$lastOption] = $value;
+                        $args[$arg] = $value;
                     }
                 } else {
                     $args[$lastOption] = true;
+                    $args[$arg] = true;
                 }
             } else {
                 if ($lastOption and isset($args[$lastOption]) and !is_bool($args[$lastOption])) {
@@ -87,8 +93,7 @@ class Cli extends CliAbstract
                     }else{
                         $args[$lastOption][]= $arg;
                     }
-
-                } else {
+                }else {
                     if(strpos($arg, '=') !== false) {
                         if(isset($args[$lastOption])) {
                             if(is_bool($args[$lastOption])){
@@ -99,8 +104,15 @@ class Cli extends CliAbstract
                         }
                         $args[$lastOption][substr($arg, 0,strpos($arg, '='))] = substr($arg, strpos($arg, '=') + 1);
                     }else{
-                        $args[$lastOption] = $arg;
+                        $args[$lastOption?:$arg] = $arg;
                     }
+                }
+            }
+            if($lastOption and isset($args[$lastOption]) and is_array($args[$lastOption]) and isset($args['-'.$lastOption])){
+                if(!is_array($args['-'.$lastOption]) and is_bool($args['-'.$lastOption])){
+                    $args['-'.$lastOption]= [];
+                }else{
+                    $args['-'.$lastOption][]= $arg;
                 }
             }
         }
