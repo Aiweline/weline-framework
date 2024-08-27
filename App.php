@@ -336,14 +336,23 @@ class App
     public static function detectCurrency(string $code, string &$uri, EventsManager &$eventManager): bool
     {
         if(!$code) return false;
-        $default_currency = strtolower(Env::get('currency'));
-        if (strtolower($code) === $default_currency) {
+        if(isset($_COOKIE['WELINE-USER-CURRENCY']) and $_COOKIE['WELINE-USER-CURRENCY'] == $code) {
             if (str_starts_with($uri, '/' . $code)) {
                 $uri = substr($uri, strlen('/' . $code));
             }
             Cookie::set('WELINE-USER-CURRENCY', $code, 3600 * 24 * 30);
             $_SERVER['WELINE-USER-CURRENCY'] = $code;
             return true;
+        }
+        if($default_currency = Env::get('currency')){
+            if (strtolower($code) === strtolower($default_currency)) {
+                if (str_starts_with($uri, '/' . $code)) {
+                    $uri = substr($uri, strlen('/' . $code));
+                }
+                Cookie::set('WELINE-USER-CURRENCY', $code, 3600 * 24 * 30);
+                $_SERVER['WELINE-USER-CURRENCY'] = $code;
+                return true;
+            }
         }
         # 如果查询得到属于货币，则删除此路由
         $data = new DataObject([
@@ -366,14 +375,23 @@ class App
     public static function detectLanguage(string $code, string &$uri, EventsManager &$eventManager): bool
     {
         if(!$code) return false;
-        $default_lang = strtolower(Env::get('lang'));
-        if (strtolower($code) === $default_lang) {
+        if(isset($_COOKIE['WELINE-USER-LANG']) and $_COOKIE['WELINE-USER-LANG'] == $code) {
             if (str_starts_with($uri, '/' . $code)) {
                 $uri = substr($uri, strlen('/' . $code));
             }
             Cookie::set('WELINE-USER-LANG', $code, 3600 * 24 * 30);
             $_SERVER['WELINE-USER-LANG'] = $code;
             return true;
+        }
+        if($default_lang = Env::get('lang')){
+            if (strtolower($code) === strtolower($default_lang)) {
+                if (str_starts_with($uri, '/' . $code)) {
+                    $uri = substr($uri, strlen('/' . $code));
+                }
+                Cookie::set('WELINE-USER-LANG', $code, 3600 * 24 * 30);
+                $_SERVER['WELINE-USER-LANG'] = $code;
+                return true;
+            }
         }
         # 如果查询得到属于货币，则删除此路由
         $data = new DataObject([
