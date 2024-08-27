@@ -255,7 +255,7 @@ class App
             $uri = $_SERVER['REQUEST_URI'];
             if ($uri and '/' !== $uri) {
                 # 获取路由前缀，可能是货币码或者语言码
-                $uri_arr = explode('/', ltrim($uri, '/'));
+                $uri_arr = explode('/', ltrim($uri,'/'));
                 if ($uri_arr) {
                     # 如果还有路由
                     $pre_path_1 = $uri_arr[0] ?? '';
@@ -320,11 +320,11 @@ class App
         if ($store_url = $data->getData('store_url') and $store_id = $data->getData('store_id')) {
             # 截取非店铺路径
             $_SERVER['REQUEST_URI'] = substr($_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], strlen($store_url));
-            $_SERVER['WELINE-STORE-ID'] = $store_id;
-            $_SERVER['WELINE-STORE-URL'] = $store_url;
+            $_SERVER['WELINE-WEBSITE-ID'] = $store_id;
+            $_SERVER['WELINE-WEBSITE-URL'] = $store_url;
         } else {
-            $_SERVER['WELINE-STORE-ID'] = 0;
-            $_SERVER['WELINE-STORE-URL'] = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'];
+            $_SERVER['WELINE-WEBSITE-ID'] = 0;
+            $_SERVER['WELINE-WEBSITE-URL'] = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'];
         }
     }
 
@@ -335,6 +335,16 @@ class App
      */
     public static function detectCurrency(string $code, string &$uri, EventsManager &$eventManager): bool
     {
+        if(!$code) return false;
+        $default_currency = strtolower(Env::get('currency'));
+        if (strtolower($code) === $default_currency) {
+            if (str_starts_with($uri, '/' . $code)) {
+                $uri = substr($uri, strlen('/' . $code));
+            }
+            Cookie::set('WELINE-USER-CURRENCY', $code, 3600 * 24 * 30);
+            $_SERVER['WELINE-USER-CURRENCY'] = $code;
+            return true;
+        }
         # 如果查询得到属于货币，则删除此路由
         $data = new DataObject([
             'result' => false,
@@ -347,6 +357,7 @@ class App
                 $uri = substr($uri, strlen('/' . $code));
             }
             Cookie::set('WELINE-USER-CURRENCY', $code, 3600 * 24 * 30);
+            $_SERVER['WELINE-USER-CURRENCY'] = $code;
             return true;
         }
         return false;
@@ -354,6 +365,16 @@ class App
 
     public static function detectLanguage(string $code, string &$uri, EventsManager &$eventManager): bool
     {
+        if(!$code) return false;
+        $default_lang = strtolower(Env::get('lang'));
+        if (strtolower($code) === $default_lang) {
+            if (str_starts_with($uri, '/' . $code)) {
+                $uri = substr($uri, strlen('/' . $code));
+            }
+            Cookie::set('WELINE-USER-LANG', $code, 3600 * 24 * 30);
+            $_SERVER['WELINE-USER-LANG'] = $code;
+            return true;
+        }
         # 如果查询得到属于货币，则删除此路由
         $data = new DataObject([
             'result' => false,
@@ -366,6 +387,7 @@ class App
                 $uri = substr($uri, strlen('/' . $code));
             }
             Cookie::set('WELINE-USER-LANG', $code, 3600 * 24 * 30);
+            $_SERVER['WELINE-USER-LANG'] = $code;
             return true;
         }
         return false;

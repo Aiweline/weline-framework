@@ -409,6 +409,9 @@ abstract class RequestAbstract extends RequestFilter
 
     public function getBaseHost(): string
     {
+        if((isset($_SERVER['WELINE-WEBSITE-URL']))) {
+            return $_SERVER['WELINE-WEBSITE-URL'];
+        }
         $port = $this->getServer('SERVER_PORT');
         return ($this->getServer('HTTP_X_FORWARDED_PROTO') ?: $this->getServer('REQUEST_SCHEME')) . '://' . $this->getServer('HTTP_HOST') . (($port !== '80' && $port !== '443') ? ':' . $port : '');
     }
