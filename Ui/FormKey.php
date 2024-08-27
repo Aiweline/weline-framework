@@ -25,17 +25,25 @@ class FormKey
 
     public function __construct(
         Session $session
-    )
-    {
+    ) {
         $this->_session = $session;
     }
 
-    public function setKey(): static
+    public function setKey(string $name = ''): static
     {
-        if (empty($this->_key)) {
-            $this->_key = Text::rand_str();
-            $this->_session->setData(self::key_name, $this->_key);
+        if($name){
+            if($this->_session->getData(self::key_name.'_'.$name)){
+                return $this;
+            }else{
+                $this->_session->setData(self::key_name.'_'.$name, Text::rand_str());
+                return $this;
+            }
         }
+        if($this->_key || $this->_session->getData(self::key_name)) {
+            return $this;
+        }
+        $this->_key = Text::rand_str();
+        $this->_session->setData(self::key_name, $this->_key);
         return $this;
     }
 
@@ -44,18 +52,22 @@ class FormKey
         return [];
     }
 
-    public function getKey(string $path): string
+    public function getKey(string $path, string $name = ''): string
     {
-        if (empty($this->_key)) {
-            $this->setKey();
-        }
+        $this->setKey($name);
         $this->_key_paths[] = $path;
+        if($name) {
+            $this->_key_paths[] = $name;
+        }
         $this->_session->setData(self::form_key_paths, implode(',', $this->_key_paths));
+        if($name) {
+            return $this->_session->getData(self::key_name.'_'.$name);
+        }
         return $this->_session->getData(self::key_name);
     }
 
-    public function getHtml(string $path): string
+    public function getHtml(string $path, string $name = ''): string
     {
-        return '<input type="hidden" name="form_key" value="' . $this->getKey($path) . '"/>';
+        return '<input type="hidden" name="form_key"'.($name?' alias="'.$name.'"':'').' value="' . $this->getKey($path, $name) . '"/>';
     }
 }

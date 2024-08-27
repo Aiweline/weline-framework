@@ -139,7 +139,7 @@ class Env extends DataObject
         'session' => self::default_SESSION,
         'log' => self::default_LOG,
         'php-cs' => true,
-        'lang' => 'en_US',
+        'lang' => 'zh_Hans_CN',
         'currency' => 'CNY',
     ];
 

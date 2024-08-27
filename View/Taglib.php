@@ -16,6 +16,7 @@ use Weline\Framework\DataObject\DataObject;
 use Weline\Framework\Event\EventsManager;
 use Weline\Framework\Http\Request;
 use Weline\Framework\Manager\ObjectManager;
+use Weline\Framework\View\Block\Csrf;
 use Weline\Framework\View\Cache\ViewCache;
 use Weline\Framework\View\Exception\TemplateException;
 
@@ -70,7 +71,7 @@ class Taglib
         '|='
     ];
 
-    const operators_symbols_to_lang = [
+    public const operators_symbols_to_lang = [
         '||' => ' or ',
         '&&' => ' and ',
 //        '|'=>' or ', 已当做过滤器使用
@@ -84,7 +85,7 @@ class Taglib
         ' lte ' => ' <= '
     ];
 
-    const special_lang_symbols = [
+    public const special_lang_symbols = [
         'null', 'and', 'or', 'xor', '||', 'neq', 'eq', 'gt', 'lt', 'gte', 'lte'
     ];
 
@@ -96,9 +97,9 @@ class Taglib
         if (str_contains($name, $filter)) {
             $name_arr = explode('|', $name);
             $name     = $name_arr[0];
-            if(w_get_string_between_quotes($name_arr[1])){
+            if(w_get_string_between_quotes($name_arr[1])) {
                 $default  = $name_arr[1];
-            }else{
+            } else {
                 $default  = $this->varParser($name_arr[1]);
             }
         }
@@ -108,7 +109,7 @@ class Taglib
     public function checkVar(string $name): string
     {
         if (str_starts_with($name, '$')) {
-//            return '('.$name.'??"")';
+            //            return '('.$name.'??"")';
             return $name;
         }
         # 有字母的，且不是字符串，不存在特殊字符内的，可以加$
@@ -130,7 +131,7 @@ class Taglib
 
 
         # 处理转行变量
-//        $name = str_replace('    ', '', $name);
+        //        $name = str_replace('    ', '', $name);
         $name = preg_replace('/ {4,}/', '', $name);
 
         # 单双引号包含的字符串不解析
@@ -143,8 +144,8 @@ class Taglib
         $pattern = '/(?<![\-\>()\s])\s*([><=!]={1,3}+|&&|\|\|)\s*(?![()\s])/';
         $name = preg_replace($pattern, ' $1 ', $name);
 
-//        $name = $newString;
-//        d($name);
+        //        $name = $newString;
+        //        d($name);
         foreach ($exclude_names as $key => $exclude_name) {
             $name = str_replace('w_var_str' . $key, $exclude_name, $name);
         }
@@ -157,9 +158,9 @@ class Taglib
             $pieces    = explode('.', $var);
             $has_piece = false;
             if (count($pieces) > 1) {
-//                if (PROD) {
-//                    $name_str .= '(';
-//                }
+                //                if (PROD) {
+                //                    $name_str .= '(';
+                //                }
                 $name_str  .= '(';
                 $has_piece = true;
             }
@@ -484,8 +485,8 @@ class Taglib
                                 }
                             }
                             return $result;
-//                            $content_arr = explode('|', $tag_data[1]);
-//                            $name        = $this->varParser($this->checkVar($content_arr[0]));
+                        //                            $content_arr = explode('|', $tag_data[1]);
+                        //                            $name        = $this->varParser($this->checkVar($content_arr[0]));
                         /*                            return "<?php if(!empty({$name}))echo '" . $template->tmp_replace(trim($content_arr[1] ?? '')) . "'?>";*/
                         case 'tag-start':
                             if (!isset($attributes['name'])) {
@@ -568,7 +569,7 @@ class Taglib
                             return "<?php
                         foreach({$foreach_str}){
                         ?>
-                            {$template->tmp_replace($content_arr[1]??'')}
+                            {$template->tmp_replace($content_arr[1] ?? '')}
                             <?php
                         }
                         ?>";
@@ -837,6 +838,53 @@ class Taglib
                         }
                     }
             ],
+            'csrf'      => [
+                'tag'      => 1,
+                'doc'                       => '@csrf{demo}或者@csrf(demo)或者' . htmlentities('<csrf name="demo"/>') . '或者' . htmlentities('<csrf>demo</csrf>').' 协助在form表单中设置csrf令牌，防止跨站请求伪造（CSRF）攻击',
+                'tag'                       => 1,
+                'attr'                      => [],
+                'tag-self-close-with-attrs' => 1,
+                'callback' =>
+                    function ($tag_key, $config, $tag_data, $attributes) {
+                        switch ($tag_key) {
+                            case 'tag':
+                                $name = $tag_data[2] ?? '';
+                            // no break
+                            case 'tag-self-close-with-attrs':
+                                $name = $attributes['name'] ?? '';
+                            // no break
+                            default:
+                                if (empty($name)) {
+                                    $name = $tag_data[1] ?? 'csrf';
+                                }
+                                /**@var Csrf $csrf */
+                                $csrf = ObjectManager::getInstance(Csrf::class);
+                                return $csrf->getHtml($name);
+                        }
+                    }
+            ],
+            'message'      => [
+                'tag'      => 1,
+                'doc'                       => '@message{}或者@message()或者' . htmlentities('<message/>') . '或者' . htmlentities('<message></message>').' 显示消息提示：有来自后端渲染型消息会提示到此处！',
+                'tag'                       => 1,
+                'attr'                      => [],
+                'tag-self-close-with-attrs' => 1,
+                'callback' =>
+                    function ($tag_key, $config, $tag_data, $attributes) {
+                        return ObjectManager::getInstance(\Weline\Framework\Manager\MessageManager::class)->__toString();
+                    }
+            ],
+            'msg'      => [
+                'tag'      => 1,
+                'doc'                       => '@msg{}或者@msg()或者' . htmlentities('<msg/>') . '或者' . htmlentities('<msg></msg>').' 显示消息提示：有来自后端渲染型消息会提示到此处！',
+                'tag'                       => 1,
+                'attr'                      => [],
+                'tag-self-close-with-attrs' => 1,
+                'callback' =>
+                    function ($tag_key, $config, $tag_data, $attributes) {
+                        return ObjectManager::getInstance(\Weline\Framework\Manager\MessageManager::class)->__toString();
+                    }
+            ],
         ];
         # 兼容自定义tag
         /**@var EventsManager $event */
@@ -896,12 +944,12 @@ class Taglib
             $tag_config_patterns['@tag{}'] = $tag_patterns['@tag{}'];
 
             # 标签验证测试
-//            if('var'===$tag){
-//                foreach ($tag_config_patterns as &$tag_config_pattern) {
-//                    $tag_config_pattern = htmlentities($tag_config_pattern);
-//                }
-//                p($tag_config_patterns);
-//            }
+            //            if('var'===$tag){
+            //                foreach ($tag_config_patterns as &$tag_config_pattern) {
+            //                    $tag_config_pattern = htmlentities($tag_config_pattern);
+            //                }
+            //                p($tag_config_patterns);
+            //            }
             # 匹配处理
             $format_function = $tag_configs['callback'];
             foreach ($tag_config_patterns as $tag_key => $tag_pattern) {
@@ -941,17 +989,17 @@ class Taglib
                         }
                     }
 
-//                    if($tag_key==='tag-self-close-with-attrs'&&$tag==='block') {
-//                        p( $rawAttributes,1);
-//                        p( $attributes);
-//                        if(str_contains($rawAttributes, "item='sub_menu'")){
-//                            p( $formatedAttributes,1);
-//                            p( $attributes);
-//                        };
-//                    }
+                    //                    if($tag_key==='tag-self-close-with-attrs'&&$tag==='block') {
+                    //                        p( $rawAttributes,1);
+                    //                        p( $attributes);
+                    //                        if(str_contains($rawAttributes, "item='sub_menu'")){
+                    //                            p( $formatedAttributes,1);
+                    //                            p( $attributes);
+                    //                        };
+                    //                    }
                     # 验证标签属性
                     $attrs = $tag_configs['attr'] ?? [];
-                    if ($attrs && ('tar-start' === $tag_key || 'tag-self-close-with-attrs' === $tag_key|| 'tag' === $tag_key)) {
+                    if ($attrs && ('tar-start' === $tag_key || 'tag-self-close-with-attrs' === $tag_key || 'tag' === $tag_key)) {
                         $attributes_keys = array_keys($formatedAttributes);
                         foreach ($attrs as $attr => $required) {
                             if ($required && !in_array($attr, $attributes_keys)) {
@@ -963,10 +1011,10 @@ class Taglib
                     }
 
                     $result = $format_function($tag_key, $tag_configs, $customTag, $formatedAttributes);
-//                    if (DEV) {
-//                        $origin_tag = htmlspecialchars($customTag[0]) ?? '';
-//                        $result    = "<!-- {$origin_tag} START -->" . $result . "<!-- {$origin_tag} -->";
-//                    }
+                    //                    if (DEV) {
+                    //                        $origin_tag = htmlspecialchars($customTag[0]) ?? '';
+                    //                        $result    = "<!-- {$origin_tag} START -->" . $result . "<!-- {$origin_tag} -->";
+                    //                    }
                     $content = str_replace($originalTag, $result, $content);
                 }
             }
