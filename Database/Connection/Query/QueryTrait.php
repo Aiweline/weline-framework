@@ -269,7 +269,7 @@ trait QueryTrait
                     $values     .= '(';
                     foreach ($insert as $insert_field => $insert_value) {
                         $insert_bound_key                      = ':' . md5("{$insert_field}_field_{$insert_key}");
-                        $this->bound_values[$insert_bound_key] = $insert_value;
+                        $this->bound_values[$insert_bound_key] = (string)$insert_value;
                         $values                                .= "$insert_bound_key , ";
                     }
                     $values = rtrim($values, ', ');
@@ -289,7 +289,7 @@ trait QueryTrait
                     foreach ($identity_values as $key=>$identityValue) {
                         $identity_values_key                      = ':' . md5('update_identity_values_key'.$key);
                         $identity_values_str                     .= $identity_values_key. ',';
-                        $this->bound_values[$identity_values_key] = $identityValue;
+                        $this->bound_values[$identity_values_key] = (string)$identityValue;
                     }
                     $identity_values_str = rtrim($identity_values_str, ',');
                     $wheres .= ($wheres ? ' AND ' : 'WHERE ') . "$this->identity_field IN ($identity_values_str)";
@@ -313,11 +313,11 @@ trait QueryTrait
                                 # 主键值
                                 $update_key                                     += 1;
                                 $identity_field_column_key                      = ':' . md5("{$this->identity_field}_{$column}_key_{$update_key}");
-                                $this->bound_values[$identity_field_column_key] = $line[$this->identity_field];
+                                $this->bound_values[$identity_field_column_key] = (string)$line[$this->identity_field];
 
                                 # 更新键值
                                 $identity_field_column_value                      = ':' . md5("update_{$column}_value_{$update_key}");
-                                $this->bound_values[$identity_field_column_value] = $line[$column];
+                                $this->bound_values[$identity_field_column_value] = (string)$line[$column];
                                 # 组装
                                 $updates .= sprintf('WHEN %s THEN %s ', $identity_field_column_key, $identity_field_column_value);
 //                            $updates .= sprintf("WHEN '%s' THEN '%s' \n", $line[$this->identity_field], $identity_field_column_value);
@@ -331,7 +331,7 @@ trait QueryTrait
                         foreach ($this->updates[0] as $update_field => $field_value) {
                             $update_key                      = ':' . md5($update_field);
                             $update_field                    = $this->parserFiled($update_field);
-                            $this->bound_values[$update_key] = $field_value;
+                            $this->bound_values[$update_key] = (string)$field_value;
                             $updates                         .= "$update_field = $update_key,";
                         }
                     }
@@ -339,7 +339,7 @@ trait QueryTrait
                     foreach ($this->single_updates as $update_field => $update_value) {
                         $update_field                    = $this->parserFiled($update_field);
                         $update_key                      = ':' . md5($update_field);
-                        $this->bound_values[$update_key] = $update_value;
+                        $this->bound_values[$update_key] = (string)$update_value;
                         $updates                         .= "$update_field=$update_key,";
                     }
                 } else {
