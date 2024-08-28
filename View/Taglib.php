@@ -859,7 +859,7 @@ class Taglib
                                 }
                                 /**@var Csrf $csrf */
                                 $csrf = ObjectManager::getInstance(Csrf::class);
-                                return $csrf->getHtml($name);
+                                return $csrf->render($name);
                         }
                     }
             ],

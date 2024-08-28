@@ -80,37 +80,40 @@ class PcController extends Core
         return ObjectManager::getInstance(EventsManager::class);
     }
 
-    protected function csrf(): bool
+    protected function csrf(): string
     {
-        return false;
+        return '';
     }
 
     protected function isAllowed(): void
     {
         /**@var Session $session */
         $session = ObjectManager::getInstance(Session::class);
-        //        $session->setData('form_key_paths','');
-        # form表单检测
-        if (!empty($form_key_paths_str = $session->getData('form_key_paths')) && !empty($form_key = $session->getData('form_key'))) {
-            $form_key_paths = explode(',', $form_key_paths_str);
-            if (in_array($this->_url->getCurrentUrl(), $form_key_paths) && ($form_key !== $this->request->getPost('form_key'))) {
-                $this->noRouter();
-            }
-        } else {
-            # scrf 检测
-            if ($this->csrf() || ($this->request->getServer('Content-Type') === 'application/json')) {
-                # 处理form-key和token问题
-                $request_token = $this->request->getServer('X-CSRF-TOKEN');
-                if (empty($request_token)) {
-                    $request_token = $this->request->getParam('form_key');
-                }
-                if (empty($request_token)) {
-                    $request_token = $this->request->getParam('t');
-                }
-                if ($request_token !== Token::get('csrf')) {
+        if($name = $this->csrf()) {
+            # form表单检测
+            if ($token = Token::get($name)) {
+                $request_token = $this->request->getPost($name);
+                # post 请求
+                if ($request_token and ($this->request->getPost($name) !== $token)) {
                     $this->noRouter();
-                    return;
                 }
+                if(!$request_token) {
+                    # 处理api form-key和token问题
+                    if($this->request->getServer('Content-Type') === 'application/json') {
+                        $request_token = $this->request->getServer('X-CSRF-TOKEN');
+                    }
+                    if (empty($request_token)) {
+                        $request_token = $this->request->getParam('form_key');
+                    }
+                    if (empty($request_token)) {
+                        $request_token = $this->request->getParam('t');
+                    }
+                    if ($request_token !== $token) {
+                        $this->noRouter();
+                    }
+                }
+            }else{
+                $this->noRouter();
             }
         }
     }
@@ -216,7 +219,7 @@ class PcController extends Core
             if(is_int(strpos($fileName, '::'))) {
                 return $this->getTemplate()->fetch($fileName);
             }
-//            return $this->getTemplate()->fetch('templates' . DS .$fileName);
+            //            return $this->getTemplate()->fetch('templates' . DS .$fileName);
         }
         $controller_class_name = $this->request->getRouterData('class/controller_name');
         if ($fileName === null) {
@@ -227,7 +230,7 @@ class PcController extends Core
             }
         } elseif (is_bool(strpos($fileName, '/')) || is_bool(strpos($fileName, '\\'))) {
             $fileName = $controller_class_name . DS . $fileName;
-        }else{
+        } else {
             $fileName = $controller_class_name . '/' .$this->request->getRouterData('class/method') . DS . $fileName;
         }
         return $this->getTemplate()->fetch('templates' . DS . $fileName);

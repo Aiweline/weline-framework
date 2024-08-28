@@ -14,7 +14,7 @@ class Token extends Text
      * @param int $lifetime  token有效期（秒）
      * @return string
      */
-    static function create(string $name, int $lenght = 32, int $lifetime = 0)
+    public static function create(string $name, int $lenght = 32, int $lifetime = 600)
     {
         if ($token = self::get($name)) {
             $session = self::session();
@@ -31,12 +31,12 @@ class Token extends Text
         return $token;
     }
 
-    static function session(): Session
+    public static function session(): Session
     {
         return ObjectManager::getInstance(Session::class);
     }
 
-    static function get(string $name): string|null
+    public static function get(string $name): string|null
     {
         $session = self::session();
         $name_expired_time = intval($session->getData($name . '_expired_time'));
@@ -46,6 +46,6 @@ class Token extends Text
         if ((time() - $name_expired_time) > 0) {
             return null;
         }
-        return ObjectManager::getInstance(Session::class)->getData($name) ?: null;
+        return self::session()->getData($name);
     }
 }

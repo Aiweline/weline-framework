@@ -4,6 +4,7 @@ namespace Weline\Framework\View\Block;
 
 use Weline\Framework\Http\Request;
 use Weline\Framework\Manager\ObjectManager;
+use Weline\Framework\Security\Token;
 use Weline\Framework\Ui\FormKey;
 use Weline\Framework\View\Block;
 
@@ -15,11 +16,12 @@ class Csrf extends Block
     }
     public function getHtml(string $name): string
     {
-        return $this->formKey->getHtml($this->request->getRouteUrlPath(), $name);
+        return $this->render();
     }
-    public function render(): string
+    public function render(string $name = 'csrf'): string
     {
-        return $this->formKey->getHtml($this->request->getRouteUrlPath());
+        $token = Token::create($name,9,3600);
+        return "<input type='hidden' name='$name' value='$token'/>";
     }
     public function __toString(): string
     {
