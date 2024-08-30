@@ -66,9 +66,9 @@ class Upgrade extends CommandAbstract
         $eventsManager = ObjectManager::getInstance(EventsManager::class);
         $eventsManager->dispatch('Framework_Module::module_upgrade_before');
         $appoint = false;
-        $argsModule = [];
-        if(!empty($args['module'])){
-            $argsModule = explode(',', $args['module']);
+        $argsModule = $args['module']??[];
+        if(is_string($argsModule)){
+            $argsModule = explode(' ', $argsModule);
         }
         if(isset($args['model'])){
             $appoint = true;
@@ -83,6 +83,9 @@ class Upgrade extends CommandAbstract
                 if($argsModule and !in_array($module_name, $argsModule)){
                     continue;
                 }
+                if (is_file($module['base_path'].'/register.php')) {
+                    require $module['base_path'].'/register.php';
+                }
                 $module_handle->setupInstall(new Module($module));
             }
             // 注册模型数据库信息
@@ -96,6 +99,8 @@ class Upgrade extends CommandAbstract
             }
         }
         if(isset($args['route'])){
+            // 扫描模型注册代码
+            list($origin_vendor_modules, $dependencyModules) = Register::getOriginModulesData();
             $appoint = true;
             // 注册路由信息
             /**@var Handle $module_handle */
@@ -105,6 +110,11 @@ class Upgrade extends CommandAbstract
             foreach ($modules as $module_name => $module) {
                 if($argsModule and !in_array($module_name, $argsModule)){
                     continue;
+                }
+                // 注册模组
+                $this->printer->note(__('1)注册模组'));
+                if (is_file($module['base_path'].'/register.php')) {
+                    require $module['base_path'].'/register.php';
                 }
                 $module_handle->registerRoute(new Module($module));
             }
