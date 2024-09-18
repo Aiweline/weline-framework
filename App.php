@@ -319,12 +319,12 @@ class App
         $eventManager->dispatch('App::detect_store', ['data' => &$data]);
         if ($store_url = $data->getData('store_url') and $store_id = $data->getData('store_id')) {
             # 截取非店铺路径
-            $_SERVER['REQUEST_URI'] = substr($_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], strlen($store_url));
+            $_SERVER['REQUEST_URI'] = substr(($_SERVER['REQUEST_SCHEME']??'http')  . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], strlen($store_url));
             $_SERVER['WELINE-WEBSITE-ID'] = $store_id;
             $_SERVER['WELINE-WEBSITE-URL'] = $store_url;
         } else {
             $_SERVER['WELINE-WEBSITE-ID'] = 0;
-            $_SERVER['WELINE-WEBSITE-URL'] = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'];
+            $_SERVER['WELINE-WEBSITE-URL'] = ($_SERVER['REQUEST_SCHEME']??'http') . '://' . $_SERVER['HTTP_HOST'];
         }
     }
 
