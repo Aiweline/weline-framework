@@ -64,6 +64,7 @@ class Cli extends CliAbstract
                 }
                 if (str_starts_with($next, '-')) {
                     $args[$arg] = true;
+                    $args[$argName] = true;
                     $argName = null;
                 }
             } elseif (!empty($argName)) {
