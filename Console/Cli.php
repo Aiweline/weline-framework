@@ -39,80 +39,37 @@ class Cli extends CliAbstract
         $this->printer->note(__('执行命令：') . $command_class['command'] . ' ' . ($this->argv[1] ?? '')/*,$this->printer->colorize('CLI-System','red')*/);
     }
 
-    function parseArgs($args): array
-    {
-        $lastOption = null;
-        $lastOptionOrigin = null;
-        foreach ($args as $k=>$arg) {
-            if($k==0) {
+    function parseArgs(array $args): array {
+        foreach ($args as $k => $arg) {
+            if ($k == 0) {
+                $args['command'] = $arg;
+                continue;
+            }
+            if(is_string($k)){
+                continue;
+            }
+            if (str_contains($arg, '=')) {
+                $arg = explode('=', $arg);
+                $args[trim($arg[0], '-')] = $arg[1] ?? true;
                 continue;
             }
             # 参数名
-            if (str_starts_with($arg, '--')) {
-                $lastOption       = substr($arg, 2);
-                $lastOptionOrigin = $lastOption;
-                if (strpos($lastOption, '=') !== false) {
-                    $lastOption                  = substr($lastOptionOrigin, 0, strpos($lastOptionOrigin, '='));
-                    $value                       = substr($lastOptionOrigin, strpos($lastOptionOrigin, '=') + 1);
-                    if(strpos($value, '=') !== false) {
-                        $args[$lastOption][substr($value, 0,strpos($value, '='))] = substr($value, strpos($value, '=') + 1);
-                        $args[$arg][$value] = $value;
-                    }else{
-                        $args[$lastOption] = $value;
-                        $args[$arg] = $value;
-                    }
-                } else {
-                    $args[$lastOption] = true;
+            if (str_starts_with($arg, '-')) {
+                $argName = trim($arg, '-');
+                $next = $args[$k + 1] ?? null;
+                if ($next and str_starts_with($next, '-')) {
                     $args[$arg] = true;
+                    $argName = null;
                 }
-            } elseif (str_starts_with($arg, '-')) {
-                $lastOption       = substr($arg, 1);
-                $lastOptionOrigin = $lastOption;
-                if (strpos($lastOption, '=') !== false) {
-                    $lastOption                  = substr($lastOptionOrigin, 0, strpos($lastOptionOrigin, '='));
-                    $value                       = substr($lastOptionOrigin, strpos($lastOptionOrigin, '=') + 1);
-                    if(strpos($value, '=') !== false) {
-                        $args[$lastOption][substr($value, 0,strpos($value, '='))] = substr($value, strpos($value, '=') + 1);
-                        $args[$arg][$value] = $value;
-                    }else{
-                        $args[$lastOption] = $value;
-                        $args[$arg] = $value;
-                    }
-                } else {
-                    $args[$lastOption] = true;
-                    $args[$arg] = true;
-                }
-            } else {
-                if ($lastOption and isset($args[$lastOption]) and !is_bool($args[$lastOption])) {
-                    # 转化成数组
-                    if (!is_array($args[$lastOption]) and $args[$lastOption]) {
-                        $args[$lastOption]= [$args[$lastOption]];
-                    }
-                    if(strpos($arg, '=') !== false) {
-                        $args[$lastOption][substr($arg, 0,strpos($arg, '='))]= substr($arg, strpos($arg, '=') + 1);
-                    }else{
-                        $args[$lastOption][]= $arg;
-                    }
-                }else {
-                    if(strpos($arg, '=') !== false) {
-                        if(isset($args[$lastOption])) {
-                            if(is_bool($args[$lastOption])){
-                                $args[$lastOption]= [];
-                            }else{
-                                $args[$lastOption]= [$args[$lastOption]];
-                            }
-                        }
-                        $args[$lastOption][substr($arg, 0,strpos($arg, '='))] = substr($arg, strpos($arg, '=') + 1);
-                    }else{
-                        $args[$lastOption?:$arg] = $arg;
-                    }
-                }
-            }
-            if($lastOption and isset($args[$lastOption]) and is_array($args[$lastOption]) and isset($args['-'.$lastOption])){
-                if(!is_array($args['-'.$lastOption]) and is_bool($args['-'.$lastOption])){
-                    $args['-'.$lastOption]= [];
+            } elseif (!empty($argName)) {
+                if(!isset($args[$argName])){
+                    $args[$argName] = $arg;
                 }else{
-                    $args['-'.$lastOption][]= $arg;
+                    if(is_array($args[$argName])){
+                        $args[$argName][] = $arg;
+                    }else{
+                        $args[$argName] = [$args[$argName],$arg];
+                    }
                 }
             }
         }
