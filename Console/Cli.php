@@ -57,7 +57,12 @@ class Cli extends CliAbstract
             if (str_starts_with($arg, '-')) {
                 $argName = trim($arg, '-');
                 $next = $args[$k + 1] ?? null;
-                if ($next and str_starts_with($next, '-')) {
+                if(empty($next)){
+                    $args[$argName] = true;
+                    $args[$arg] = true;
+                    continue;
+                }
+                if (str_starts_with($next, '-')) {
                     $args[$arg] = true;
                     $argName = null;
                 }
