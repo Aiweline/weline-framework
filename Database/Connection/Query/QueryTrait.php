@@ -233,6 +233,10 @@ trait QueryTrait
                                     $set_where = '(';
                                     if (is_array($where[2])) {
                                         foreach ($where[2] as $in_where_key => $item) {
+                                            # $in_where_key如果是字符串，只保留字母和下划线
+                                            if (is_string($in_where_key)) {
+                                                $in_where_key = preg_replace('/[^A-Za-z_]/', '', $in_where_key);
+                                            }
                                             $set_where_key_param                      = $param . '_' . str_replace(' ', '_', $where[1]) . '_' . $in_where_key;
                                             $this->bound_values[$set_where_key_param] = (string)$item;
                                             $set_where                                .= $set_where_key_param . ',';
