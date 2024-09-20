@@ -45,7 +45,7 @@ interface TableInterface
     // 能够支持text类型数据
     public const column_type_TEXT       = 'text';
     public const column_type_LONG_TEXT  = 'longtext';
-    public const column_type_MEDIU_TEXT = 'mediumtext ';
+    public const column_type_MEDIU_TEXT = 'mediumtext';
 
     // 一个真正的blob，以二进制形式存储在DB中
     public const column_type_BLOB = 'blob';

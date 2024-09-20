@@ -158,25 +158,36 @@ class Alter extends TableAbstract implements AlterInterface
         return $this;
     }
 
-    public function alter(): bool
+    public function alter(bool $dump_sql = false): bool
     {
+        if($dump_sql){
+            $dump_sqls = [];
+        }
         # --如果存在删除数组中则先删除字段
         foreach ($this->delete_fields as $delete_field) {
             $sql = "ALTER TABLE {$this->table} DROP `{$delete_field}`";
-            try {
-                $this->query->query($sql)->fetch();
-            } catch (\Exception $exception) {
-                exit($exception->getMessage() . PHP_EOL . __('数据库SQL:%1', $sql) . PHP_EOL);
+            if($dump_sql){
+                $dump_sqls[] = $sql;
+            }else{
+                try {
+                    $this->query->query($sql)->fetch();
+                } catch (\Exception $exception) {
+                    exit($exception->getMessage() . PHP_EOL . __('数据库SQL:%1', $sql) . PHP_EOL);
+                }
             }
         }
         # --如果存在要新增的字段
         if ($this->fields) {
             $fields = join(',', $this->fields);
             $sql    = "ALTER TABLE {$this->table} $fields";
-            try {
-                $this->query->query($sql);
-            } catch (\Exception $exception) {
-                exit($exception->getMessage() . PHP_EOL . __('数据库SQL:%1', $sql) . PHP_EOL);
+            if($dump_sql){
+                $dump_sqls[] = $sql;
+            }else{
+                try {
+                    $this->query->query($sql);
+                } catch (\Exception $exception) {
+                    exit($exception->getMessage() . PHP_EOL . __('数据库SQL:%1', $sql) . PHP_EOL);
+                }
             }
         }
         try {
@@ -187,10 +198,15 @@ class Alter extends TableAbstract implements AlterInterface
             $comment           = str_replace('\'', '', $comment);
             # --检测存在评论，并且评论不相同时，更新表评论
             if ($this->comment && $comment !== $this->comment) {
-                try {
-                    $this->query->query("ALTER TABLE {$this->table} COMMENT='{$this->comment}'")->fetch();
-                } catch (\Exception $exception) {
-                    exit(__('更新表注释错误：%1', $exception->getMessage()) . PHP_EOL);
+                $sql = "ALTER TABLE {$this->table} COMMENT='{$this->comment}'";
+                if($dump_sql){
+                    $dump_sqls[] = $sql;
+                }else{
+                    try {
+                        $this->query->query($sql)->fetch();
+                    } catch (\Exception $exception) {
+                        exit(__('更新表注释错误：%1', $exception->getMessage()) . PHP_EOL);
+                    }
                 }
             }
             $table_fields = $this->getTableColumns();
@@ -206,7 +222,10 @@ class Alter extends TableAbstract implements AlterInterface
                     # --与数据库中的字段类型 比较
                     $type_length = $table_field['Type'];
                     if (!is_int(strpos($table_field['Type'], $alter_field['type_length']))) {
-                        $type_length = $alter_field['type_length'];
+                        $type_length = (int)$alter_field['type_length'];
+                    }
+                    if($type_length==0){
+                        $type_length = '';
                     }
                     # --与数据库中的字段评论 比较
                     $comment = $table_field['Comment'];
@@ -251,7 +270,11 @@ class Alter extends TableAbstract implements AlterInterface
 
                     $sql = "ALTER TABLE {$this->table} {$field_action} {$type_length} {$options} COMMENT '{$comment}' {$field_sort}";
                     try {
-                        $this->query($sql)->fetch();
+                        if($dump_sql){
+                            $dump_sqls[] = $sql;
+                        }else{
+                            $this->query($sql)->fetch();
+                        }
                     } catch (\Exception $exception) {
                         exit($exception->getMessage() . PHP_EOL . __('数据库SQL:%1', $sql) . PHP_EOL);
                     }
@@ -263,12 +286,19 @@ class Alter extends TableAbstract implements AlterInterface
                 $sql = "ALTER TABLE {$this->table} RENAME TO {$this->new_table_name}";
             }
             try {
-               $this->query->query($sql)->fetch();
+                if($dump_sql){
+                    $dump_sqls[] = $sql;
+                }else{
+                    $this->query->query($sql)->fetch();
+                }
             } catch (\Exception $exception) {
                exit($exception->getMessage() . PHP_EOL . __('数据库SQL:%1', $sql) . PHP_EOL);
             }
         } catch (\Exception $exception) {
             exit($exception->getMessage());
+        }
+        if($dump_sql){
+            dd($dump_sqls);
         }
 
         return true;
