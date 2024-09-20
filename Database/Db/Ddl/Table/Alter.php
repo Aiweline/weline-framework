@@ -34,11 +34,11 @@ class Alter extends TableAbstract implements AlterInterface
      * @DateTime: 2021/8/26 21:31
      * 参数区：
      *
-     * @param string   $field_name 字段名
-     * @param string   $type       字段类型
-     * @param int|null $length     长度
-     * @param string   $options    配置
-     * @param string   $comment    字段注释
+     * @param string $field_name 字段名
+     * @param string $type 字段类型
+     * @param int|null $length 长度
+     * @param string $options 配置
+     * @param string $comment 字段注释
      *
      * @return AlterInterface
      */
@@ -72,8 +72,8 @@ class Alter extends TableAbstract implements AlterInterface
      *
      * 参数区：
      *
-     * @param string       $type
-     * @param string       $name
+     * @param string $type
+     * @param string $name
      * @param array|string $column
      *
      * @return AlterInterface
@@ -150,9 +150,16 @@ class Alter extends TableAbstract implements AlterInterface
         return $this;
     }
 
-    public function alterColumn(string $old_field, string $field_name, string $after_field = '', string $type = null, ?int $length = null, string $options = null, string $comment = null): AlterInterface
+    public function alterColumn(string $old_field, string $field_name, string $after_field = '', string $type = null, string|int|null $length = null, string $options = null, string $comment = null): AlterInterface
     {
-        $type_length                    = $length ? "{$type}({$length})" : $type;
+        $not_need_length_types = [
+            'text', 'mediumtext', 'longtext','tinytext','mediumblob','longblob','tinyblob','blob',
+        ];
+        if (in_array(strtolower($type), $not_need_length_types)) {
+            $type_length = $type;
+        } else {
+            $type_length = $length ? "{$type}({$length})" : $type;
+        }
         $this->alter_fields[$old_field] = ['field_name' => $field_name, 'after_field' => $after_field, 'type_length' => $type_length, 'options' => $options, 'comment' => $comment,];
 
         return $this;
@@ -160,15 +167,15 @@ class Alter extends TableAbstract implements AlterInterface
 
     public function alter(bool $dump_sql = false): bool
     {
-        if($dump_sql){
+        if ($dump_sql) {
             $dump_sqls = [];
         }
         # --如果存在删除数组中则先删除字段
         foreach ($this->delete_fields as $delete_field) {
             $sql = "ALTER TABLE {$this->table} DROP `{$delete_field}`";
-            if($dump_sql){
+            if ($dump_sql) {
                 $dump_sqls[] = $sql;
-            }else{
+            } else {
                 try {
                     $this->query->query($sql)->fetch();
                 } catch (\Exception $exception) {
@@ -180,9 +187,9 @@ class Alter extends TableAbstract implements AlterInterface
         if ($this->fields) {
             $fields = join(',', $this->fields);
             $sql    = "ALTER TABLE {$this->table} $fields";
-            if($dump_sql){
+            if ($dump_sql) {
                 $dump_sqls[] = $sql;
-            }else{
+            } else {
                 try {
                     $this->query->query($sql);
                 } catch (\Exception $exception) {
@@ -199,9 +206,9 @@ class Alter extends TableAbstract implements AlterInterface
             # --检测存在评论，并且评论不相同时，更新表评论
             if ($this->comment && $comment !== $this->comment) {
                 $sql = "ALTER TABLE {$this->table} COMMENT='{$this->comment}'";
-                if($dump_sql){
+                if ($dump_sql) {
                     $dump_sqls[] = $sql;
-                }else{
+                } else {
                     try {
                         $this->query->query($sql)->fetch();
                     } catch (\Exception $exception) {
@@ -222,10 +229,7 @@ class Alter extends TableAbstract implements AlterInterface
                     # --与数据库中的字段类型 比较
                     $type_length = $table_field['Type'];
                     if (!is_int(strpos($table_field['Type'], $alter_field['type_length']))) {
-                        $type_length = (int)$alter_field['type_length'];
-                    }
-                    if($type_length==0){
-                        $type_length = '';
+                        $type_length = $alter_field['type_length'];
                     }
                     # --与数据库中的字段评论 比较
                     $comment = $table_field['Comment'];
@@ -270,9 +274,9 @@ class Alter extends TableAbstract implements AlterInterface
 
                     $sql = "ALTER TABLE {$this->table} {$field_action} {$type_length} {$options} COMMENT '{$comment}' {$field_sort}";
                     try {
-                        if($dump_sql){
+                        if ($dump_sql) {
                             $dump_sqls[] = $sql;
-                        }else{
+                        } else {
                             $this->query($sql)->fetch();
                         }
                     } catch (\Exception $exception) {
@@ -286,18 +290,18 @@ class Alter extends TableAbstract implements AlterInterface
                 $sql = "ALTER TABLE {$this->table} RENAME TO {$this->new_table_name}";
             }
             try {
-                if($dump_sql){
+                if ($dump_sql) {
                     $dump_sqls[] = $sql;
-                }else{
+                } else {
                     $this->query->query($sql)->fetch();
                 }
             } catch (\Exception $exception) {
-               exit($exception->getMessage() . PHP_EOL . __('数据库SQL:%1', $sql) . PHP_EOL);
+                exit($exception->getMessage() . PHP_EOL . __('数据库SQL:%1', $sql) . PHP_EOL);
             }
         } catch (\Exception $exception) {
             exit($exception->getMessage());
         }
-        if($dump_sql){
+        if ($dump_sql) {
             dd($dump_sqls);
         }
 
