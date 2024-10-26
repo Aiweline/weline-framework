@@ -35,49 +35,7 @@ class Set extends CommandAbstract
     {
         array_shift($args);
         $param = array_shift($args);
-        // 如果当前是线上环境，应当提醒开发者切换到其他模式的风险
-        if ($param !== 'prod' && (Env::getInstance()->getConfig('deploy') === 'prod')) {
-            $this->printer->setup(__('当前部署模式为prod(生产模式)，请谨慎操作！你确认要切换到 %1 模式么？', (string)$param));
-            $input = $this->system->input();
-            if (strtolower(chop($input)) !== 'y') {
-                $this->printer->setup(__('已为您取消操作！'));
-                return;
-            }
-        }
-        $this->printer->note('清理缓存...');
-        /**@var $cacheManagerConsole \Weline\Framework\Cache\Console\Cache\Clear */
-        $cacheManagerConsole = ObjectManager::getInstance(\Weline\Framework\Cache\Console\Cache\Clear::class);
-        $cacheManagerConsole->execute();
-        $this->printer->note('正在清除模组模板编译文件...');
-        $this->cleanTplComDir();
-        $this->clearGeneratedComplicateDir();
-        switch ($param) {
-            case 'prod':
-                $this->printer->note('编译静态资源...');
-                ObjectManager::getInstance(Compile::class)->execute();
-                $this->printer->note('正在清除pub目录下生成的静态文件...');
-                $this->cleanThemeDir();
-                $this->printer->note('正在执行清理模板缓存...');
-                $this->cleanTplComDir();
-                $this->printer->note('正在执行静态资源部署...');
-                /**@var $deploy_upgrade Upgrade */
-                $deploy_upgrade = ObjectManager::getInstance(Upgrade::class);
-                $deploy_upgrade->execute();
-                break;
-            case 'dev':
-                $this->cleanTplComDir();
-                $this->printer->note('正在执行清理模板缓存...');
-                break;
-            default:
-                $this->printer->error(' ╮(๑•́ ₃•̀๑)╭  ：错误的部署模式：' . $param);
-                $this->printer->note('(￢_￢) ->：允许的部署模式：dev/prod');
-                return;
-        }
-        if (Env::getInstance()->setConfig('deploy', $param)) {
-            $this->printer->success('（●´∀｀）♪ 当前部署模式：' . $param);
-        } else {
-            $this->printer->error('╮(๑•́ ₃•̀๑)╭ 部署模式设置错误：' . $param);
-        }
+        $this->deploy($param);
     }
 
     public function tip(): string
@@ -122,6 +80,58 @@ class Set extends CommandAbstract
         if (is_dir($pub_theme_dir)) {
             $this->printer->warning('系统', $pub_theme_dir);
             $this->system->exec("rm -rf $pub_theme_dir");
+        }
+    }
+
+    /**
+     * @param mixed $param
+     * @return void
+     * @throws \Weline\Framework\App\Exception
+     */
+    public function deploy(string $type): void
+    {
+// 如果当前是线上环境，应当提醒开发者切换到其他模式的风险
+        if ($type !== 'prod' && (Env::getInstance()->getConfig('deploy') === 'prod')) {
+            $this->printer->setup(__('当前部署模式为prod(生产模式)，请谨慎操作！你确认要切换到 %1 模式么？', (string)$type));
+            $input = $this->system->input();
+            if (strtolower(chop($input)) !== 'y') {
+                $this->printer->setup(__('已为您取消操作！'));
+                return;
+            }
+        }
+        $this->printer->note('清理缓存...');
+        /**@var $cacheManagerConsole \Weline\Framework\Cache\Console\Cache\Clear */
+        $cacheManagerConsole = ObjectManager::getInstance(\Weline\Framework\Cache\Console\Cache\Clear::class);
+        $cacheManagerConsole->execute();
+        $this->printer->note('正在清除模组模板编译文件...');
+        $this->cleanTplComDir();
+        $this->clearGeneratedComplicateDir();
+        switch ($type) {
+            case 'prod':
+                $this->printer->note('编译静态资源...');
+                ObjectManager::getInstance(Compile::class)->execute();
+                $this->printer->note('正在清除pub目录下生成的静态文件...');
+                $this->cleanThemeDir();
+                $this->printer->note('正在执行清理模板缓存...');
+                $this->cleanTplComDir();
+                $this->printer->note('正在执行静态资源部署...');
+                /**@var $deploy_upgrade Upgrade */
+                $deploy_upgrade = ObjectManager::getInstance(Upgrade::class);
+                $deploy_upgrade->execute();
+                break;
+            case 'dev':
+                $this->cleanTplComDir();
+                $this->printer->note('正在执行清理模板缓存...');
+                break;
+            default:
+                $this->printer->error(' ╮(๑•́ ₃•̀๑)╭  ：错误的部署模式：' . $type);
+                $this->printer->note('(￢_￢) ->：允许的部署模式：dev/prod');
+                return;
+        }
+        if (Env::getInstance()->setConfig('deploy', $type)) {
+            $this->printer->success('（●´∀｀）♪ 当前部署模式：' . $type);
+        } else {
+            $this->printer->error('╮(๑•́ ₃•̀๑)╭ 部署模式设置错误：' . $type);
         }
     }
 }

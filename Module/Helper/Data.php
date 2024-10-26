@@ -146,6 +146,10 @@ class Data extends AbstractHelper
                         $routers = is_string($router) ? [$router] : $router;
                         foreach ($routers as $router_) {
                             $route  = $rule_router . ($request_method ? '::' . $request_method : '');
+                            $backend = false;
+                            if(in_array('BackendController',$ctl_area)){
+                                $backend = true;
+                            }
                             $params = [
                                 'type' => DataInterface::type_API,
                                 'area' => $ctl_area,
@@ -156,6 +160,8 @@ class Data extends AbstractHelper
                                 'module_path' => $path,
                                 'method' => $method,
                                 'request_method' => $request_method,
+                                'is_backend' => $backend,
+                                'is_enable' => true
                             ];
                             $data   = new DataObject($params);
                             /**@var \ReflectionAttribute $attribute */
@@ -164,7 +170,8 @@ class Data extends AbstractHelper
                                     'data' => $data,
                                     'type' => 'api',
                                     'attribute' => $attribute,
-                                    'controller_data' => $ctl_data
+                                    'controller_data' => $ctl_data,
+                                    'params' => $params
                                 ]);
                             }
                             // 路由注册+
@@ -173,6 +180,10 @@ class Data extends AbstractHelper
                             // 原始路由注册
                             $origin_route = str_replace('-', '', $route);
                             if ($router !== $origin_route) {
+                                $backend = false;
+                                if(in_array('BackendController',$ctl_area)){
+                                    $backend = true;
+                                }
                                 $params = [
                                     'type' => DataInterface::type_API,
                                     'area' => $ctl_area,
@@ -183,6 +194,8 @@ class Data extends AbstractHelper
                                     'module_path' => $path,
                                     'method' => $method,
                                     'request_method' => $request_method,
+                                    'is_backend' => $backend,
+                                    'is_enable' => true
                                 ];
                                 $data   = new DataObject($params);
                                 /**@var \ReflectionAttribute $attribute */
@@ -191,7 +204,8 @@ class Data extends AbstractHelper
                                         'data' => $data,
                                         'type' => 'api',
                                         'attribute' => $attribute,
-                                        'controller_data' => $ctl_data
+                                        'controller_data' => $ctl_data,
+                                        'params' => $params
                                     ]);
                                 }
                                 // 路由注册+
@@ -278,6 +292,10 @@ class Data extends AbstractHelper
                         $routers = is_string($router) ? [$router] : $router;
                         foreach ($routers as $router_) {
                             $route  = $rule_router . ($request_method ? '::' . $request_method : '');
+                            $backend = false;
+                            if(in_array('BackendController',$ctl_area)){
+                                $backend = true;
+                            }
                             $params = [
                                 'type' => DataInterface::type_PC,
                                 'area' => $ctl_area,
@@ -288,6 +306,8 @@ class Data extends AbstractHelper
                                 'method' => $method,
                                 'module_path' => $path,
                                 'request_method' => $request_method,
+                                'is_backend' => $backend,
+                                'is_enable' => true,
                             ];
                             $data   = new DataObject($params);
                             /**@var \ReflectionAttribute $attribute */
@@ -306,6 +326,10 @@ class Data extends AbstractHelper
                             // 原始路由注册
                             $origin_route = str_replace('-', '', $route);
                             if ($router !== $origin_route) {
+                                $backend = false;
+                                if(in_array('BackendController',$ctl_area)){
+                                    $backend = true;
+                                }
                                 $params = [
                                     'type' => DataInterface::type_PC,
                                     'area' => $ctl_area,
@@ -316,6 +340,8 @@ class Data extends AbstractHelper
                                     'module_path' => $path,
                                     'method' => $method,
                                     'request_method' => $request_method,
+                                    'is_backend' => $backend,
+                                    'is_enable' => true,
                                 ];
                                 $data   = new DataObject($params);
                                 /**@var \ReflectionAttribute $attribute */
@@ -324,7 +350,8 @@ class Data extends AbstractHelper
                                         'data' => $data,
                                         'type' => 'pc',
                                         'attribute' => $attribute,
-                                        'controller_data' => $ctl_data
+                                        'controller_data' => $ctl_data,
+                                        'params' => $params,
                                     ]);
                                 }
                                 // 路由注册+

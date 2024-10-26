@@ -371,6 +371,10 @@ class Handle implements HandleInterface, RegisterInterface
                     }
                 }
             }
+            /** @var ModelManager $modelManager */
+            $modelManager = ObjectManager::getInstance(ModelManager::class);
+            $modelManager->update($module, $setup_context, 'setup');
+            $modelManager->update($module, $setup_context, 'update');
             $module->unsetData('upgrading');
             $this->modules[$module->getName()] = $module->getData();
             $this->printer->success(str_pad($module->getName(), 45) . __('已更新！'));
@@ -388,6 +392,10 @@ class Handle implements HandleInterface, RegisterInterface
                     $setup->setup($this->setup_data, $setup_context);
                 }
             }
+            # 扫描Model
+            /** @var ModelManager $modelManager */
+            $modelManager = ObjectManager::getInstance(ModelManager::class);
+            $modelManager->update($module, $setup_context, 'install');
             $this->printer->success(str_pad($module->getName(), 45) . __('已安装！'));
             $module->unsetData('installing');
         }

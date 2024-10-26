@@ -41,7 +41,7 @@ class Parser
         $words = self::processWords($words);
         if (is_array($args)) {
             foreach ($args as $key => $arg) {
-                $words = str_replace('%' . (is_integer($key) ? $key + 1 : $key), $arg, $words);
+                $words = str_replace('%' . (is_integer($key) ? $key + 1 : $key), (string)$arg, $words);
             }
         } elseif ($words && $args) {
             $words = str_replace('%1', $args, $words);

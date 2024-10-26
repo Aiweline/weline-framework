@@ -120,9 +120,9 @@ class ConfigProvider extends DataObject implements ConfigProviderInterface
         return $this->setData('type', $type);
     }
 
-    public function getDbType(): string|null
+    public function getDbType(): string
     {
-        return $this->getData('type');
+        return $this->getData('type') ?? '';
     }
 
     public function setHostName(string $hostname): ConfigProviderInterface
@@ -132,7 +132,7 @@ class ConfigProvider extends DataObject implements ConfigProviderInterface
 
     public function getHostName(): string
     {
-        return $this->getData('hostname');
+        return $this->getData('hostname') ?? '';
     }
 
     public function setDatabase(string $database_name): ConfigProviderInterface
@@ -142,7 +142,7 @@ class ConfigProvider extends DataObject implements ConfigProviderInterface
 
     public function getDatabase(): string
     {
-        return $this->getData('database');
+        return $this->getData('database') ?? '';
     }
 
     public function setUsername(string $username): ConfigProviderInterface
@@ -152,7 +152,7 @@ class ConfigProvider extends DataObject implements ConfigProviderInterface
 
     public function getUsername(): string
     {
-        return $this->getData('username');
+        return $this->getData('username') ?? '';
     }
 
     public function setPassword(string $password): ConfigProviderInterface
@@ -162,7 +162,7 @@ class ConfigProvider extends DataObject implements ConfigProviderInterface
 
     public function getPassword(): string
     {
-        return $this->getData('password');
+        return $this->getData('password') ?? "";
     }
 
     public function setHostPort(string $host_port): ConfigProviderInterface
@@ -172,7 +172,7 @@ class ConfigProvider extends DataObject implements ConfigProviderInterface
 
     public function getHostPort(): string
     {
-        return $this->getData('hostport');
+        return $this->getData('hostport') ?? '';
     }
 
     public function setPrefix(string $prefix): ConfigProviderInterface
@@ -182,7 +182,7 @@ class ConfigProvider extends DataObject implements ConfigProviderInterface
 
     public function getPrefix(): string
     {
-        return $this->getData('prefix');
+        return $this->getData('prefix') ?? '';
     }
 
     public function setCharset(string $charset = 'utf8mb4'): ConfigProviderInterface

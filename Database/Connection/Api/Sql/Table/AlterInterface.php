@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Weline\Framework\Database\Api\Db\Ddl\Table;
+namespace Weline\Framework\Database\Connection\Api\Sql\Table;
 
 /*
  * 本文件由 秋枫雁飞 编写，所有解释权归Aiweline所有。
@@ -11,9 +11,8 @@ namespace Weline\Framework\Database\Api\Db\Ddl\Table;
  * 论坛：https://bbs.aiweline.com
  */
 
-use Weline\Framework\Database\Api\Db\Ddl\TableInterface;
 
-interface AlterInterface extends TableInterface
+interface AlterInterface
 {
     /**
      * @DESC          # 修改表

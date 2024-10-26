@@ -73,6 +73,26 @@ use Weline\Framework\Manager\ObjectManager;
         return $this->setData('method', $method);
     }
 
+    function setIsEnable(bool $is_enable = true): Acl
+    {
+        return $this->setData('is_enable', $is_enable);
+    }
+
+    public function getIsEnable(): bool
+    {
+        return (bool)$this->getData('is_enable');
+    }
+
+    function setIsBackend(bool $is_backend = true): Acl
+    {
+        return $this->setData('is_backend', $is_backend);
+    }
+
+    public function getIsBackend(): bool
+    {
+        return (bool)$this->getData('is_backend');
+    }
+
     function setDocument(string $document = ''): Acl
     {
         return $this->setData('document', $document);

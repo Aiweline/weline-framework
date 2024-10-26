@@ -9,23 +9,20 @@ declare(strict_types=1);
  * 论坛：https://bbs.aiweline.com
  */
 
-namespace Weline\Framework\Database\Connection;
+namespace Weline\Framework\Database\Connection\Adapter\Mysql;
 
 use PDO;
 use PDOStatement;
 use Weline\Framework\App\Env;
 use Weline\Framework\App\Exception;
-use Weline\Framework\Database\AbstractModel;
-use Weline\Framework\Database\Api\Connection\QueryInterface;
+use Weline\Framework\Database\Connection\Api\Sql\QueryInterface;
+use Weline\Framework\Database\Connection\Api\Sql\SqlTrait;
 use Weline\Framework\Database\Exception\DbException;
-use Weline\Framework\Database\Connection\Query\QueryTrait;
-use Weline\Framework\Database\Exception\SqlParserException;
-use Weline\Framework\Database\Model;
 use Weline\Framework\Manager\ObjectManager;
 
-abstract class Query implements QueryInterface
+abstract class Query extends \Weline\Framework\Database\Connection\Api\Sql\Query
 {
-    use QueryTrait;
+    use SqlTrait;
 
     // 联合主键 设置联合主键可以提升查询效率
     public array $_unit_primary_keys = [];
@@ -48,7 +45,7 @@ abstract class Query implements QueryInterface
     public string $group_by = '';
     public string $having = '';
 
-    private ?PDOStatement $PDOStatement = null;
+    protected ?PDOStatement $PDOStatement = null;
     public string $sql = '';
     public string $additional_sql = '';
 
@@ -71,17 +68,19 @@ abstract class Query implements QueryInterface
         return $this;
     }
 
-    public function insert(array $data, array|string $exist_update_fields = []): QueryInterface
+    public function insertOld(array $data, array|string $update_fields = [], string $update_where_fields = '', bool $ignore_primary_key = false): QueryInterface
     {
         if (empty($data)) {
             throw new DbException('插入数据不能为空！');
         }
-        if ($exist_update_fields) {
+        if ($update_fields) {
             $this->exist_update_sql = 'ON DUPLICATE KEY UPDATE ';
-            if (is_string($exist_update_fields)) {
+            if (is_string($update_fields)) {
+                $exist_update_fields = explode(',', $update_fields);
+                $exist_update_fields = implode('`.`', $exist_update_fields);
                 $this->exist_update_sql .= "`$exist_update_fields`=VALUES(`$exist_update_fields`),";
             } else {
-                foreach ($exist_update_fields as $field) {
+                foreach ($update_fields as $field) {
                     $this->exist_update_sql .= "`$field`=VALUES(`$field`),";
                 }
             }
@@ -156,70 +155,6 @@ abstract class Query implements QueryInterface
             $fields       = explode(',', $this->fields);
             $fields       = array_unique($fields);
             $this->fields = implode(',', $fields);
-        }
-        return $this;
-    }
-
-    public function where(array|string $field, mixed $value = null, string $condition = '=', string $where_logic = 'AND', string $array_where_logic_type = 'AND'): QueryInterface
-    {
-        $where_logic            = trim(strtoupper($where_logic));
-        $condition              = trim(strtoupper($condition));
-        $array_where_logic_type = trim(strtoupper($array_where_logic_type));
-        if (is_array($field)) {
-            foreach ($field as $f_key => $where_array) {
-                if (!is_array($where_array)) {
-                    $value          = $where_array;
-                    $where_array    = [];
-                    $where_array[0] = $f_key;
-                    $where_array[1] = '=';
-                    $where_array[2] = $value;
-                    $where_array[3] = $array_where_logic_type;
-                } elseif (2 === count($where_array)) {# 处理两个元素数组
-                    $where_array[2] = $where_array[1];
-                    $where_array[1] = '=';
-                }
-
-                # 检测条件数组 下角标 必须为数字
-                $this->checkWhereArray($where_array, $f_key);
-                # 检测条件数组 检测第二个元素必须是限定的 条件操作符
-                $this->checkConditionString($where_array);
-                $this->wheres[] = $where_array;
-            }
-        } else {
-            if (is_array($value)) {
-                if ($condition === 'IN' || $condition === 'NOT IN') {
-                    if (empty($value)) {
-                        throw new Exception(__('IN 条件无法匹配空值数组。数组值：[]'));
-                    }
-                    $where_array = [$field, $condition, $value, $where_logic];
-                    # 检测条件数组 下角标 必须为数字
-                    $this->checkWhereArray($where_array, 0);
-                    # 检测条件数组 检测第二个元素必须是限定的 条件操作符
-                    $this->checkConditionString($where_array);
-                    $this->wheres[] = $where_array;
-                } else {
-                    $last_key = array_key_last($value);
-                    foreach ($value as $kv => $item) {
-                        if ($last_key === $kv) {
-                            $array_where_logic_type = $where_logic;
-                        }
-                        # 判断字段是否为同一个
-                        $where_array = [$field, $condition, $item, $array_where_logic_type];
-                        # 检测条件数组 下角标 必须为数字
-                        $this->checkWhereArray($where_array, 0);
-                        # 检测条件数组 检测第二个元素必须是限定的 条件操作符
-                        $this->checkConditionString($where_array);
-                        $this->wheres[] = $where_array;
-                    }
-                }
-            } else {
-                $where_array = [$field, $condition, $value, $where_logic];
-                # 检测条件数组 下角标 必须为数字
-                $this->checkWhereArray($where_array, 0);
-                # 检测条件数组 检测第二个元素必须是限定的 条件操作符
-                $this->checkConditionString($where_array);
-                $this->wheres[] = $where_array;
-            }
         }
         return $this;
     }
@@ -327,7 +262,7 @@ abstract class Query implements QueryInterface
         $this->reset();
         $this->sql          = $sql;
         $this->fetch_type   = __FUNCTION__;
-        $this->PDOStatement = $this->connection->getLink()->prepare($sql);
+        $this->PDOStatement = $this->getLink()->prepare($sql);
         return $this;
     }
 
@@ -335,65 +270,6 @@ abstract class Query implements QueryInterface
     {
         $this->additional_sql = $additional_sql;
         return $this;
-    }
-
-    public function fetch(string $model_class = ''): mixed
-    {
-        $result      = $this->PDOStatement->execute($this->bound_values);
-        do {
-            $origin_data[] = $this->PDOStatement->fetchAll(PDO::FETCH_ASSOC);
-        } while($this->PDOStatement->nextRowset());
-        if(count($origin_data) == 1) {
-            $origin_data = $origin_data[0];
-        }
-
-        $data = [];
-        if ($model_class) {
-            foreach ($origin_data as $origin_datum) {
-                $data[] = ObjectManager::make($model_class, ['data' => $origin_datum], '__construct');
-            }
-            //            /** @var AbstractModel $model */
-            //            $model = ObjectManager::make($model_class, ['data' => end($data)->getData()], '__construct');
-            //            $data = $model->setFetchData($data);
-        } else {
-            $data = $origin_data;
-        }
-        switch ($this->fetch_type) {
-            case 'find':
-                $result = array_shift($data);
-                if ($model_class && empty($result)) {
-                    $result = ObjectManager::make($model_class, ['data' => []], '__construct');
-                }
-                break;
-            case 'insert':
-                $result = $this->connection->getLink()->lastInsertId();
-                break;
-            case 'query':
-            case 'select':
-                $result = $data;
-                break;
-            case 'delete':
-            case 'update':
-                break;
-            default:
-                throw new Exception(__('错误的获取类型。fetch之前必须有操作函数，操作函数包含（find,update,delete,select,query,insert,find）函数。'));
-                break;
-        }
-        $this->fetch_type = '';
-        if(Env::get('db_log.enabled') or DEBUG) {
-            $file = Env::get('db_log.file');
-            $data = [
-                'prepare_sql' => $this->getPrepareSql(false),
-                'sql' => $this->getLastSql(false),
-                'data' => $this->bound_values,
-                'result' => $origin_data
-            ];
-            Env::log($file, json_encode($data));
-        }
-        //        $this->clear();
-        $this->clearQuery();
-        //        $this->reset();
-        return $result;
     }
 
     public function fetchOrigin(): mixed
@@ -445,17 +321,17 @@ abstract class Query implements QueryInterface
 
     public function beginTransaction(): void
     {
-        $this->connection->getLink()->beginTransaction();
+        $this->getLink()->beginTransaction();
     }
 
     public function rollBack(): void
     {
-        $this->connection->getLink()->rollBack();
+        $this->getLink()->rollBack();
     }
 
     public function commit(): void
     {
-        $this->connection->getLink()->commit();
+        $this->getLink()->commit();
     }
 
     /**
@@ -527,18 +403,6 @@ abstract class Query implements QueryInterface
         return $this;
     }
 
-    public function getLastSql(bool $format = true): string
-    {
-        foreach ($this->bound_values as $where_key => $wheres_value) {
-            $wheres_value = "'{$wheres_value}'";
-            $this->sql    = str_replace($where_key, $wheres_value, $this->sql);
-        }
-        if ($format) {
-            return \SqlFormatter::format($this->sql);
-        }
-        return $this->sql;
-    }
-
     public function getPrepareSql(bool $format = true): string
     {
         if ($format) {
@@ -552,12 +416,12 @@ abstract class Query implements QueryInterface
         if (empty($table)) {
             $table = $this->table;
         }
-        if(empty($table)) {
+        if (empty($table)) {
             throw new Exception(__('请先指定要操作的表，表名不能为空!'));
         }
         $this->backup($backup_file, $table);
         # 清理表
-        $PDOStatement = $this->connection->getLink()->prepare("TRUNCATE TABLE $table");
+        $PDOStatement = $this->getLink()->prepare("TRUNCATE TABLE $table");
         $PDOStatement->execute();
         return $this;
     }
@@ -567,11 +431,11 @@ abstract class Query implements QueryInterface
         if (empty($table)) {
             $table = $this->table;
         }
-        if(empty($table)) {
+        if (empty($table)) {
             throw new Exception(__('请先指定要操作的表，表名不能为空!'));
         }
         // 获取表的创建语句
-        $PDOStatement = $this->connection->getLink()->prepare("SHOW CREATE TABLE $table");
+        $PDOStatement = $this->getLink()->prepare("SHOW CREATE TABLE $table");
         $PDOStatement->execute();
         $createTableResult = $PDOStatement->fetchAll(PDO::FETCH_ASSOC);
         $createTableSql    = $createTableResult[0]['Create Table'];
@@ -601,7 +465,7 @@ abstract class Query implements QueryInterface
         fwrite($file, "-- $table 建表语句" . PHP_EOL);
         fwrite($file, $createTableSql . ';' . PHP_EOL);
         // 获取表的数据并写入备份文件
-        $PDOStatement = $this->connection->getLink()->prepare("SELECT * FROM $table");
+        $PDOStatement = $this->getLink()->prepare("SELECT * FROM $table");
         $PDOStatement->execute();
         $results = $PDOStatement->fetchAll(PDO::FETCH_ASSOC);
         fwrite($file, PHP_EOL);
@@ -609,7 +473,7 @@ abstract class Query implements QueryInterface
         foreach ($results as $result) {
             # 单引号转义
             foreach ($result as $key => $item) {
-                if(is_string($item)) {
+                if (is_string($item)) {
                     $result[$key] = str_replace("'", "\\'", $item);
                 }
             }

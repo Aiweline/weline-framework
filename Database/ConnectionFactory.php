@@ -14,23 +14,22 @@ declare(strict_types=1);
 
 namespace Weline\Framework\Database;
 
-use PDO;
-use PDOException;
-use PDOStatement;
-use Weline\Framework\Database\Api\Connection\AlterInterface;
-use Weline\Framework\Database\Api\Connection\QueryInterface;
-
+use Weline\Framework\Database\Connection\Api\ConnectorInterface;
+use Weline\Framework\Database\Connection\Api\Sql\QueryInterface;
+use Weline\Framework\Database\Connection\Api\Sql\Table\AlterInterface;
 use Weline\Framework\Database\DbManager\ConfigProvider;
 use Weline\Framework\Database\Exception\LinkException;
 use Weline\Framework\Manager\ObjectManager;
 
 class ConnectionFactory
 {
-    protected ?PDO $connection = null;
+    protected ?ConnectorInterface $defaultConnector = null;
     protected ConfigProvider $configProvider;
-    protected ?QueryInterface $query = null;
-    protected ?AlterInterface $alter = null;
-    protected array $queries = [];
+    protected ?AlterInterface $alter;
+    /**
+     * @var ConnectorInterface[] $connectors
+     */
+    protected array $connectors = [];
 
     /**
      * Connection 初始函数...
@@ -93,42 +92,45 @@ class ConnectionFactory
      */
     public function create(): static
     {
-        if (!$this->connection) {
-            $db_type = $this->configProvider->getDbType();
-            $dsn     = "{$db_type}:host={$this->configProvider->getHostName()}:{$this->configProvider->getHostPort()};dbname={$this->configProvider->getDatabase()};charset={$this->configProvider->getCharset()};collate={$this->configProvider->getCollate()}";
-            if (!in_array($db_type, PDO::getAvailableDrivers())) {
-                throw new LinkException(__('驱动不存在：%1,可用驱动列表：%2，更多驱动配置请转到php.ini中开启。', [$db_type, implode(',', PDO::getAvailableDrivers())]));
-            }
-            try {
-                //初始化一个Connection对象
-                $this->connection = new PDO($dsn, $this->configProvider->getUsername(), $this->configProvider->getPassword(), $this->configProvider->getOptions());
-//            $this->connection->exec("set names {$this->configProvider->getCharset()} COLLATE {$this->configProvider->getCollate()}");
-            } catch (PDOException $e) {
-                throw new LinkException($e->getMessage());
-            }
+        if (!$this->defaultConnector) {
+            $this->defaultConnector = $this->getConnectorAdapter()->create($this->configProvider);
         }
-
         return $this;
+    }
+
+    /**
+     * 获取适配器
+     *
+     * @param string $driver_type
+     *
+     * @return string
+     */
+    public function getConnectorAdapter(string $driver_type = ''): ConnectorInterface
+    {
+        if ('' == $driver_type) {
+            $driver_type = $this->configProvider->getDbType();
+        }
+        $driverClass = "Weline\\Framework\\Database\\Connection\\Adapter\\" . ucfirst($driver_type) . '\\Connector';
+        return ObjectManager::make($driverClass, ['configProvider' => $this->configProvider]);
     }
 
     public function close(): void
     {
-        $this->connection = null;
+        $this->defaultConnector = null;
     }
 
     /**
      * @DESC          # 获取连接
-     *
+     * @deprecated 函数已准备移除 使用 getConnector 代替
      * @AUTH    秋枫雁飞
      * @EMAIL aiweline@qq.com
      * @DateTime: 2021/8/18 21:06
      * 参数区：
-     * @return PDO
-     * @throws LinkException
+     * @return ConnectorInterface
      */
-    public function getLink(): PDO
+    public function getConnection(): ConnectorInterface
     {
-        return $this->connection;
+        return $this->defaultConnector;
     }
 
     /**
@@ -138,16 +140,16 @@ class ConnectionFactory
      * @EMAIL aiweline@qq.com
      * @DateTime: 2021/8/18 21:07
      * 参数区：
-     * @return QueryInterface
+     * @return ConnectorInterface
      */
-    public function getQuery(): QueryInterface
+    public function getConnector(): ConnectorInterface
     {
-        if (is_null($this->query)) {
-            $adapter                 = $this->getAdapter();
-            $this->queries['master'] = new $adapter($this);
-            $this->query             = $this->queries['master'];
+        if (is_null($this->defaultConnector)) {
+            $adapter = $this->getConnectorAdapter();
+            $this->connectors['master'] = $adapter;
+            $this->defaultConnector = $this->connectors['master'];
         }
-        return $this->query;
+        return $this->defaultConnector;
     }
 
     /**
@@ -164,7 +166,7 @@ class ConnectionFactory
      * @throws \ReflectionException
      * @throws \Weline\Framework\App\Exception
      */
-    public function query(string $sql): PDOStatement
+    public function query(string $sql): QueryInterface
     {
         # 非写操作，用均衡算法从从库中选择一个
         $write_flags = [
@@ -182,77 +184,36 @@ class ConnectionFactory
             'grant',
             'revoke',
         ];
-        $sql_type    = strtolower(substr(trim($sql), 0, strpos($sql, ' ')));
+        $sql_type = strtolower(substr(trim($sql), 0, strpos($sql, ' ')));
         if (!in_array($sql_type, $write_flags)) {
             # 检测从库配置，如果有从库，则从库中查询
             if ($slaves_configs = $this->configProvider->getSalvesConfig()) {
                 # 如果有从库直接读取从库，一个请求只能读取一个从库
                 # FIXME 均衡算法（先随机选一个）
                 $slave_config = $slaves_configs[array_rand($slaves_configs)];
-                $config_key   = md5($slave_config['host'] . $slave_config['port'] . $slave_config['database']);
-                if (!isset($this->queries[$config_key])) {
-                    $adapter                    = $this->getAdapter($slave_config->getType());
-                    $this->queries[$config_key] = new $adapter(new ConnectionFactory($slave_config));
+                $config_key = md5($slave_config['host'] . $slave_config['port'] . $slave_config['database']);
+                if (!isset($this->connectors[$config_key])) {
+                    $adapter = $this->getConnectorAdapter($slave_config->getType());
+                    $this->connectors[$config_key] = new $adapter(new ConnectionFactory($slave_config));
                 }
-                $this->query = $this->queries[$config_key];
+                $this->defaultConnector = $this->connectors[$config_key];
             } else {
-                $this->query = $this->getQuery();
+                $this->defaultConnector = $this->getConnector();
             }
         }
-        if (is_null($this->query)) {
-            $this->getQuery();
+        if (is_null($this->defaultConnector)) {
+            $this->getConnector();
         }
         // 如果是drop开头的语句，则不进行缓存
-//        if (strpos(strtolower($sql), 'drop') === 0) {
-//            p($sql);
-//        }
-//
-//        // 如果是drop开头的语句，则不进行缓存
-//        if (strpos(strtolower($sql), 'm_aiweline_hello_world')) {
-//            p($sql);
-//        }
-        return $this->query->getConnection()->getLink()->query($sql);
+        //        if (strpos(strtolower($sql), 'drop') === 0) {
+        //            p($sql);
+        //        }
+        //
+        //        // 如果是drop开头的语句，则不进行缓存
+        //        if (strpos(strtolower($sql), 'm_aiweline_hello_world')) {
+        //            p($sql);
+        //        }
+        return $this->defaultConnector->query($sql);
     }
 
-    /**
-     * @DESC          # 获取修改者
-     *
-     * @AUTH    秋枫雁飞
-     * @EMAIL aiweline@qq.com
-     * @DateTime: 2021/9/5 21:11
-     * 参数区：
-     * @return AlterInterface
-     * @throws \ReflectionException
-     * @throws \Weline\Framework\App\Exception
-     */
-    public function getAlter(): AlterInterface
-    {
-        if (is_null($this->alter)) {
-            $this->alter = ObjectManager::getInstance($this->getAdapter('alert'));
-        }
-        return $this->alter;
-    }
-
-    /**
-     * 获取适配器
-     *
-     * @param string $driver_type
-     *
-     * @return string
-     */
-    public function getAdapter(string $driver_type = 'mysql'): string
-    {
-        $driver_type = $this->configProvider->getDbType() ?: $driver_type;
-        return "Weline\\Framework\\Database\\Connection\\Query\\Adapter\\" . ucfirst($driver_type);
-    }
-
-    public function getVersion(): string
-    {
-        // 查询数据库版本号
-        $query = 'SELECT VERSION() AS version';
-        $stmt  = $this->getQuery()->getConnection()->getLink()->prepare($query);
-        $stmt->execute();
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $result['version'];
-    }
 }

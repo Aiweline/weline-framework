@@ -12,21 +12,62 @@ declare(strict_types=1);
  * 描述：此文件源码由Aiweline（秋枫雁飞）开发，请勿随意修改源码！
  */
 
-namespace Weline\Framework\Database\Connection\Query\Adapter;
+namespace Weline\Framework\Database\Connection\Adapter\Mysql;
 
-use Weline\Framework\Database\Api\Connection\QueryInterface;
-use Weline\Framework\Database\Connection\Query;
+use PDO;
+use PDOException;
+use Weline\Framework\Database\Connection\Adapter\Mysql\Table\Alter;
+use Weline\Framework\Database\Connection\Adapter\Mysql\Table\Create;
+use Weline\Framework\Database\Connection\Api\ConnectorInterface;
+use Weline\Framework\Database\Connection\Api\Sql;
+use Weline\Framework\Database\Connection\Api\Sql\QueryInterface;
+use Weline\Framework\Database\DbManager\ConfigProviderInterface;
+use Weline\Framework\Database\Exception\LinkException;
+use Weline\Framework\Manager\ObjectManager;
 
-class Mysql extends Query
+final class Connector extends Query implements ConnectorInterface
 {
-    public function reindex(string $table): void
+    public function __construct(
+        private readonly ?ConfigProviderInterface $configProvider
+    ) {
+        $this->db_name    = $this->configProvider->getDatabase();
+    }
+    protected ?PDO $link = null;
+    protected ?Query $query = null;
+    public function create(): static
+    {
+        $db_type = $this->configProvider->getDbType();
+        if (!in_array($db_type, PDO::getAvailableDrivers())) {
+            throw new LinkException(__('驱动不存在：%1,可用驱动列表：%2，更多驱动配置请转到php.ini中开启。', [$db_type, implode(',', PDO::getAvailableDrivers())]));
+        }
+        $dsn     = "{$db_type}:host={$this->configProvider->getHostName()}:{$this->configProvider->getHostPort()};dbname={$this->configProvider->getDatabase()};charset={$this->configProvider->getCharset()};collate={$this->configProvider->getCollate()}";
+        try {
+            //初始化一个Connection对象
+            $this->link = new PDO($dsn, $this->configProvider->getUsername(), $this->configProvider->getPassword(), $this->configProvider->getOptions());
+            //            $this->link->exec("set names {$this->configProvider->getCharset()} COLLATE {$this->configProvider->getCollate()}");
+        } catch (PDOException $e) {
+            throw new LinkException($e->getMessage());
+        }
+        return $this;
+    }
+
+    public function close(): void
+    {
+        $this->link = null;
+    }
+
+    public function getLink(): PDO
+    {
+        return $this->link;
+    }
+    public function reindex(string $table): bool
     {
         $table = str_replace('`', '', $table);
-        if(str_contains($table, '.')) {
+        if (str_contains($table, '.')) {
             list($schema, $table) = explode('.', $table);
         }
-        if(empty($schema)) {
-            $schema = $this->getConnection()->getConfigProvider()->getDatabase();
+        if (empty($schema)) {
+            $schema = $this->configProvider->getDatabase();
         }
         # 查询表的存储引擎
         $RebuildIndexerSql = <<<REBUILD_INDEXER_SQL
@@ -71,16 +112,16 @@ SELECT CONCAT('ALTER TABLE `', @rebuild_indexer_schema, '`.`', @rebuild_indexer_
               @rebuild_indexer_sql) AS rebuild_indexer_sql;
 REBUILD_INDEXER_SQL;
         $rebuild_indexer_sql = $this->query($RebuildIndexerSql)->fetch()[4][0]['rebuild_indexer_sql'] ?? '';
-        if(empty($rebuild_indexer_sql)) {
-            return;
+        if (empty($rebuild_indexer_sql)) {
+            return false;
         }
-
         $this->query($rebuild_indexer_sql)->fetch();
+        return true;
     }
 
-    public function getIndexFields(): QueryInterface
+    public function getIndexFields(string $table): QueryInterface
     {
-        return $this->query('show index from ' . $this->table);
+        return $this->query('show index from ' . $table);
     }
 
     public function dev()
@@ -125,5 +166,57 @@ FROM (SELECT--   i.TABLE_NAME,
          AS index_field;
 SELECT CONCAT('ALTER TABLE `', @rebuild_indexer_schema, '`.`', @rebuild_indexer_table, '`',
               @rebuild_indexer_sql) AS rebuild_indexer_sql;";
+    }
+
+    /**
+     * @DESC          # 读取创建表SQL
+     *
+     * @AUTH    秋枫雁飞
+     * @EMAIL aiweline@qq.com
+     * @DateTime: 2021/9/5 22:08
+     * 参数区：
+     *
+     * @param string $table_name
+     *
+     * @return mixed
+     */
+    public function getCreateTableSql(string $table_name): string
+    {
+        return $this->query("SHOW CREATE TABLE {$table_name}")->fetch()[0]["Create Table"];
+    }
+
+    public function getConfigProvider(): ConfigProviderInterface
+    {
+        return $this->configProvider;
+    }
+
+    public function createTable(): Sql\Table\CreateInterface
+    {
+        return ObjectManager::getInstance(Create::class)->setConnection($this);
+    }
+
+    public function alterTable(): Sql\Table\AlterInterface
+    {
+        return ObjectManager::getInstance(Alter::class)->setConnection($this);
+    }
+
+    public function tableExist(string $table_name): bool
+    {
+        try {
+            $this->query("DESC {$table_name}")->fetch();
+            return true;
+        } catch (\Exception $exception) {
+            return false;
+        }
+    }
+
+    public function getVersion(): string
+    {
+        // 查询数据库版本号
+        $query = 'SELECT VERSION() AS version';
+        $stmt = $this->link->prepare($query);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['version'];
     }
 }

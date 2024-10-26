@@ -141,6 +141,36 @@ class Env extends DataObject
         'php-cs' => true,
         'lang' => 'zh_Hans_CN',
         'currency' => 'CNY',
+        'db' => [
+            'default' => 'mysql',
+            'master' => [
+                'hostname' => 'demo',
+                'database' => 'demo',
+                'username' => 'demo',
+                'password' => 'demo',
+                'type' => 'mysql',
+                'hostport' => '3306',
+                'prefix' => 'm_',
+                'charset' => 'utf8mb4',
+                'collate' => 'utf8mb4_general_ci',
+            ],
+            'slaves' => [
+
+            ],
+        ],
+        'sandbox_db' => [
+            'default' => 'sqlite',
+            'master' => [
+                'type' => 'sqlite',
+                'path'=> APP_PATH.'etc/sandbox_db.sqlite'
+            ],
+            'slaves' => [
+                [
+                    'type' => 'sqlite',
+                    'path'=> APP_PATH.'etc/sandbox_db.sqlite'
+                ]
+            ],
+        ],
     ];
 
     // 日志
@@ -263,29 +293,30 @@ class Env extends DataObject
         return self::$instance;
     }
 
-    static public function get(string $name = '')
+    public static function get(string $name = '')
     {
         return self::getInstance()->getConfig($name);
     }
 
-    static public function set(string $name, $value){
+    public static function set(string $name, $value)
+    {
         return self::getInstance()->setConfig($name, $value);
     }
 
-    static function log(string $filename, string $content, bool $append = true): bool
+    public static function log(string $filename, string $content, bool $append = true): bool
     {
         $content = str_replace("\r\n", "\n", $content);
         $content = str_replace("\r", "\n", $content);
         $content = '-------------------'. date('Y-m-d H:i:s') .'------------------------' . "\n" . $content . "\n". '-------------------------'. date('Y-m-d H:i:s') .'------------------' . "\n";
-        if(!str_contains($filename, BP)) {
+        if (!str_contains($filename, BP)) {
             $filename = BP . $filename;
         }
-        if(!is_file($filename)){
-            if(!is_dir(dirname($filename))) {
+        if (!is_file($filename)) {
+            if (!is_dir(dirname($filename))) {
                 mkdir(dirname($filename), 0777, true);
             }
         }
-        if($append) {
+        if ($append) {
             return file_put_contents($filename, $content, FILE_APPEND);
         } else {
             return file_put_contents($filename, $content);
@@ -305,11 +336,11 @@ class Env extends DataObject
     public function getConfig(string $name = '', $default = null): mixed
     {
         # 使用.获取数组数据
-        if(str_contains($name, '.')) {
+        if (str_contains($name, '.')) {
             $config = $this->config;
             $name = explode('.', $name);
-            foreach($name as $key) {
-                if(isset($config[$key])) {
+            foreach ($name as $key) {
+                if (isset($config[$key])) {
                     $config = $config[$key];
                 } else {
                     return $default;
@@ -384,10 +415,29 @@ class Env extends DataObject
      */
     public function getDbConfig(): array
     {
-        if (SANDBOX) {
-            return $this->config['sandbox_db'] ?? [];
+        if (SANDBOX || DEBUG) {
+            $sandbox_db = $this->config['sandbox_db'] ?? [];
+            if ($sandbox_db) {
+                return $sandbox_db;
+            } else {
+                # 默认使用Sqlite
+                $driver_type = 'sqlite';
+                $path = BP. (SANDBOX ? 'sandbox' : 'debug').'.db.sqlite';
+                $db_conf['type'] = $driver_type;
+                $db_conf['path'] = $path;
+                return $db_conf;
+            }
         }
-        return $this->config['db'] ?? [];
+        $db_conf =  $this->config['db'] ?? [];
+        if ($db_conf) {
+            return $db_conf;
+        }
+        # 默认使用Sqlite
+        $driver_type = 'sqlite';
+        $path = APP_PATH.'etc/db.sqlite';
+        $db_conf['type'] = $driver_type;
+        $db_conf['path'] = $path;
+        return $db_conf;
     }
 
     /**

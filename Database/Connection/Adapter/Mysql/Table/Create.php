@@ -7,15 +7,14 @@
  * 论坛：https://bbs.aiweline.com
  */
 
-namespace Weline\Framework\Database\Db\Ddl\Table;
+namespace Weline\Framework\Database\Connection\Adapter\Mysql\Table;
 
 use Weline\Framework\App\Exception;
-use Weline\Framework\Database\Api\Db\Ddl\Table\CreateInterface;
-use Weline\Framework\Database\Api\Db\TableInterface;
-use Weline\Framework\Database\Api\Connection\QueryInterface;
-use Weline\Framework\Database\Db\Ddl\TableAbstract;
+use Weline\Framework\Database\Api\Db\Ddl\TableInterface;
+use Weline\Framework\Database\Connection\Api\Sql\AbstractTable;
+use Weline\Framework\Database\Connection\Api\Sql\Table\CreateInterface;
 
-class Create extends TableAbstract implements CreateInterface
+class Create extends AbstractTable implements CreateInterface
 {
     public function createTable(string $table, string $comment = ''): CreateInterface
     {
@@ -55,28 +54,29 @@ class Create extends TableAbstract implements CreateInterface
         $comment      = $comment ? "COMMENT '{$comment}'" : '';
         $index_method = $index_method ? "USING {$index_method}" : '';
         $type         = strtoupper($type);
-        if (is_array($column)) {
-            $column = implode('`,`', $column);
+        if (is_string($column)) {
+            $column = explode(',', $column);
         }
+        $column = implode('`,`', $column);
         switch ($type) {
             case self::index_type_DEFAULT:
-                $this->indexes[] = "INDEX `{$name}`(`{$column}`) {$index_method} {$comment}" . PHP_EOL;
+                $this->indexes[] = "INDEX `{$name}`(`{$column}`) {$index_method} {$comment}";
 
                 break;
             case self::index_type_FULLTEXT:
-                $this->indexes[] = "FULLTEXT INDEX `{$name}`(`{$column}`) {$index_method} {$comment}" . PHP_EOL;
+                $this->indexes[] = "FULLTEXT INDEX `{$name}`(`{$column}`) {$index_method} {$comment}";
 
                 break;
             case self::index_type_UNIQUE:
-                $this->indexes[] = "UNIQUE INDEX `{$name}`(`{$column}`) {$index_method} {$comment}" . PHP_EOL;
+                $this->indexes[] = "UNIQUE INDEX `{$name}`(`{$column}`) {$index_method} {$comment}";
 
                 break;
             case self::index_type_SPATIAL:
-                $this->indexes[] = "SPATIAL INDEX `{$name}`(`{$column}`) {$index_method} {$comment}" . PHP_EOL;
+                $this->indexes[] = "SPATIAL INDEX `{$name}`(`{$column}`) {$index_method} {$comment}";
 
                 break;
             case self::index_type_KEY:
-                $this->indexes[] = "KEY `{$name}`(`{$column}`) {$index_method} {$comment}" . PHP_EOL;
+                $this->indexes[] = "KEY `{$name}`(`{$column}`) {$index_method} {$comment}";
 
                 break;
             case self::index_type_MULTI:
@@ -85,7 +85,7 @@ class Create extends TableAbstract implements CreateInterface
                     new Exception(self::index_type_MULTI . __('：此索引的column需要array类型,当前类型') . "{$type_of_column}" . ' 例如：[ID,NAME(19),AGE]');
                 }
                 $column          = implode(',', $column);
-                $this->indexes[] = "INDEX `{$name}`(`$column`) {$index_method} {$comment}," . PHP_EOL;
+                $this->indexes[] = "INDEX `{$name}`(`$column`) {$index_method} {$comment},";
 
                 break;
             default:
@@ -133,7 +133,7 @@ class Create extends TableAbstract implements CreateInterface
         $fields_str = implode(',' . PHP_EOL, $this->fields);
         $fields_str = rtrim($fields_str, PHP_EOL);
         // 索引
-        $indexes_str = implode(',', $this->indexes);
+        $indexes_str = implode(',' . PHP_EOL, $this->indexes);
         $indexes_str = rtrim($indexes_str, PHP_EOL);
         // 外键
         $foreign_key_str = implode(',' . PHP_EOL, $this->foreign_keys);

@@ -197,13 +197,6 @@ class App
         //报告错误
         DEBUG ? error_reporting(E_ALL) : error_reporting(0);
 
-        // 检测debug数据库
-        if (SANDBOX) {
-            if (!isset($config['sandbox_db'])) {
-                throw new Exception(__('请设置沙盒数据库！'));
-            }
-        }
-
         // 错误报告
         if (DEV || CLI) {
             ini_set('error_reporting', E_ALL);

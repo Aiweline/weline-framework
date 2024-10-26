@@ -9,16 +9,27 @@ declare(strict_types=1);
  * 论坛：https://bbs.aiweline.com
  */
 
-namespace Weline\Framework\Database\Db\Ddl\Table;
+namespace Weline\Framework\Database\Connection\Adapter\SqLite\Table;
 
 use Weline\Framework\App\Exception;
-use Weline\Framework\Database\Api\Db\Ddl\Table\AlterInterface;
-use Weline\Framework\Database\ConnectionFactory;
-use Weline\Framework\Database\Db\Ddl\TableAbstract;
-use Weline\Framework\Database\Exception\DbException;
+use Weline\Framework\Database\Connection\Api\Sql\AbstractTable;
+use Weline\Framework\Database\Connection\Api\Sql\Table\AlterInterface;
 
-class Alter extends TableAbstract implements AlterInterface
+class Alter extends AbstractTable implements AlterInterface
 {
+    public string $additional = ';';
+    public const init_vars = [
+        self::table_TABLE         => '',
+        self::table_COMMENT       => '',
+        self::table_FIELDS        => [],
+        self::table_ALERT_FIELDS  => [],
+        self::table_DELETE_FIELDS => [],
+        self::table_INDEXS        => [],
+        self::table_FOREIGN_KEYS  => [],
+        self::table_CONSTRAINTS   => '',
+        self::table_ADDITIONAL    => ';',
+    ];
+
     public function forTable(string $table_name, string $primary_key, string $comment = '', string $new_table_name = ''): AlterInterface
     {
         # 开始表操作

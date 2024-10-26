@@ -81,11 +81,11 @@ interface ConfigProviderInterface
      *
      * 参数区：
      *
-     * @param string $database
+     * @param string $database_name
      *
      * @return ConfigProviderInterface
      */
-    public function setDatabase(string $database): ConfigProviderInterface;
+    public function setDatabase(string $database_name): ConfigProviderInterface;
 
     /**
      * @DESC         |数据库名

@@ -9,16 +9,12 @@ declare(strict_types=1);
  * 论坛：https://bbs.aiweline.com
  */
 
-namespace Weline\Framework\Database\Db\Ddl;
+namespace Weline\Framework\Database\Connection\Api\Sql;
 
 use Weline\Framework\App\Exception;
-use Weline\Framework\Database\Api\Db\Ddl\TableInterface;
-use Weline\Framework\Database\Api\Connection\QueryInterface;
-use Weline\Framework\Database\DbManager;
-use Weline\Framework\Database\ConnectionFactory;
-use Weline\Framework\Manager\ObjectManager;
+use Weline\Framework\Database\Connection\Api\ConnectorInterface;
 
-abstract class TableAbstract implements TableInterface
+abstract class AbstractTable implements TableInterface
 {
     // 数据字段
     protected string $table;
@@ -37,9 +33,9 @@ abstract class TableAbstract implements TableInterface
 
     protected string $constraints = '';
 
-    protected string $additional = 'ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;';
+    public string $additional = 'ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;';
 
-    protected ?ConnectionFactory $connection = null;
+    protected ?ConnectorInterface $connector = null;
     protected ?QueryInterface $query = null;
 
     /**
@@ -52,49 +48,33 @@ abstract class TableAbstract implements TableInterface
      * @throws Exception
      * @throws \ReflectionException
      */
-    public function setConnection(ConnectionFactory $connection): static
+    public function setConnection(ConnectorInterface $connector): static
     {
-        $this->connection = $connection;
-        $this->query      = $connection->getQuery();
+        $this->connector = $connector;
         return $this;
     }
 
-    /**
-     * @DESC          # 数据库链接
-     *
-     * @AUTH    秋枫雁飞
-     * @EMAIL aiweline@qq.com
-     * @DateTime: 2021/8/31 20:43
-     * 参数区：
-     * @return ConnectionFactory
-     * @throws Exception
-     */
-    public function getConnection(): ConnectionFactory
+    public function getConnection(): ConnectorInterface
     {
-        # 如果没有链接，则抛出异常
-        if (!$this->connection) {
-            throw new Exception('请先设置数据库链接：setConnection()');
-        }
-        return $this->connection;
+        return $this->connector;
     }
 
     /**
      * @DESC          # 数据库链接
-     *
      * @AUTH    秋枫雁飞
      * @EMAIL aiweline@qq.com
      * @DateTime: 2021/8/31 20:43
      * 参数区：
-     * @return QueryInterface
+     * @return ConnectorInterface
      * @throws Exception
      */
-    public function getQuery(): QueryInterface
+    public function getConnector(): ConnectorInterface
     {
         # 如果没有链接，则抛出异常
-        if (!$this->query) {
+        if (!$this->connector) {
             throw new Exception('请先设置数据库链接：setConnection()');
         }
-        return $this->query;
+        return $this->connector;
     }
 
     /**
@@ -110,7 +90,7 @@ abstract class TableAbstract implements TableInterface
      * @param string $comment
      * @param string $new_table_name
      */
-    protected function startTable(string $table, string $comment = '', string $primary_key = '', string $new_table_name = '')
+    protected function startTable(string $table, string $comment = '', string $primary_key = '', string $new_table_name = ''): void
     {
         # 清空所有表操作属性
         $this->init_vars();
@@ -119,23 +99,8 @@ abstract class TableAbstract implements TableInterface
             $this->primary_key = $primary_key;
         }
         $this->table          = $table;
-        $this->new_table_name = $new_table_name ? '`' . $this->connection->getConfigProvider()->getDatabase() . '`.`' . $new_table_name . '`' : '';
+        $this->new_table_name = $new_table_name ? '`' . $this->connector->getConfigProvider()->getDatabase() . '`.`' . $new_table_name . '`' : '';
         $this->comment        = $comment;
-    }
-
-    /**
-     * @DESC          # 清空所有表操作属性
-     *
-     * @AUTH    秋枫雁飞
-     * @EMAIL aiweline@qq.com
-     * @DateTime: 2021/9/5 18:22
-     * 参数区：
-     */
-    protected function init_vars()
-    {
-        foreach (self::init_vars as $attr => $init_var) {
-            $this->$attr = $init_var;
-        }
     }
 
     /**
@@ -148,12 +113,12 @@ abstract class TableAbstract implements TableInterface
      *
      * @param string $sql
      *
-     * @return \Weline\Framework\Database\Api\Connection\QueryInterface
+     * @return \Weline\Framework\Database\Connection\Api\Sql\QueryInterface
      * @throws Exception
      */
-    public function query(string $sql): \Weline\Framework\Database\Api\Connection\QueryInterface
+    public function query(string $sql): \Weline\Framework\Database\Connection\Api\Sql\QueryInterface
     {
-        return $this->getQuery()->query($sql);
+        return $this->connector->query($sql);
     }
 
     /**
@@ -168,7 +133,7 @@ abstract class TableAbstract implements TableInterface
      */
     public function getType(): string
     {
-        return $this->getConnection()->getConfigProvider()->getDbType();
+        return $this->getConnector()->getConfigProvider()->getDbType();
     }
 
     /**
@@ -177,7 +142,7 @@ abstract class TableAbstract implements TableInterface
      */
     public function getPrefix(): string
     {
-        return $this->getConnection()->getConfigProvider()->getPrefix();
+        return $this->getConnector()->getConfigProvider()->getPrefix();
     }
 
     /**
@@ -217,10 +182,18 @@ abstract class TableAbstract implements TableInterface
      * @param string $table_name
      *
      * @return mixed
+     * @throws Exception
      */
     public function getCreateTableSql(string $table_name = ''): mixed
     {
         $table_name = $table_name ?: $this->table;
         return $this->query("SHOW CREATE TABLE {$table_name}")->fetch()[0]["Create Table"];
+    }
+
+    protected function init_vars()
+    {
+        foreach (self::init_vars as $attr => $init_var) {
+            $this->$attr = $init_var;
+        }
     }
 }

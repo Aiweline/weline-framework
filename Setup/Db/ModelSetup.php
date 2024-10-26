@@ -11,15 +11,13 @@ declare(strict_types=1);
 
 namespace Weline\Framework\Setup\Db;
 
-use Weline\Framework\App\Exception;
 use Weline\Framework\Database\AbstractModel;
+use Weline\Framework\Database\Connection\Adapter\Mysql\Table;
+use Weline\Framework\Database\Connection\Adapter\Mysql\Table\Alter;
+use Weline\Framework\Database\Connection\Api\Sql\Table\AlterInterface;
+use Weline\Framework\Database\Connection\Api\Sql\Table\CreateInterface;
 use Weline\Framework\Database\ConnectionFactory;
-use Weline\Framework\Database\Db\Ddl\Table;
-use Weline\Framework\Database\Db\Ddl\Table\Alter;
 use Weline\Framework\Database\Db\DdlFactory;
-use Weline\Framework\Database\DbManager;
-use Weline\Framework\Database\DbManager\ConfigProvider;
-use Weline\Framework\Manager\ObjectManager;
 use Weline\Framework\Output\Cli\Printing;
 
 /**
@@ -36,17 +34,14 @@ class ModelSetup
      * Setup constructor.
      *
      * @param \Weline\Framework\Output\Cli\Printing $printing
-     * @param DdlFactory $ddl_table
      *
      * @throws \ReflectionException
      * @throws \Weline\Framework\App\Exception
      */
     public function __construct(
         Printing   $printing,
-        DdlFactory $ddl_table
     )
     {
-        $this->ddl_table = $ddl_table->create();
         $this->printing  = $printing;
     }
 
@@ -76,11 +71,11 @@ class ModelSetup
      * @param string $comment
      * @param string $table
      *
-     * @return Table\Create
+     * @return CreateInterface
      */
-    public function createTable(string $comment = '', string $table = ''): Table\Create
+    public function createTable(string $comment = '', string $table = ''): CreateInterface
     {
-        return $this->ddl_table->setConnection($this->model->getConnection())
+        return $this->model->getConnection()->getConnector()
             ->createTable()
             ->createTable($table ?: $this->model->getOriginTableName(), $comment);
     }
@@ -93,11 +88,11 @@ class ModelSetup
      * @param string $comment 留空不修改表注释
      * @param string $new_table_name 留空不修改表名
      *
-     * @return Alter
+     * @return AlterInterface
      */
-    public function alterTable(string $comment = '', string $new_table_name = ''): Alter
+    public function alterTable(string $comment = '', string $new_table_name = ''): AlterInterface
     {
-        return $this->ddl_table->setConnection($this->model->getConnection())->alterTable()->forTable($this->model->getTable(), $this->model->_primary_key, $comment, $new_table_name);
+        return $this->model->getConnection()->getConnector()->alterTable()->forTable($this->model->getTable(), $this->model->_primary_key, $comment, $new_table_name);
     }
 
     /**
@@ -126,15 +121,7 @@ class ModelSetup
      */
     public function tableExist(string $table_name = ''): bool
     {
-        if (empty($table_name)) {
-            $table_name = $this->model->getTable();
-        }
-        try {
-            $this->query("DESC {$table_name}");
-            return true;
-        } catch (\Exception $exception) {
-            return false;
-        }
+        return $this->model->getConnection()->getConnector()->tableExist($table_name ?: $this->model->getTable());
     }
 
     /**

@@ -11,49 +11,46 @@ namespace Weline\Framework\Setup\Db;
 
 use PDOException;
 use Weline\Framework\App\Exception;
-use Weline\Framework\Cache\Driver\Memcached\Connection;
-use Weline\Framework\Database\Api\Db\Ddl\TableInterface;
+use Weline\Framework\Database\Connection\Adapter\Mysql\Table;
+use Weline\Framework\Database\Connection\Adapter\Mysql\Table\Alter;
+use Weline\Framework\Database\Connection\Adapter\Mysql\Table\Create;
+use Weline\Framework\Database\Connection\Api\ConnectorInterface;
 use Weline\Framework\Database\ConnectionFactory;
-use Weline\Framework\Database\Db\Ddl\Table;
-use Weline\Framework\Database\Db\DdlFactory;
-use Weline\Framework\Database\DbManager;
 use Weline\Framework\Database\DbManager\ConfigProvider;
-use Weline\Framework\Database\DbManagerFactory;
 use Weline\Framework\Database\Exception\LinkException;
-use Weline\Framework\Manager\ObjectManager;
 
 class Setup
 {
-    private Table $ddl_table;
-    private ?ConnectionFactory $connection = null;
+    private ?ConnectorInterface $connector = null;
 
     /**
      * Setup constructor.
      *
      * @param ConfigProvider $configProvider
-     * @param DdlFactory $ddl_table
      *
      * @throws Exception
      * @throws \ReflectionException
      */
     public function __construct(
-        DdlFactory $ddl_table,
-                   $connection = null
-    )
-    {
-        $this->connection = $connection;
-        $this->ddl_table  = $ddl_table->create($connection);
+        $connector = null
+    ) {
+        $this->connector = $connector;
     }
 
-    public function setConnection(ConnectionFactory $connection)
+    public function setConnection(ConnectionFactory $connecttion)
     {
-        $this->connection = $connection;
+        $this->connector = $connecttion->getConnector();
+        return $this;
+    }
+    public function setConnector(ConnectorInterface $connector)
+    {
+        $this->connector = $connector;
         return $this;
     }
 
-    public function getConnection()
+    public function getConnector()
     {
-        return $this->connection;
+        return $this->connector;
     }
 
     /**
@@ -64,12 +61,12 @@ class Setup
      * @param string $table_name
      * @param string $comment
      *
-     * @return Table\Create
+     * @return Create
      */
-    public function createTable(string $table_name, string $comment = ''): Table\Create
+    public function createTable(string $table_name, string $comment = ''): Create
     {
         $table_name = $this->getTable($table_name);
-        return $this->ddl_table->setConnection($this->getConnection())->createTable()->createTable($table_name, $comment);
+        return $this->getConnector()->reset()->createTable()->createTable($table_name, $comment);
     }
 
     /**
@@ -82,12 +79,12 @@ class Setup
      * @param string $comment
      * @param string $new_table_name
      *
-     * @return Table\Alter
+     * @return Alter
      */
-    public function alterTable(string $table_name, string $primary_key, string $comment = '', string $new_table_name = ''): Table\Alter
+    public function alterTable(string $table_name, string $primary_key, string $comment = '', string $new_table_name = ''): Alter
     {
         $table_name = $this->getTable($table_name);
-        return $this->ddl_table->setConnection($this->getConnection())->alterTable()->forTable($table_name, $primary_key, $comment, $new_table_name);
+        return $this->getConnector()->reset()->alterTable()->forTable($table_name, $primary_key, $comment, $new_table_name);
     }
 
     /**
@@ -101,7 +98,7 @@ class Setup
      */
     public function getTablePrefix(): string
     {
-        $prefix = $this->getConnection()->getConfigProvider()->getPrefix();
+        $prefix = $this->getConnector()->getConfigProvider()->getPrefix();
         return $prefix ?? '';
     }
 
@@ -139,7 +136,7 @@ class Setup
      */
     public function getTable(string $name = ''): string
     {
-        if(!str_contains($name, '.')){
+        if (!str_contains($name, '.')) {
             if (!str_starts_with($name, $this->getTablePrefix())) {
                 $name = $this->getTablePrefix() . $name;
             }
@@ -180,12 +177,9 @@ class Setup
      * @param string $sql
      *
      * @return mixed
-     * @throws Exception
-     * @throws \ReflectionException
-     * @throws \Weline\Framework\Database\Exception\LinkException
      */
     public function query(string $sql): mixed
     {
-        return $this->getConnection()->query($sql)->fetch();
+        return $this->getConnector()->query($sql)->fetch();
     }
 }

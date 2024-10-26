@@ -11,6 +11,8 @@ namespace Weline\Framework\System\RunType\Db;
 
 use Weline\Framework\App\Env;
 use Weline\Framework\App\Exception;
+use Weline\Framework\Database\ConnectionFactory;
+use Weline\Framework\Database\DbManager\ConfigProvider;
 use Weline\Framework\Database\Setup\DataInterface;
 use Weline\Framework\Output\Cli\Printing;
 use Weline\Framework\System\Helper\Data;
@@ -127,12 +129,13 @@ class InstallConfig
         $tmp['数据库：1、Debug调试数据库链接检测...'] = '系统';
         try {
             //初始化一个PDO对象
-            $dbh = new PDO($sandbox_db_config['type'] . ':host=' . $sandbox_db_config['hostname'] . ';dbname=' . $sandbox_db_config['database'], $sandbox_db_config['username'], $sandbox_db_config['password']);
+            $configProvider = new ConfigProvider();
+            $connect = new ConnectionFactory($configProvider);
             if (CLI) {
                 $this->printer->success('PDO数据库链接检测通过', 'OK');
             }
             $tmp['PDO数据库链接检测通过'] = '【✔】';
-            $dbh                          = null;
+            $connect->close();
         } catch (PDOException $e) {
             if (CLI) {
                 $this->printer->error('PDO数据库链接检测失败!' . 'Error: ' . $e->getMessage(), 'ERROR');

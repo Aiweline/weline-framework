@@ -12,12 +12,7 @@ declare(strict_types=1);
  * 描述：此文件源码由Aiweline（秋枫雁飞）开发，请勿随意修改源码！
  */
 
-namespace Weline\Framework\Database\Api\Connection;
-
-use PDOStatement;
-use Weline\Framework\Database\Connection;
-use Weline\Framework\Database\AbstractModel;
-use Weline\Framework\Database\Connection\Query;
+namespace Weline\Framework\Database\Connection\Api\Sql;
 
 interface QueryInterface
 {
@@ -36,7 +31,6 @@ interface QueryInterface
     public const attr_HAVING = 'having';
     public const attr_SQL = 'sql';
     public const attr_ADDITIONAL_SQL = 'additional_sql';
-    public const attr_EXIST_UPDATE_SQL = 'exist_update_sql';
 
     public const init_vars = [
         self::attr_IDENTITY_FIELD => 'id',
@@ -54,7 +48,6 @@ interface QueryInterface
         self::attr_HAVING => '',
         self::attr_SQL => '',
         self::attr_ADDITIONAL_SQL => '',
-        self::attr_EXIST_UPDATE_SQL => '',
     ];
     public const query_vars = [
         self::attr_INSERT => [],
@@ -69,7 +62,6 @@ interface QueryInterface
         self::attr_HAVING => '',
         self::attr_SQL => '',
         self::attr_ADDITIONAL_SQL => '',
-        self::attr_EXIST_UPDATE_SQL => '',
     ];
 
     /**
@@ -237,12 +229,12 @@ interface QueryInterface
      * @DateTime: 2021/8/18 22:46
      * 参数区：
      *
-     * @param string $fields
+     * @param string $field
      * @param string $sort
      *
      * @return QueryInterface
      */
-    public function order(string $fields, string $sort = 'ASC'): QueryInterface;
+    public function order(string $field, string $sort = 'ASC'): QueryInterface;
 
     /**
      * @DESC          # Group By语法
@@ -305,11 +297,13 @@ interface QueryInterface
      * 参数区：
      *
      * @param array $data [数据]
-     * @param array|string $exist_update_fields [数组：存在则更新字段] 检测到这些字段对应的值已经存在则更新
+     * @param array|string $exist_update_fields [数组或字符串] 检测到这些字段对应的值已经存在则更新此参数指定的字段 字符串方式以','号分割字段
+     * @param string $update_where_fields [数组：存在则更新字段] 检测到这些字段对应的值已经存在则更新 字符串方式以','号分割字段，作为附加条件加入主键和联合主键的条件
+     * @param bool $ignore_primary_key [布尔] 是否忽略主键
      *
      * @return QueryInterface
      */
-    public function insert(array $data, array|string $exist_update_fields = []): QueryInterface;
+    public function insert(array $data, array|string $update_where_fields = [], string $update_fields = '', bool $ignore_primary_key = false): QueryInterface;
 
     /**
      * @DESC         |删除
@@ -332,31 +326,6 @@ interface QueryInterface
      * @return QueryInterface
      */
     public function query(string $sql): QueryInterface;
-
-    /**
-     * @DESC          # 查看所有索引字段
-     *
-     * @AUTH    秋枫雁飞
-     * @EMAIL aiweline@qq.com
-     * @DateTime: 2022/5/17 22:52
-     * 参数区：
-     * @return QueryInterface
-     */
-    public function getIndexFields(): QueryInterface;
-
-    /**
-     * @DESC          # 重建索引
-     *
-     * @AUTH    秋枫雁飞
-     * @EMAIL aiweline@qq.com
-     * @DateTime: 2022/5/17 22:33
-     * 参数区：
-     *
-     * @param string $table
-     *
-     * @return void
-     */
-    public function reindex(string $table): void;
 
     /**
      * @DESC          # 附加的sql 用于复杂自定义的长sql 比如聚合函数的使用
@@ -500,7 +469,6 @@ interface QueryInterface
      * @return $this
      */
     public function backup(string $backup_file = '', string $table = ''): static;
-
     /**
      * @DESC          # 读取最终的sql
      *
@@ -513,7 +481,7 @@ interface QueryInterface
      *
      * @return string
      */
-    public function getLastSql(bool $format = true): string;
+    public function getSql(bool $format = false): string;
 
     /**
      * @DESC          # 读取预编译sql
@@ -527,5 +495,5 @@ interface QueryInterface
      *
      * @return string
      */
-    public function getPrepareSql(bool $format = true): string;
+    public function getPrepareSql(bool $format = false): string;
 }

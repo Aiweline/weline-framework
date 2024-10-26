@@ -95,9 +95,9 @@ if (!function_exists('pp')) {
      *
      * @param $data
      */
-    function pp($data): void
+    function pp($data, int $trace_deep = 2): void
     {
-        p($data, 1);
+        p($data, 1,$trace_deep);
     }
 }
 if (function_exists('dump') && !function_exists('d')) {
@@ -111,6 +111,18 @@ if (function_exists('dump') && !function_exists('d')) {
 //        if (DEV) {
 //            dump($parent_call_info);
 //        }
+        $parent_call_info = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $trace_deep);
+        $parent_call_info = array_reverse($parent_call_info);
+        foreach ($parent_call_info as $key => $item) {
+            if (is_array($item)) {
+                echo w_var_export($item);
+                echo '---------------------------------------------------------' . (CLI ? PHP_EOL : '<br>');
+            } else {
+                $key      = str_pad($key, 12, '-', STR_PAD_BOTH);
+                print_r("{$key}");
+                echo '---------------------------------------------------------' . (CLI ? PHP_EOL : '<br>');
+            }
+        }
         dump($data);
     }
 }
