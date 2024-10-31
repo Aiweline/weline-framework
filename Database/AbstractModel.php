@@ -138,6 +138,7 @@ abstract class AbstractModel extends DataObject
      */
     public function __init()
     {
+        $this->reset();
         # 如果初始化有数据
         if ($this->getData()) {
             $this->fetch_after();
@@ -619,15 +620,15 @@ abstract class AbstractModel extends DataObject
         $this->getEvenManager()->dispatch($model_event_name . '_model_save_before', ['model' => $this]);
         $this->getQuery()->beginTransaction();
 //        try {
-            if ($this->force_check_flag) {
-                $save_result = $this->checkUpdateOrInsert();
-            } else {
-                $save_result = $this->getQuery()->clearQuery()->insert($this->getModelData())->fetch();
-            }
-            if (!$this->getId()) {
-                $this->setData($this->_primary_key, $save_result);
-            }
-            $this->getQuery()->commit();
+        if ($this->force_check_flag) {
+            $save_result = $this->checkUpdateOrInsert();
+        } else {
+            $save_result = $this->getQuery()->clearQuery()->insert($this->getModelData())->fetch();
+        }
+        if (!$this->getId()) {
+            $this->setData($this->_primary_key, $save_result);
+        }
+        $this->getQuery()->commit();
 //        } catch (\Exception $exception) {
 //            $this->getQuery()->rollBack();
 //            $msg = __('保存数据出错! ');

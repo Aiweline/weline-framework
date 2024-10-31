@@ -303,7 +303,6 @@ class ObjectManager implements ManagerInterface
     private static function initClassInstance(string $class, $new_object, bool $init_factory = true): mixed
     {
         $init_method_name = '__init';
-
         if (method_exists($new_object, $init_method_name)) {
             $new_object->__init();
         }
@@ -315,6 +314,10 @@ class ObjectManager implements ManagerInterface
             $create_method = 'create';
             if (method_exists($new_object, $create_method)) {
                 $new_object = $new_object->$create_method();
+            }
+            if (method_exists($new_object, $init_method_name)) {
+                $new_object->__init();
+                return $new_object;
             }
         }
         return $new_object;
@@ -446,7 +449,7 @@ class ObjectManager implements ManagerInterface
                             $args = self::getMethodParams($paramTypeName);
                             // 实例化时执行自定义__init方法
                             try {
-                                 $newObj = ObjectManager::getInstance($paramTypeName, $args);
+                                $newObj = ObjectManager::getInstance($paramTypeName, $args);
 //                                $newObj = (new ReflectionClass(self::parserClass($paramTypeName)))->newInstanceArgs($args);
                             } catch (\ReflectionException $e) {
                                 if (CLI or DEV) {

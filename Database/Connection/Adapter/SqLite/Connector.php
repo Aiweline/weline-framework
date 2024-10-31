@@ -212,10 +212,6 @@ SELECT CONCAT('ALTER TABLE `', @rebuild_indexer_schema, '`.`', @rebuild_indexer_
     public function getVersion(): string
     {
         // 查询数据库版本号
-        $query = 'SELECT VERSION() AS version';
-        $stmt = $this->link->prepare($query);
-        $stmt->execute();
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $result['version'];
+        return $this->link->getAttribute(PDO::ATTR_CLIENT_VERSION);
     }
 }

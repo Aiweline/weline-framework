@@ -512,6 +512,7 @@ abstract class Query implements QueryInterface
             $this->reset();
         }
         $this->_unit_primary_keys = [];
+        $this->batch = false;
         return $this;
     }
 
@@ -538,6 +539,7 @@ abstract class Query implements QueryInterface
             $this->$init_field = $init_var;
         }
         $this->PDOStatement = null;
+        $this->batch = false;
         return $this;
     }
 

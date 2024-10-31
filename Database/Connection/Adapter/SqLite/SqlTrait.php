@@ -19,6 +19,7 @@ use Weline\Framework\Database\Exception\SqlParserException;
 trait SqlTrait
 {
     use \Weline\Framework\Database\Connection\Api\Sql\SqlTrait;
+
     /**
      * @param string $sql
      * @return string|string[]
@@ -26,8 +27,9 @@ trait SqlTrait
     protected static function formatSql(string $sql): string|array
     {
         $sql = self::parserFiled($sql);
-        if (str_contains(strtolower($sql), 'truncate')) {
-            $truncate_check_sqls = explode(strtolower($sql), ';');
+        $sql = strtolower($sql);
+        if (str_contains($sql, 'truncate')) {
+            $truncate_check_sqls = explode($sql, ';');
             foreach ($truncate_check_sqls as $truncate_check_sql_key => $truncate_check_sql) {
                 if (str_contains($truncate_check_sql, 'truncate')) {
                     # 修改成sqlite支持的delete形式
@@ -37,21 +39,24 @@ trait SqlTrait
             }
             $sql = implode(';', $truncate_check_sqls);
         }
-        if (str_contains(strtolower($sql), 'curdate()-1')) {
-            $sql = strtolower($sql);
-            $sql = str_replace('curdate()-1','\'now\', \'-1 day\'', $sql);
+        if (str_contains($sql, 'curdate()-1')) {
+            $sql = str_replace('curdate()-1', '\'now\', \'-1 day\'', $sql);
         }
-        if (str_contains(strtolower($sql), 'to_days')) {
-            $sql = strtolower($sql);
-            $sql = str_replace('to_days','DATE', $sql);
+        if (str_contains($sql, 'to_days')) {
+            $sql = str_replace('to_days', 'DATE', $sql);
         }
-        if (str_contains(strtolower($sql), 'now()')) {
-            $sql = strtolower($sql);
-            $sql = str_replace('now()','\'now\'', $sql);
+        if (str_contains($sql, 'now()')) {
+            $sql = str_replace('now()', '\'now\'', $sql);
         }
-        if (str_contains(strtolower($sql), 'order by order')) {
-            $sql = strtolower($sql);
-            $sql = str_replace('order by order','order by `order`', $sql);
+        if (str_contains($sql, 'order by order')) {
+            $sql = str_replace('order by order', 'order by `order`', $sql);
+        }
+        if (str_contains($sql, 'order') and str_contains($sql, 'create')) {
+            $sql = str_replace('order', '`order`', $sql);
+            $sql = str_replace('``order``', '`order`', $sql);
+        }
+        if (str_contains($sql, '`order` by')) {
+            $sql = str_replace('`order` by', 'order by', $sql);
         }
         return $sql;
     }

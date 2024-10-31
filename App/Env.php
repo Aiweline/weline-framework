@@ -138,17 +138,17 @@ class Env extends DataObject
         'cache' => self::default_CACHE,
         'session' => self::default_SESSION,
         'log' => self::default_LOG,
-        'php-cs' => true,
+        'php-cs' => false,
         'lang' => 'zh_Hans_CN',
         'currency' => 'CNY',
         'db' => [
-            'default' => 'mysql',
+            'default' => 'sqlite',
             'master' => [
                 'hostname' => 'demo',
                 'database' => 'demo',
                 'username' => 'demo',
                 'password' => 'demo',
-                'type' => 'mysql',
+                'type' => 'sqlite',
                 'hostport' => '3306',
                 'prefix' => 'm_',
                 'charset' => 'utf8mb4',
@@ -162,12 +162,12 @@ class Env extends DataObject
             'default' => 'sqlite',
             'master' => [
                 'type' => 'sqlite',
-                'path'=> APP_PATH.'etc/sandbox_db.sqlite'
+                'path' => APP_PATH . 'etc/sandbox_db.sqlite'
             ],
             'slaves' => [
                 [
                     'type' => 'sqlite',
-                    'path'=> APP_PATH.'etc/sandbox_db.sqlite'
+                    'path' => APP_PATH . 'etc/sandbox_db.sqlite'
                 ]
             ],
         ],
@@ -258,6 +258,14 @@ class Env extends DataObject
         }
     }
 
+    static function real_config(string $key, mixed $value = null): string|null
+    {
+        if (null !== $value) {
+            self::set($key, $value);
+        }
+        return ((array)include self::path_ENV_FILE)[$key] ?? null;
+    }
+
     public function reload(): static
     {
         if (!is_file(self::path_ENV_FILE)) {
@@ -307,7 +315,7 @@ class Env extends DataObject
     {
         $content = str_replace("\r\n", "\n", $content);
         $content = str_replace("\r", "\n", $content);
-        $content = '-------------------'. date('Y-m-d H:i:s') .'------------------------' . "\n" . $content . "\n". '-------------------------'. date('Y-m-d H:i:s') .'------------------' . "\n";
+        $content = '-------------------' . date('Y-m-d H:i:s') . '------------------------' . "\n" . $content . "\n" . '-------------------------' . date('Y-m-d H:i:s') . '------------------' . "\n";
         if (!str_contains($filename, BP)) {
             $filename = BP . $filename;
         }
@@ -376,9 +384,9 @@ class Env extends DataObject
     public function setConfig(string $key, $value = null): bool
     {
         $this->hasGetConfig[$key] = $value;
-        $config                   = $this->getConfig();
-        $config[$key]             = $value;
-        $this->config[$key]       = $value;
+        $config = $this->getConfig();
+        $config[$key] = $value;
+        $this->config[$key] = $value;
 
         try {
             $file = new File();
@@ -422,19 +430,19 @@ class Env extends DataObject
             } else {
                 # 默认使用Sqlite
                 $driver_type = 'sqlite';
-                $path = BP. (SANDBOX ? 'sandbox' : 'debug').'.db.sqlite';
+                $path = BP . (SANDBOX ? 'sandbox' : 'debug') . '.db.sqlite';
                 $db_conf['type'] = $driver_type;
                 $db_conf['path'] = $path;
                 return $db_conf;
             }
         }
-        $db_conf =  $this->config['db'] ?? [];
+        $db_conf = $this->config['db'] ?? [];
         if ($db_conf) {
             return $db_conf;
         }
         # 默认使用Sqlite
         $driver_type = 'sqlite';
-        $path = APP_PATH.'etc/db.sqlite';
+        $path = APP_PATH . 'etc/db.sqlite';
         $db_conf['type'] = $driver_type;
         $db_conf['path'] = $path;
         return $db_conf;
@@ -482,7 +490,7 @@ class Env extends DataObject
         if (!$reget && $this->active_module_list) {
             return $this->active_module_list;
         }
-        $modules        = $this->getModuleList($reget);
+        $modules = $this->getModuleList($reget);
         $active_modules = [];
         foreach ($modules as $module) {
             if ($module['status']) {

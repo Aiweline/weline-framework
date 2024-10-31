@@ -15,6 +15,8 @@ use Weline\Framework\Database\Connection\Adapter\Mysql\Table;
 use Weline\Framework\Database\Connection\Adapter\Mysql\Table\Alter;
 use Weline\Framework\Database\Connection\Adapter\Mysql\Table\Create;
 use Weline\Framework\Database\Connection\Api\ConnectorInterface;
+use Weline\Framework\Database\Connection\Api\Sql\Table\AlterInterface;
+use Weline\Framework\Database\Connection\Api\Sql\Table\CreateInterface;
 use Weline\Framework\Database\ConnectionFactory;
 use Weline\Framework\Database\DbManager\ConfigProvider;
 use Weline\Framework\Database\Exception\LinkException;
@@ -63,7 +65,7 @@ class Setup
      *
      * @return Create
      */
-    public function createTable(string $table_name, string $comment = ''): Create
+    public function createTable(string $table_name, string $comment = ''): CreateInterface
     {
         $table_name = $this->getTable($table_name);
         return $this->getConnector()->reset()->createTable()->createTable($table_name, $comment);
@@ -81,7 +83,7 @@ class Setup
      *
      * @return Alter
      */
-    public function alterTable(string $table_name, string $primary_key, string $comment = '', string $new_table_name = ''): Alter
+    public function alterTable(string $table_name, string $primary_key, string $comment = '', string $new_table_name = ''): AlterInterface
     {
         $table_name = $this->getTable($table_name);
         return $this->getConnector()->reset()->alterTable()->forTable($table_name, $primary_key, $comment, $new_table_name);

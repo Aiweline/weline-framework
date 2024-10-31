@@ -76,11 +76,11 @@ class SqlFile
         if (is_array($sqls)) {
             foreach ($sqls as $sql) {
                 if (trim($sql) !== '') {
-                    $this->connection->query($sql);
+                    $this->connection->query($sql)->fetch();
                 }
             }
         } else {
-            $this->connection->query((string)$sqls);
+            $this->connection->query((string)$sqls)->fetch();
         }
 
         return true;
@@ -99,7 +99,7 @@ class SqlFile
      */
     protected function _sql_split($sql, $db_file_table_pre): array
     {
-        if ($this->connection->getConnector()->query('select version()')->fetchOrigin()['version()']??"" > '4.1' && $db_charset = $this->configProvider->getCharset()) {
+        if ($this->connection->getConnector()->getVersion() > '4.1' && $db_charset = $this->configProvider->getCharset()) {
             $sql = preg_replace('/TYPE=(InnoDB|MyISAM|MEMORY)( DEFAULT CHARSET=[^; ]+)?/', 'ENGINE=\\1 DEFAULT CHARSET=' . $db_charset, $sql);
         }
         //如果有表前缀就替换现有的前缀

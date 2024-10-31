@@ -14,6 +14,7 @@ namespace Weline\Framework\Database\Connection\Adapter\SqLite;
 use PDO;
 use Weline\Framework\App\Env;
 use Weline\Framework\App\Exception;
+use Weline\Framework\Database\Connection\Api\Sql\QueryInterface;
 use Weline\Framework\Manager\ObjectManager;
 
 abstract class Query extends \Weline\Framework\Database\Connection\Api\Sql\Query
@@ -83,5 +84,30 @@ abstract class Query extends \Weline\Framework\Database\Connection\Api\Sql\Query
         $this->clearQuery();
         //        $this->reset();
         return $result;
+    }
+
+    public function truncate(string $backup_file = '', string $table = ''): static
+    {
+        if (empty($table)) {
+            $table = $this->table;
+        }
+        if (empty($table)) {
+            throw new Exception(__('请先指定要操作的表，表名不能为空!'));
+        }
+        $this->backup($backup_file, $table);
+        # 清理表
+        $PDOStatement = $this->getLink()->prepare("delete from TABLE $table");
+        $PDOStatement->execute();
+        return $this;
+    }
+
+    public function query(string $sql): QueryInterface
+    {
+        $sql = self::formatSql($sql);
+        $this->reset();
+        $this->sql          = $sql;
+        $this->fetch_type   = __FUNCTION__;
+        $this->PDOStatement = $this->getLink()->prepare($sql);
+        return $this;
     }
 }
