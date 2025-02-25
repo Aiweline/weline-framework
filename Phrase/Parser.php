@@ -17,6 +17,8 @@ use Weline\Framework\Manager\ObjectManager;
 
 class Parser
 {
+
+    public static bool $loaded = false;
     public const PARSER_WORDS_CACHE_KEY = 'PARSER_WORDS_CACHE_KEY';
     protected static array $words = [];
 
@@ -28,7 +30,7 @@ class Parser
      * @DateTime: 2021/8/16 22:50
      * 参数区：
      *
-     * @param string|array          $words
+     * @param string|array $words
      * @param int|array|string|null $args
      *
      * @return mixed|string|string[]
@@ -36,7 +38,7 @@ class Parser
      * @throws \Weline\Framework\App\Exception
      * @throws \Weline\Framework\Exception\Core
      */
-    public static function parse(string|array $words, int|array|string $args = null): mixed
+    public static function parse(string|array $words, int|array|string|null $args = null): mixed
     {
         $words = self::processWords($words);
         if (is_array($args)) {
@@ -75,13 +77,13 @@ class Parser
     public static function getWords()
     {
         // 仅加载一次翻译到对象self::$words
-        if (empty(self::$words)) {
+        if (empty(self::$words) and !self::$loaded) {
             // 先访问缓存
             /**@var \Weline\Framework\Cache\CacheInterface $phraseCache */
-            $phraseCache    = ObjectManager::getInstance(\Weline\Framework\Phrase\Cache\PhraseCache::class . 'Factory');
-            $translate_mode = Env::getInstance()->getConfig('translate_mode');
+            $phraseCache = ObjectManager::getInstance(\Weline\Framework\Phrase\Cache\PhraseCache::class . 'Factory');
+            $translate_mode = Env::getInstance()->getConfig('translate_mode')?:'default';
 
-            $cache_key = 'phrase_locale_words_'.Cookie::getLangLocal();
+            $cache_key = 'phrase_locale_words_' . Cookie::getLangLocal();
             # 非实时翻译
             if ($translate_mode !== 'online' && $phrase_words = $phraseCache->get($cache_key)) {
                 self::$words = $phrase_words;
@@ -89,7 +91,7 @@ class Parser
                 # 事件分配
                 /**@var \Weline\Framework\Event\EventsManager $eventsManager */
                 $eventsManager = ObjectManager::getInstance(\Weline\Framework\Event\EventsManager::class);
-                $file_data     = new DataObject(['file_path' => Env::path_TRANSLATE_DEFAULT_FILE]);
+                $file_data = new DataObject(['file_path' => Env::path_TRANSLATE_DEFAULT_FILE]);
                 $eventsManager->dispatch('Framework_phrase::get_words_file', ['file_data' => $file_data]);
                 $words_file = $file_data->getData('file_path');
                 # 实时翻译
@@ -102,6 +104,7 @@ class Parser
                     }
                 }
             }
+            self::$loaded = true;
         }
         return self::$words ?? [];
     }

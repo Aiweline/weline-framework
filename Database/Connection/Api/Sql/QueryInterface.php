@@ -107,6 +107,48 @@ interface QueryInterface
     public function alias(string $table_alias_name): QueryInterface;
 
     /**
+     * @DESC          # 模糊查询
+     *
+     * @AUTH    秋枫雁飞
+     * @EMAIL aiweline@qq.com
+     * @DateTime: 2021/8/17 23:25
+     * 参数区：
+     *
+     * @param string $word
+     * @param string $fields
+     * @return QueryInterface
+     */
+    public function concat(string $fields,string $alias_field): QueryInterface;
+    /**
+     * @DESC          # 模糊查询
+     *
+     * @AUTH    秋枫雁飞
+     * @EMAIL aiweline@qq.com
+     * @DateTime: 2021/8/17 23:25
+     * 参数区：
+     *
+     * @param string $word
+     * @param string $fields
+     * @return QueryInterface
+     */
+    public function concat_like(string $fields,string $like_word): QueryInterface;
+
+
+    /**
+     * @DESC          # 组合字段
+     *
+     * @AUTH    秋枫雁飞
+     * @EMAIL aiweline@qq.com
+     * @DateTime: 2021/8/17 23:25
+     * 参数区：
+     *
+     * @param string $fields
+     * @param string $separator 默认json
+     * @return QueryInterface
+     */
+    public function group_concat(string $fields, string $concat_field, string $separator = 'json'): QueryInterface;
+
+    /**
      * @DESC          # 更新
      *
      * @AUTH    秋枫雁飞
@@ -119,7 +161,7 @@ interface QueryInterface
      *
      * @return QueryInterface
      */
-    public function update(array|string $field, int|string $value_or_condition_field = 'id'): QueryInterface;
+    public function update(array|string $field = '', int|string $value_or_condition_field = 'id'): QueryInterface;
 
     /**
      * @DESC          # 表名设置
@@ -176,6 +218,22 @@ interface QueryInterface
     public function where(array|string $field, mixed $value = null, string $condition = '=', string $where_logic = 'AND', string $array_where_logic_type = 'AND'): QueryInterface;
 
     /**
+     * @DESC          # 累减
+     * @param string $field
+     * @param float|int $value
+     * @return QueryInterface
+     */
+    public function dec(string $field, float|int $value = 1): QueryInterface;
+
+    /**
+     * @DESC          # 累加
+     * @param string $field
+     * @param float|int $value
+     * @return QueryInterface
+     */
+    public function inc(string $field, float|int $value = 1): QueryInterface;
+
+    /**
      * @DESC          # 限制查询
      *
      * @AUTH    秋枫雁飞
@@ -219,7 +277,7 @@ interface QueryInterface
      *
      * @return QueryInterface
      */
-    public function pagination(int $page = 1, int $pageSize = 20, array $params = []): QueryInterface;
+    public function pagination(int $page = 1, int $pageSize = 20, array $params = [], int $max_limit = 1000, int $total = 0): QueryInterface;
 
     /**
      * @DESC          # 方法描述
@@ -234,7 +292,7 @@ interface QueryInterface
      *
      * @return QueryInterface
      */
-    public function order(string $field, string $sort = 'ASC'): QueryInterface;
+    public function order(string $field = '', string $sort = 'DESC'): QueryInterface;
 
     /**
      * @DESC          # Group By语法
@@ -269,7 +327,7 @@ interface QueryInterface
      * 参数区：
      * @return QueryInterface
      */
-    public function find(): QueryInterface;
+    public function find(string $find_fields = ''): QueryInterface;
 
     /**
      * @DESC          # 统计
@@ -280,7 +338,7 @@ interface QueryInterface
      * 参数区：
      * @return int
      */
-    public function total(): int;
+    public function total(string $field = '*', string $alias = 'total_count'): int;
 
     /**
      * @DESC         |选择
@@ -363,7 +421,7 @@ interface QueryInterface
      *
      * @return array
      */
-    public function fetchOrigin(): mixed;
+    public function fetchArray(): array;
 
     /**
      * @DESC          # 清理特定条件
@@ -469,6 +527,7 @@ interface QueryInterface
      * @return $this
      */
     public function backup(string $backup_file = '', string $table = ''): static;
+
     /**
      * @DESC          # 读取最终的sql
      *

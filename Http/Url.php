@@ -25,7 +25,7 @@ class Url implements UrlInterface
         $this->request = $request;
     }
 
-    public function getBackendApiUrl(string $path = '', array $params = [], bool $merge_params = true): string
+    public function getBackendApiUrl(string $path = '', array $params = [], bool $merge_url_params = true): string
     {
         if ($path) {
             if (!$this->isLink($path)) {
@@ -42,10 +42,10 @@ class Url implements UrlInterface
         } else {
             $url = $this->request->getBaseUrl();
         }
-        return $this->extractedUrl($params, $merge_params, $url);
+        return $this->extractedUrl($params, $merge_url_params, $url);
     }
 
-    public function getUrl(string $path = '', array $params = [], bool $merge_params = false): string
+    public function getUrl(string $path = '', array $params = [], bool $merge_url_params = false): string
     {
         if ($path) {
             if (!$this->isLink($path)) {
@@ -62,10 +62,10 @@ class Url implements UrlInterface
         } else {
             $url = $this->request->getBaseUrl();
         }
-        return $this->extractedUrl($params, $merge_params, $url);
+        return $this->extractedUrl($params, $merge_url_params, $url);
     }
 
-    public function getOriginUrl(string $path = '', array $params = [], bool $merge_params = false): string
+    public function getOriginUrl(string $path = '', array $params = [], bool $merge_url_params = false): string
     {
         if ($path) {
             if (!$this->isLink($path)) {
@@ -82,7 +82,7 @@ class Url implements UrlInterface
         } else {
             $url = $this->request->getBaseUrl();
         }
-        return $this->extractedUrl($params, $merge_params, $url);
+        return $this->extractedUrl($params, $merge_url_params, $url);
     }
 
     static function getPrefix()
@@ -90,9 +90,9 @@ class Url implements UrlInterface
         return (Cookie::getCurrency() ? '/' . Cookie::getCurrency() : '') . (Cookie::getLang() ? '/' . Cookie::getLang() : '');
     }
 
-    public static function removeExtraDoubleSlashes(?string $url = null): string
+    public static function removeExtraDoubleSlashes(null|string $url = ''): string
     {
-        if (null === $url) {
+        if ('' === $url || null === $url) {
             return '';
         }
         $parts = parse_url($url);
@@ -101,7 +101,7 @@ class Url implements UrlInterface
         return $scheme . $rest;
     }
 
-    public function getBackendUrl(string $path = '', array $params = [], bool $merge_params = false): string
+    public function getBackendUrl(string $path = '', array $params = [], bool $merge_url_params = false): string
     {
         if ($path) {
             if (!$this->isLink($path)) {
@@ -118,10 +118,10 @@ class Url implements UrlInterface
         } else {
             $url = $this->request->getBaseUrl();
         }
-        return $this->extractedUrl($params, $merge_params, $url);
+        return $this->extractedUrl($params, $merge_url_params, $url);
     }
 
-    public function getOriginBackendUrl(string $path = '', array $params = [], bool $merge_params = false): string
+    public function getOriginBackendUrl(string $path = '', array $params = [], bool $merge_url_params = false): string
     {
         if ($path) {
             if (!$this->isLink($path)) {
@@ -138,7 +138,7 @@ class Url implements UrlInterface
         } else {
             $url = $this->request->getBaseUrl();
         }
-        return $this->extractedUrl($params, $merge_params, $url);
+        return $this->extractedUrl($params, $merge_url_params, $url);
     }
 
     /**
@@ -173,28 +173,47 @@ class Url implements UrlInterface
      * 参数区：
      *
      * @param array $params
-     * @param bool $merge_params
+     * @param bool $merge_url_params
      * @param string $url
      *
      * @return string
      */
-    public function extractedUrl(array $params, bool $merge_params = false, string $url = ''): string
+    public function extractedUrl(array $params, bool $merge_url_params = false, string $url = ''): string
     {
         if (empty($url)) {
             $url = $this->request->getBaseUrl();
         }
-        $param_split_string = '?';
+        $url_params = [];
         if (strpos($url, '?') !== false) {
-            $param_split_string = '&';
+            $url_arrs = explode('?', $url);
+            $url_query = $url_arrs[1];
+            $url_params = explode('&', $url_query);
+            foreach ($url_params as $key => $url_param) {
+                unset($url_params[$key]);
+                $url_param_arr = explode('=', $url_param);
+                $url_params[$url_param_arr[0]] = $url_param_arr[1] ?? '';
+            }
+            $url = $url_arrs[0];
+        }
+        if ($url_params) {
+            if ($merge_url_params) {
+                if ($params) {
+                    $params = array_merge($url_params, $params);
+                } else {
+                    $params = $url_params;
+                }
+            }
+        }
+        if ($merge_url_params) {
+            $params = array_merge($this->request->getGet(), $params);
         }
         if ($params) {
-            if ($merge_params) {
-                $url .= $param_split_string . http_build_query(array_merge($this->request->getGet(), $params));
-            } else {
-                $url .= $param_split_string . http_build_query($params);
+            foreach ($params as $key => $param) {
+                if (empty($param)) {
+                    unset($params[$key]);
+                }
             }
-        } else {
-            $url .= ($this->request->getGet() && $merge_params) ? $param_split_string . http_build_query($this->request->getGet()) : '';
+            $url .= '?' . http_build_query($params);
         }
         return self::removeExtraDoubleSlashes($url);
     }
@@ -224,8 +243,9 @@ class Url implements UrlInterface
         return self::removeExtraDoubleSlashes($this->getUrlOrigin($s, $use_forwarded_host) . '/' . ($s['ORIGIN_REQUEST_URI'] ?? $s['REQUEST_URI']));
     }
 
-    public function getCurrentUrl(): string
+    public function getCurrentUrl(array $params = [], bool $merge_url_params = true): string
     {
-        return self::removeExtraDoubleSlashes($this->getUrlOrigin($_SERVER, false) . '/' . ($_SERVER['ORIGIN_REQUEST_URI'] ?? $_SERVER['REQUEST_URI']));
+        $url = self::removeExtraDoubleSlashes($this->getUrlOrigin($_SERVER, false) . '/' . ($_SERVER['ORIGIN_REQUEST_URI'] ?? $_SERVER['REQUEST_URI']));
+        return $this->extractedUrl($params, $merge_url_params, $url);
     }
 }

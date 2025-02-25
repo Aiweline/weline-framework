@@ -20,7 +20,7 @@ class System
      * 参数区：
      *
      * @param string $linux_command
-     * @param bool   $process_win_to_linux
+     * @param bool $process_win_to_linux
      *
      * @return array|string
      * @throws \Weline\Framework\App\Exception
@@ -39,9 +39,9 @@ class System
                 $linux_command = str_replace(' -fr ', ' -r  -f ', $linux_command);
             }
             $linux_to_win = [
-                'rm '  => ' del ',
+                'rm ' => ' del ',
                 ' -f ' => ' /S/Q ',
-                'cp '  => ' xcopy ',
+                'cp ' => ' xcopy ',
                 ' -r ' => '  ',
             ];
 
@@ -123,5 +123,10 @@ class System
     public function getDirectoryObject(): Directory
     {
         return ObjectManager::getInstance(Directory::class);
+    }
+
+    public function getLocalIp(): string
+    {
+        return getHostByName(getHostName());
     }
 }

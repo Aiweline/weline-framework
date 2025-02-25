@@ -26,7 +26,7 @@ abstract class RequestAbstract extends RequestFilter
 {
     /**缓存专区*/
     public string $uri_cache_key = '';
-    public ?string $uri_cache_url_path_data = null;
+    public string $uri_cache_url_path_data = '';
     public const HEADER = 'header';
 
     public const MOBILE_DEVICE_HEADERS = [
@@ -39,7 +39,7 @@ abstract class RequestAbstract extends RequestFilter
     ];
 
     private string $area_router = State::area_frontend;
-    private ?string $uri = null;
+    private string $uri = '';
 
     /**
      * @var CacheInterface|null
@@ -55,6 +55,21 @@ abstract class RequestAbstract extends RequestFilter
 
     public function __init()
     {
+        # FIXME 兼容$_GET将”."替换成"_“的情况，暂不清楚$_POST情况，可能第一层键名也会有此情况
+        $query_str = $this->getServer('QUERY_STRING');
+        if (str_contains($query_str, '.')) {
+            $query_str = str_replace('&amp;', '&', $query_str);
+            $query_str_arr = explode('&', $query_str);
+            foreach ($query_str_arr as $item) {
+                if (str_contains($item, '.')) {
+                    $item = explode('=', $item);
+                    if (str_contains($item[0], '.')) {
+                        $_GET[$item[0]] = $item[1];
+                        unset($_GET[str_replace('.', '_', $item[0])]);
+                    }
+                }
+            }
+        }
         if (empty($this->cache)) {
             $this->cache = ObjectManager::getInstance(RequestCache::class . 'Factory');
         }
@@ -222,11 +237,11 @@ abstract class RequestAbstract extends RequestFilter
      *
      * 参数区：
      *
-     * @param string|null $key
+     * @param string $key
      *
      * @return string|array
      */
-    public function getServer(string $key = null): string|array
+    public function getServer(string $key = ''): string|array
     {
         $filter = RequestFilter::getInstance();
         $filter->init();
@@ -343,10 +358,11 @@ abstract class RequestAbstract extends RequestFilter
 
     public function getUri(): string
     {
-        if (!is_null($this->uri)) {
+        if ($this->uri !== '') {
             return $this->uri;
         }
         $uri = rtrim($this->getServer('REQUEST_URI'), '/');
+
         $url_path = $this->cache->get($this->uri_cache_key);
         if ($url_path !== false) {
             $this->uri_cache_url_path_data = $url_path;
@@ -409,7 +425,7 @@ abstract class RequestAbstract extends RequestFilter
 
     public function getBaseHost(): string
     {
-        if((isset($_SERVER['WELINE-WEBSITE-URL']))) {
+        if ((isset($_SERVER['WELINE-WEBSITE-URL']))) {
             return $_SERVER['WELINE-WEBSITE-URL'];
         }
         $port = $this->getServer('SERVER_PORT');

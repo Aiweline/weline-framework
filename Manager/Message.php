@@ -13,7 +13,7 @@ namespace Weline\Framework\Manager;
 
 use Weline\Framework\Session\Session;
 
-class MessageManager
+class Message
 {
     private Session $session;
 
@@ -89,7 +89,7 @@ class MessageManager
         return $this;
     }
 
-    public static function exception(\Exception $exception, string $title = '', string $class = 'warning'): self
+    public static function exception(\Exception $exception, string $title = '', string $class = 'warning'): void
     {
         $msg = $exception->getMessage();
         self::session()->addData('system-message', self::process_message($msg, $title, $class));

@@ -71,12 +71,12 @@ class ConfigProvider extends DataObject implements ConfigProviderInterface
             $db_conf = Env::getInstance()->reload()->getDbConfig();
             if (empty($db_conf) || !isset($db_conf['master'])) {
                 if ('cli' === PHP_SAPI) {
-                    (new Printing())->error('请安装系统后操作:bin/m system:install', '系统');
+                    (new Printing())->error('请安装系统后操作:bin/w system:install', '系统');
 
-                    throw new Exception('数据库尚未配置，请安装系统后操作:bin/m system:install');
+                    throw new Exception('数据库尚未配置，请安装系统后操作:bin/w system:install');
                 }
 
-                throw new Exception('数据库尚未配置，请安装系统后操作:bin/m system:install');
+                throw new Exception('数据库尚未配置，请安装系统后操作:bin/w system:install');
             }
         }
         $connection_name = 'default';
@@ -155,6 +155,16 @@ class ConfigProvider extends DataObject implements ConfigProviderInterface
         return $this->getData('username') ?? '';
     }
 
+    public function getPreSql(): string
+    {
+        return $this->getData('pre_sql') ?? '';
+    }
+
+    public function setPreSql(string $sql): static
+    {
+        return $this->setData('pre_sql', $sql);
+    }
+
     public function setPassword(string $password): ConfigProviderInterface
     {
         return $this->setData('password', $password);
@@ -170,9 +180,9 @@ class ConfigProvider extends DataObject implements ConfigProviderInterface
         return $this->setData('hostport', $host_port);
     }
 
-    public function getHostPort(): string
+    public function getHostPort(): int
     {
-        return $this->getData('hostport') ?? '';
+        return (int)$this->getData('hostport');
     }
 
     public function setPrefix(string $prefix): ConfigProviderInterface

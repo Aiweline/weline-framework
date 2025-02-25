@@ -13,14 +13,16 @@ namespace Weline\Framework\Http;
 use JetBrains\PhpStorm\NoReturn;
 use Weline\Framework\DataObject\DataObject;
 use Weline\Framework\Event\EventsManager;
+use Weline\Framework\Manager\Message;
 use Weline\Framework\Manager\ObjectManager;
 
 class Response implements ResponseInterface
 {
-    function getEvenManager():EventsManager
+    function getEvenManager(): EventsManager
     {
         return ObjectManager::getInstance(EventsManager::class);
     }
+
     private Response $instance;
 
     private array $headers = [];
@@ -74,14 +76,29 @@ class Response implements ResponseInterface
      * @DateTime: 2021/9/7 23:06
      * 参数区：
      */
-    public function noRouter(): void
+    public function noRouter(int|string $code = 404, string $msg = ''): void
     {
+        if (empty($msg)) {
+            switch ($code) {
+                case 403:
+                    $msg = 'Forbidden';
+                    break;
+                case 404:
+                    $msg = 'Not Found';
+                    break;
+                case 500:
+                    $msg = 'Internal Server Error';
+                    break;
+                default:
+                    $msg = 'Unknown Error';
+            }
+        }
         $this->getEvenManager()->dispatch('Weline_Framework_http_response_no_router_before');
-        http_response_code(404);
-        @header('http/2.0 404 not found');
-        @header('status: 404 not found');
-        if(is_file(BP . 'pub/errors/404.php')){
-            exit(include BP . 'pub/errors/404.php');
+        http_response_code($code);
+        @header('http/2.0 ' . $code . ' ' . $msg);
+        @header('status: ' . $code . ' ' . $msg);
+        if (is_file(BP . 'pub/errors/' . $code . '.php')) {
+            exit(include BP . 'pub/errors/' . $code . '.php');
         }
         exit();
     }
@@ -96,7 +113,7 @@ class Response implements ResponseInterface
     public function redirect(string $url, $code = 302): void
     {
         $data = new DataObject(['url' => $url, 'code' => $code]);
-        $this->getEvenManager()->dispatch('Weline_Framework_Http::response_redirect_before',['data'=>$data]);
+        $this->getEvenManager()->dispatch('Weline_Framework_Http::response_redirect_before', ['data' => $data]);
         $url = $data->getData('url');
         $code = $data->getData('code');
         http_response_code($code);
@@ -108,5 +125,32 @@ class Response implements ResponseInterface
     {
         Header('Content-Type:application/json; charset=utf-8');
         return json_encode($data);
+    }
+
+    /*下载*/
+    public function download(string $file, string $name = '', bool $is_delete = false, bool $exit = true): void
+    {
+        if (empty($name)) {
+            $name = basename($file);
+        }
+        if (is_file($file)) {
+            header('Content-Description: File Transfer');
+            header('Content-Type: application/octet-stream');
+            header('Content-Disposition: attachment; filename=' . $name);
+            header('Content-Transfer-Encoding: binary');
+            header('Expires: 0');
+            header('Cache-Control: must-revalidate');
+            header('Pragma: public');
+            header('Content-Length: ' . filesize($file));
+            readfile($file);
+            if ($is_delete) {
+                unlink($file);
+            }
+        } else {
+            Message::error(__('文件不存在！'));
+        }
+        if ($exit) {
+            exit();
+        }
     }
 }

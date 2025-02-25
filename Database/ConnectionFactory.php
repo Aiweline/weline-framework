@@ -105,13 +105,12 @@ class ConnectionFactory
      *
      * @return string
      */
-    public function getConnectorAdapter(string $driver_type = ''): ConnectorInterface
+    public function getConnectorAdapter(null|ConfigProvider $configProvider = null): ConnectorInterface
     {
-        if ('' == $driver_type) {
-            $driver_type = $this->configProvider->getDbType();
-        }
+        $configProvider = $configProvider ?: $this->configProvider;
+        $driver_type = $configProvider->getDbType();
         $driverClass = "Weline\\Framework\\Database\\Connection\\Adapter\\" . ucfirst($driver_type) . '\\Connector';
-        return ObjectManager::make($driverClass, ['configProvider' => $this->configProvider]);
+        return ObjectManager::make($driverClass, ['configProvider' => $configProvider]);
     }
 
     public function close(): void
@@ -121,12 +120,12 @@ class ConnectionFactory
 
     /**
      * @DESC          # 获取连接
+     * @return ConnectorInterface
      * @deprecated 函数已准备移除 使用 getConnector 代替
      * @AUTH    秋枫雁飞
      * @EMAIL aiweline@qq.com
      * @DateTime: 2021/8/18 21:06
      * 参数区：
-     * @return ConnectorInterface
      */
     public function getConnection(): ConnectorInterface
     {
@@ -193,8 +192,7 @@ class ConnectionFactory
                 $slave_config = $slaves_configs[array_rand($slaves_configs)];
                 $config_key = md5($slave_config['host'] . $slave_config['port'] . $slave_config['database']);
                 if (!isset($this->connectors[$config_key])) {
-                    $adapter = $this->getConnectorAdapter($slave_config->getType());
-                    $this->connectors[$config_key] = new $adapter(new ConnectionFactory($slave_config));
+                    $this->connectors[$config_key] = $this->getConnectorAdapter($slave_config);
                 }
                 $this->defaultConnector = $this->connectors[$config_key];
             } else {
@@ -213,6 +211,7 @@ class ConnectionFactory
         //        if (strpos(strtolower($sql), 'm_aiweline_hello_world')) {
         //            p($sql);
         //        }
+
         return $this->defaultConnector->query($sql);
     }
 

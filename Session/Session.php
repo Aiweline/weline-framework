@@ -49,7 +49,7 @@ class Session implements SessionInterface
         }
     }
 
-    public function start(string $session_id = null): void
+    public function start(string $session_id = ''): void
     {
         if ($session_id) {
             if (session_id() != $session_id) {
@@ -92,7 +92,7 @@ class Session implements SessionInterface
      *
      * @return string
      */
-    public function getData(string $name = null): mixed
+    public function getData(string $name = ''): mixed
     {
         if ($name) {
             return $this->session->get($name);
@@ -146,11 +146,11 @@ class Session implements SessionInterface
         return (bool)$this->session->get($this::login_KEY);
     }
 
-    public function login(\Weline\Framework\Database\Model $user, int $user_id): static
+    public function login(\Weline\Framework\Database\Model $user): static
     {
         $this->start($user->getSessionId());
-        $this->session->set($this::login_KEY, $user);
-        $this->session->set($this::login_KEY_ID, $user_id);
+        $this->session->set($this::login_KEY, $user->getUsername());
+        $this->session->set($this::login_KEY_ID, $user->getId());
         $this->session->set($this::login_USER_MODEL, $user::class);
         return $this;
     }
@@ -160,7 +160,7 @@ class Session implements SessionInterface
         if ($this->user) {
             return $this->user;
         }
-        $this->user = ObjectManager::getInstance($model)->load($this->session->get($this::login_KEY_ID) ?: '');
+        $this->user = ObjectManager::make($model)->load($this->session->get($this::login_KEY_ID) ?: '');
         return $this->user;
     }
 
@@ -211,7 +211,7 @@ class Session implements SessionInterface
         return $this->getType() === 'frontend';
     }
 
-    public function destroy(string $id = null): bool
+    public function destroy(string $id = ''): bool
     {
         return $this->session->destroy($id ?: $this->session->getSessionId());
     }

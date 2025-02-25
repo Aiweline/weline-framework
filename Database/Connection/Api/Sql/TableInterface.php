@@ -43,6 +43,8 @@ interface TableInterface
 
     // 能够支持text类型数据
     public const column_type_TEXT       = 'text';
+
+    public const column_type_JSON       = 'json';
     public const column_type_LONG_TEXT  = 'longtext';
     public const column_type_MEDIU_TEXT = 'mediumtext';
 

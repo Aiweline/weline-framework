@@ -116,6 +116,10 @@ interface ConfigProviderInterface
      */
     public function getUsername(): string;
 
+    public function setPreSql(string $sql): static;
+
+    public function getPreSql(): string;
+
     /**
      * @DESC         |设置密码
      *
@@ -154,7 +158,7 @@ interface ConfigProviderInterface
      *
      * @return string
      */
-    public function getHostPort(): string;
+    public function getHostPort(): int;
 
     /**
      * @DESC         | 设置表前缀

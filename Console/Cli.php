@@ -25,27 +25,31 @@ class Cli extends CliAbstract
      * @throws ConsoleException
      * @throws Exception
      */
-    public function run()
+    public function run(): void
     {
+        # 检测用户
+        \Weline\Framework\App\Env::check_user();
         // 没有任何参数
         if (!isset($this->argv[0])) {
-            exit($this->execute());
+            $this->execute();
+            exit();
         }
-        $command_class = $this->checkCommand();
-//        $this->printer->note(__('执行命令：') . $class['command'] . ' ' . (isset($this->argv[1])?$this->argv[1]:''));
+        $args = $this->parseArgs($this->argv);
+        $command_class = $this->checkCommand($args);
         $data = $command_class['data'];
-        ObjectManager::getInstance($command_class['class'])->execute($this->parseArgs($this->argv), $data);
+        ObjectManager::getInstance($command_class['class'])->execute($args, $data);
         $this->printer->printing("\n");
         $this->printer->note(__('执行命令：') . $command_class['command'] . ' ' . ($this->argv[1] ?? '')/*,$this->printer->colorize('CLI-System','red')*/);
     }
 
-    function parseArgs(array $args): array {
+    function parseArgs(array $args): array
+    {
         foreach ($args as $k => $arg) {
             if ($k == 0) {
                 $args['command'] = $arg;
                 continue;
             }
-            if(is_string($k)){
+            if (is_string($k)) {
                 continue;
             }
             if (str_contains($arg, '=')) {
@@ -57,7 +61,7 @@ class Cli extends CliAbstract
             if (str_starts_with($arg, '-')) {
                 $argName = trim($arg, '-');
                 $next = $args[$k + 1] ?? null;
-                if(empty($next)){
+                if (empty($next)) {
                     $args[$argName] = true;
                     $args[$arg] = true;
                     continue;
@@ -68,13 +72,13 @@ class Cli extends CliAbstract
                     $argName = null;
                 }
             } elseif (!empty($argName)) {
-                if(!isset($args[$argName])){
+                if (!isset($args[$argName])) {
                     $args[$argName] = $arg;
-                }else{
-                    if(is_array($args[$argName])){
+                } else {
+                    if (is_array($args[$argName])) {
                         $args[$argName][] = $arg;
-                    }else{
-                        $args[$argName] = [$args[$argName],$arg];
+                    } else {
+                        $args[$argName] = [$args[$argName], $arg];
                     }
                 }
             }
@@ -101,10 +105,10 @@ class Cli extends CliAbstract
         // 新算法
 
         // 旧算法
-        $arg0              = strtolower(trim($this->argv[0]));
+        $arg0 = strtolower(trim($this->argv[0]));
         $input_command_arr = explode(':', $arg0);
         $recommendCommands = [];
-        $matchCommand      = [];
+        $matchCommand = [];
         foreach ($commands as $group => $command) {
             $keys = array_keys($command);
             foreach ($keys as $command_key) {
@@ -114,7 +118,7 @@ class Cli extends CliAbstract
                 }
 
                 $command_key_arr = explode(':', $command_key);
-                $k               = 0;
+                $k = 0;
                 foreach ($input_command_arr as $input_key => $input_command_head) {
                     // 如果长度和首匹配都相同
                     if (count($command_key_arr) === count($input_command_arr)) {
@@ -142,11 +146,10 @@ class Cli extends CliAbstract
      *
      * 参数区：
      *
+     * @param array $args
      * @return array
-     * @throws Exception
-     * @throws ConsoleException
      */
-    private function checkCommand(): array
+    private function checkCommand(array $args): array
     {
         $arg0 = strtolower(trim($this->argv[0]));
         if ($arg0 === 'command:upgrade') {
@@ -165,21 +168,19 @@ class Cli extends CliAbstract
                 $this->printer->error($exception->getMessage());
                 exit();
             }
-//            exit($this->printer->error('命令系统异常！请完整执行（不能简写）更新模块命令后重试：php bin/m command:upgrade'));
+//            exit($this->printer->error('命令系统异常！请完整执行（不能简写）更新模块命令后重试：php bin/w command:upgrade'));
         }
 
-        // 检查命令
-        $command_class = '';
+        // 检查完整命令
         foreach ($commands as $group => $group_commands) {
             if (isset($group_commands[$arg0]) && $command_data = $group_commands[$arg0]) {
-                $group_arr     = explode('#', $group);
                 $command_class = $command_data['class'];
                 return ['class' => $command_class, 'command' => $arg0, 'data' => $command_data];
             }
         }
 
         $recommendCommands = $this->recommendCommand($commands);
-        $commands          = [];
+        $commands = [];
         foreach ($recommendCommands as $recommendCommand) {
             $commands = array_merge($commands, $recommendCommand);
         }
@@ -191,7 +192,7 @@ class Cli extends CliAbstract
         foreach ($recommendCommands as $key => &$command) {
             foreach ($command as $k => $item) {
                 unset($command[$k]);
-                $keys                        = array_keys($item);
+                $keys = array_keys($item);
                 $command[array_shift($keys)] = array_pop($item);
             }
         }

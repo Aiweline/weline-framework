@@ -109,7 +109,6 @@ class ObjectManager implements ManagerInterface
             self::$instances[$class] = self::initClassInstance($class, $cache_class_object);
             return self::$instances[$class];
         }
-
         // 类名规则处理
         $new_class = self::parserClass($class);
 
@@ -128,7 +127,7 @@ class ObjectManager implements ManagerInterface
         } else {
             $arguments = self::getMethodParams($new_class);
         }
-//        if (str_contains($new_class, 'Weline\Cron\Console\Cron\Listing')) {
+//        if (str_contains($new_class, 'Weline\Console\Console\Console\Listing')) {
 //            p($arguments);
 //        }
         $refClass = self::$reflections[$class] ?? self::$reflections[$class] = new ReflectionClass($new_class);
@@ -283,7 +282,6 @@ class ObjectManager implements ManagerInterface
     {
         // 拦截器处理
         $interceptor = $class . '\\Interceptor';
-
         if (class_exists($interceptor)) {
             return $interceptor;
         }
@@ -430,15 +428,9 @@ class ObjectManager implements ManagerInterface
             }
             // 判断构造函数是否有参数
             $params = $construct->getParameters();
-//            if($instance_or_class == 'Weline\FileManager\Setup\Install'){
-//                dd($params);
-//            }
             if (count($params) > 0) {
                 // 判断参数类型
                 foreach ($params as $key => $param) {
-//                    if ($instance_or_class == 'Weline\FileManager\Setup\Install') {
-//                        dd($param->getType());
-//                    }
                     if ($param->getType() && class_exists($param->getType()->getName())) {
                         // 获得参数类型名称
                         $paramTypeName = $param->getType()->getName();
@@ -447,6 +439,16 @@ class ObjectManager implements ManagerInterface
                         } else {
                             // 获得参数类型
                             $args = self::getMethodParams($paramTypeName);
+//                            if($instance_or_class == 'Weline\I18n\Observer\GetWordsFile'){
+//                                dd($params);
+//                                dd(self::$instances);
+//                            }
+//                            if($instance_or_class == 'Weline\I18n\Model\I18n'){
+//                                dd($params[1]->getType()->getName());
+//                            }
+//                            if($instance_or_class == 'Weline\I18n\Model\I18n'){
+//                                dd($params[1]->getType()->getName());
+//                            }
                             // 实例化时执行自定义__init方法
                             try {
                                 $newObj = ObjectManager::getInstance($paramTypeName, $args);

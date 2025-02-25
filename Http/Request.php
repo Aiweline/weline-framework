@@ -9,7 +9,6 @@
 
 namespace Weline\Framework\Http;
 
-use Weline\Framework\App\Env;
 use Weline\Framework\App\Exception;
 use Weline\Framework\Http\Request\RequestFilter;
 use Weline\Framework\Manager\ObjectManager;
@@ -34,7 +33,7 @@ class Request extends Request\RequestAbstract implements RequestInterface
     function getId()
     {
         if (!$this->request_id) {
-            $this->request_id = uniqid('request_id::',true);
+            $this->request_id = uniqid('request_id::', true);
         }
         return $this->request_id;
     }
@@ -71,8 +70,8 @@ class Request extends Request\RequestAbstract implements RequestInterface
         if (!$this->isBackend()) {
             return $path;
         }
-        $path =  str_replace($this->getAreaRouter() . '/', '', $this->getUrlPath($url));
-        return ltrim($path,'//');
+        $path = str_replace($this->getAreaRouter() . '/', '', $this->getUrlPath($url));
+        return ltrim($path, '//');
     }
 
     /**
@@ -83,7 +82,7 @@ class Request extends Request\RequestAbstract implements RequestInterface
         return $this->getRouterData('module_path');
     }
 
-    public function getHeader(string $key = null): array|string|null
+    public function getHeader(string $key = ''): array|string|null
     {
         if (empty($key)) {
             return $this->getServer(self::HEADER);
@@ -92,7 +91,7 @@ class Request extends Request\RequestAbstract implements RequestInterface
         return $this->getServer('HTTP_' . strtoupper($key));
     }
 
-    public function getParam(string $key, mixed $default = null, string $filter = null)
+    public function getParam(string $key, mixed $default = '', string $filter = '')
     {
         if ($result = $this->getData($key)) {
             return $result;
@@ -101,7 +100,7 @@ class Request extends Request\RequestAbstract implements RequestInterface
         array_shift($params);
         $params = array_merge($params, $_POST);
         $params = array_merge($params, $_GET);
-        $data   = $params[$key] ?? $default;
+        $data = $params[$key] ?? $default;
         # 如果设置了过滤器，则进行过滤，否则直接使用默认值的类型进行过滤
         if ($filter) {
             $data = RequestFilter::filter($filter, $data);
@@ -122,6 +121,20 @@ class Request extends Request\RequestAbstract implements RequestInterface
         $params = array_merge($params, $_GET);
         $this->setData('params', $params);
         return $params;
+    }
+
+    public function setGet(string $key, mixed $value): static
+    {
+        $_GET[$key] = $value;
+        $this->setData($key, $value);
+        return $this;
+    }
+
+    public function setPost(string $key, mixed $value): static
+    {
+        $_POST[$key] = $value;
+        $this->setData($key, $value);
+        return $this;
     }
 
     public function getBodyParam($key, mixed $default = null)
@@ -146,7 +159,7 @@ class Request extends Request\RequestAbstract implements RequestInterface
             foreach (explode('&', $params) as $key => $value) {
                 $value = explode('=', $value);
                 if (count($value) === 2) {
-                    if(str_ends_with($value[0], '%5B%5D')) {
+                    if (str_ends_with($value[0], '%5B%5D')) {
                         $paramName = rtrim($value[0], '%5B%5D');
                         $params_[$paramName][] = $value[1] ?? '';
                     } else {
@@ -173,6 +186,11 @@ class Request extends Request\RequestAbstract implements RequestInterface
         return $this->checkResult($key, $result);
     }
 
+    public function getQuery(string $key = '', mixed $default = null)
+    {
+        return $this->getGet($key, $default);
+    }
+
     public function getGet(string $key = '', mixed $default = null)
     {
         if ('' === $key) {
@@ -183,6 +201,49 @@ class Request extends Request\RequestAbstract implements RequestInterface
             $result = $this->getDefaultTypeData($result, $default);
         }
         return $this->checkResult($key, $result);
+    }
+
+    public function getGetByPre(string $pre_key, bool $filter_value = false): array
+    {
+        $data = [];
+        foreach ($_GET as $key_ => $item) {
+            if ($filter_value and empty($item)) {
+                continue;
+            }
+            if (str_starts_with($key_, $pre_key)) {
+                $key_ = str_replace($pre_key, '', $key_);
+                $data[$key_] = $item;
+            }
+        }
+        return $data;
+    }
+
+    public function setGetByPre(string $pre_key, array $data = []): self
+    {
+        foreach ($_GET as $g_key => $item) {
+            if (str_starts_with($g_key, $pre_key)) {
+                unset($_GET[$g_key]);
+            }
+        }
+        foreach ($data as $key => $value) {
+            $_GET[$pre_key . $key] = $value;
+        }
+        return $this;
+    }
+
+    public function unsetGetByPrekey(string $pre_key): self
+    {
+        foreach ($_GET as $g_key => $item) {
+            if (str_starts_with($g_key, $pre_key)) {
+                unset($_GET[$g_key]);
+            }
+        }
+        return $this;
+    }
+
+    public function hasGet(string $key): bool
+    {
+        return isset($_GET[$key]);
     }
 
     private function checkResult(string $key, mixed &$result): mixed
@@ -203,9 +264,17 @@ class Request extends Request\RequestAbstract implements RequestInterface
         return $this->getMethod() === self::POST;
     }
 
+    public function getFile(string $key = '')
+    {
+        if ($key) {
+            return $_FILES[$key] ?? null;
+        }
+        return $_FILES;
+    }
+
     public function isGet(bool $set_get = false): bool
     {
-        if($set_get) {
+        if ($set_get) {
             $this->setServer('REQUEST_METHOD', self::GET);
         }
         return $this->getMethod() === self::GET;
@@ -288,7 +357,7 @@ class Request extends Request\RequestAbstract implements RequestInterface
      * 参数区：
      *
      * @param string|array $key
-     * @param mixed        $value
+     * @param mixed $value
      *
      * @return $this
      */
@@ -297,7 +366,7 @@ class Request extends Request\RequestAbstract implements RequestInterface
         if (is_array($key)) {
             $this->setData('rule', $key);
         } else {
-            $rule       = $this->getRule();
+            $rule = $this->getRule();
             $rule[$key] = $value;
             $this->setData('rule', $rule);
         }

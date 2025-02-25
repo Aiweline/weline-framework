@@ -70,19 +70,9 @@ class SqlFile
      * @throws \ReflectionException
      * @throws Exception
      */
-    protected function _sql_execute($sql, $db_file_table_pre = 'w_'): bool
+    protected function _sql_execute(string $sql, $db_file_table_pre = 'w_'): bool
     {
-        $sqls = $this->_sql_split($sql, $db_file_table_pre);
-        if (is_array($sqls)) {
-            foreach ($sqls as $sql) {
-                if (trim($sql) !== '') {
-                    $this->connection->query($sql)->fetch();
-                }
-            }
-        } else {
-            $this->connection->query((string)$sqls)->fetch();
-        }
-
+        $this->connection->query($sql)->fetch();
         return true;
     }
 

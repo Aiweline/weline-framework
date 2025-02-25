@@ -96,11 +96,11 @@ class Taglib
         }
         if (str_contains($name, $filter)) {
             $name_arr = explode('|', $name);
-            $name     = $name_arr[0];
-            if(w_get_string_between_quotes($name_arr[1])) {
-                $default  = $name_arr[1];
+            $name = $name_arr[0];
+            if (w_get_string_between_quotes($name_arr[1])) {
+                $default = $name_arr[1];
             } else {
-                $default  = $this->varParser($name_arr[1]);
+                $default = $this->varParser($name_arr[1]);
             }
         }
         return [$name, $default];
@@ -155,19 +155,19 @@ class Taglib
             if (!str_contains($var, '"') && !str_contains($var, '\'')) {
                 $var = $this->checkVar($var);
             }
-            $pieces    = explode('.', $var);
+            $pieces = explode('.', $var);
             $has_piece = false;
             if (count($pieces) > 1) {
                 //                if (PROD) {
                 //                    $name_str .= '(';
                 //                }
-                $name_str  .= '(';
+                $name_str .= '(';
                 $has_piece = true;
             }
             foreach ($pieces as $key => $piece) {
                 if (0 !== $key) {
                     if (str_contains($piece, '$')) {
-                        $piece    = '[' . $this->varParser(implode('.', $pieces)) . ']';
+                        $piece = '[' . $this->varParser(implode('.', $pieces)) . ']';
                         $name_str .= $piece;
                         break;
                     } else {
@@ -180,38 +180,45 @@ class Taglib
             $name_str = $has_piece ? "{$name_str}??{$default}) " : $name_str . ' ';
         }
 
+        // 替换操作符
+        foreach (self::operators_symbols_to_lang as $item) {
+            if (str_contains($name_str, $item)) {
+                $name_str = str_replace($item, ' ' . $item . ' ', $name_str);
+            }
+        }
+
         return $name_str;
     }
 
     public function getTags(Template $template, string $fileName = '', $content = ''): array
     {
         $tags = [
-            'php'         => [
+            'php' => [
                 'tag-start' => 1,
-                'tag-end'   => 1,
-                'callback'  =>
+                'tag-end' => 1,
+                'callback' =>
                     function ($tag_key, $config, $tag_data, $attributes) {
                         return match ($tag_key) {
                             'tag-start' => '<?php ',
-                            'tag-end'   => '?>',
-                            default     => "<?php {$tag_data[1]} ?>"
+                            'tag-end' => '?>',
+                            default => "<?php {$tag_data[1]} ?>"
                         };
                     }
             ],
-            'include'     => [
+            'include' => [
                 'tag-start' => 1,
-                'tag-end'   => 1,
-                'callback'  =>
+                'tag-end' => 1,
+                'callback' =>
                     function ($tag_key, $config, $tag_data, $attributes) {
                         return match ($tag_key) {
                             'tag-start' => '<?php include(',
-                            'tag-end'   => ');?>',
-                            default     => "<?php include({$tag_data[1]});?>"
+                            'tag-end' => ');?>',
+                            default => "<?php include({$tag_data[1]});?>"
                         };
                     }
             ],
-            'var'         => [
-                'tag'      => 1,
+            'var' => [
+                'tag' => 1,
                 'callback' =>
                     function ($tag_key, $config, $tag_data, $attributes) {
                         switch ($tag_key) {
@@ -225,8 +232,8 @@ class Taglib
                         }
                     }
             ],
-            'pp'          => [
-                'tag'      => 1,
+            'pp' => [
+                'tag' => 1,
                 'callback' =>
                     function ($tag_key, $config, $tag_data, $attributes) {
                         switch ($tag_key) {
@@ -248,8 +255,8 @@ class Taglib
                         }
                     }
             ],
-            'dd'          => [
-                'tag'      => 1,
+            'dd' => [
+                'tag' => 1,
                 'callback' =>
                     function ($tag_key, $config, $tag_data, $attributes) {
                         if ($attributes) {
@@ -274,8 +281,8 @@ class Taglib
                         }
                     }
             ],
-            'count'       => [
-                'tag'      => 1,
+            'count' => [
+                'tag' => 1,
                 'callback' =>
                     function ($tag_key, $config, $tag_data, $attributes) {
                         if ($attributes) {
@@ -300,11 +307,11 @@ class Taglib
                         }
                     }
             ],
-            'if'          => [
+            'if' => [
                 'tag-start' => 1,
-                'tag-end'   => 1,
-                'attr'      => ['condition' => 1],
-                'callback'  => function ($tag_key, $config, $tag_data, $attributes) {
+                'tag-end' => 1,
+                'attr' => ['condition' => 1],
+                'callback' => function ($tag_key, $config, $tag_data, $attributes) {
                     $result = '';
                     switch ($tag_key) {
                         // @if{$a === 1=><li><var>$a</var></li>|$a===2=><li><var>$a</var></li>}
@@ -316,16 +323,16 @@ class Taglib
                             }
                             if (1 === count($content_arr)) {
                                 $condition = $this->varParser($content_arr[0][0]);
-                                $result    = "<?php if({$condition}):echo {$content_arr[0][1]};endif;?>";
+                                $result = "<?php if({$condition}):echo {$content_arr[0][1]};endif;?>";
                             } else {
                                 foreach ($content_arr as $key => $data) {
                                     if (0 === $key) {
                                         $condition = $this->varParser($data[0]);
-                                        $result    = "<?php if($condition):echo " . $data[1] . ';';
+                                        $result = "<?php if($condition):echo " . $data[1] . ';';
                                     } else {
                                         if (count($data) > 1) {
                                             $condition = $this->varParser($data[0]);
-                                            $result    .= " elseif($condition):echo " . $data[1] . ';';
+                                            $result .= " elseif($condition):echo " . $data[1] . ';';
                                         } else {
                                             $result .= ' else: echo ' . $data[0] . ';';
                                         }
@@ -349,7 +356,7 @@ class Taglib
                                     }
                                 }
                                 $condition = $this->varParser($attributes['condition']);
-                                $result    = "<?php if({$condition}):?>";
+                                $result = "<?php if({$condition}):?>";
                                 break;
                             }
                             $result = $tag_data[0];
@@ -362,10 +369,10 @@ class Taglib
                     return $result;
                 }
             ],
-            'elseif'      => [
-                'attr'                      => ['condition' => 1],
+            'elseif' => [
+                'attr' => ['condition' => 1],
                 'tag-self-close-with-attrs' => 1,
-                'callback'                  =>
+                'callback' =>
                     function ($tag_key, $config, $tag_data, $attributes) {
                         $result = '';
                         switch ($tag_key) {
@@ -376,15 +383,15 @@ class Taglib
                                 throw new TemplateException(__("elseif没有@elseif()和@elseif{}用法:[{$template_html}]。示例：%1", htmlentities('<if condition="$a>$b"><var>a</var><elseif condition="$b>$a"/><var>b</var><else/><var>a</var><var>b</var></if>')));
                             case 'tag-self-close-with-attrs':
                                 $condition = $this->varParser($this->checkVar($attributes['condition']));
-                                $result    = "<?php elseif({$condition}):?>";
+                                $result = "<?php elseif({$condition}):?>";
                                 break;
                             default:
                         }
                         return $result;
                     }],
-            'else'        => [
+            'else' => [
                 'tag-self-close' => 1,
-                'callback'       =>
+                'callback' =>
                     function ($tag_key, $config, $tag_data, $attributes) {
                         $result = '';
                         switch ($tag_key) {
@@ -401,16 +408,16 @@ class Taglib
                         }
                         return $result;
                     }],
-            'empty'       => [
+            'empty' => [
                 'tag-start' => 1,
-                'tag-end'   => 1,
-                'callback'  => function ($tag_key, $config, $tag_data, $attributes) use ($template) {
+                'tag-end' => 1,
+                'callback' => function ($tag_key, $config, $tag_data, $attributes) use ($template) {
                     switch ($tag_key) {
                         // @empty{$name|<li>空的</li>}
                         case '@tag{}':
                         case '@tag()':
                             $content_arr = explode('|', $tag_data[1]);
-                            $name        = $this->varParser($this->checkVar($content_arr[0]));
+                            $name = $this->varParser($this->checkVar($content_arr[0]));
                             return "<?php if(empty({$name}))echo '" . $template->tmp_replace(trim($content_arr[1] ?? '')) . "'?>";
                         case 'tag-start':
                             if (!isset($attributes['name'])) {
@@ -426,16 +433,16 @@ class Taglib
                     }
                 }
             ],
-            'notempty'    => [
+            'notempty' => [
                 'tag-start' => 1,
-                'tag-end'   => 1,
-                'callback'  => function ($tag_key, $config, $tag_data, $attributes) use ($template) {
+                'tag-end' => 1,
+                'callback' => function ($tag_key, $config, $tag_data, $attributes) use ($template) {
                     switch ($tag_key) {
                         // @empty{$name|<li>空的</li>}
                         case '@tag{}':
                         case '@tag()':
                             $content_arr = explode('|', $tag_data[1]);
-                            $name        = $this->varParser($this->checkVar($content_arr[0]));
+                            $name = $this->varParser($this->checkVar($content_arr[0]));
                             return "<?php if(!empty({$name}))echo '" . $template->tmp_replace(trim($content_arr[1] ?? '')) . "'?>";
                         case 'tag-start':
                             if (!isset($attributes['name'])) {
@@ -451,10 +458,10 @@ class Taglib
                     }
                 }
             ],
-            'has'         => [
+            'has' => [
                 'tag-start' => 1,
-                'tag-end'   => 1,
-                'callback'  => function ($tag_key, $config, $tag_data, $attributes) use ($template) {
+                'tag-end' => 1,
+                'callback' => function ($tag_key, $config, $tag_data, $attributes) use ($template) {
                     switch ($tag_key) {
                         // @empty{$name|<li>空的</li>}
                         case '@tag{}':
@@ -464,16 +471,16 @@ class Taglib
                                 $content_arr[$key] = explode('=>', $item);
                             }
                             if (1 === count($content_arr)) {
-                                $name   = $this->varParser($content_arr[0][0]);
+                                $name = $this->varParser($content_arr[0][0]);
                                 $result = "<?php if(!empty({$name})):echo {$content_arr[0][1]};endif;?>";
                             } else {
                                 foreach ($content_arr as $key => $data) {
                                     if (0 === $key) {
-                                        $name   = $this->varParser($data[0]);
+                                        $name = $this->varParser($data[0]);
                                         $result = "<?php if(!empty($name)):echo " . $data[1] . ';';
                                     } else {
                                         if (count($data) > 1) {
-                                            $name   = $this->varParser($data[0]);
+                                            $name = $this->varParser($data[0]);
                                             $result .= " elseif(!empty($name)):echo " . $data[1] . ';';
                                         } else {
                                             $result .= ' else: echo ' . $data[0] . ';';
@@ -502,18 +509,18 @@ class Taglib
                     }
                 }
             ],
-            'block'       => [
-                'doc'                       => '@block{Weline\Admin\Block\Demo|Weline_Admin::block/demo.phtml}或者@block(Weline\Admin\Block\Demo|Weline_Admin::block/demo.phtml)或者' . htmlentities('<block class="Weline\Admin\Block\Demo" template="Weline_Admin::block/demo.phtml"/>') . '或者' . htmlentities('<block>Weline\Admin\Block\Demo|Weline_Admin::block/demo.phtml</block>'),
-                'tag'                       => 1,
-                'attr'                      => ['class' => 0, 'template' => 0, 'cache' => 0],
+            'block' => [
+                'doc' => '@block{Weline\Admin\Block\Demo|Weline_Admin::block/demo.phtml}或者@block(Weline\Admin\Block\Demo|Weline_Admin::block/demo.phtml)或者' . htmlentities('<block class="Weline\Admin\Block\Demo" template="Weline_Admin::block/demo.phtml"/>') . '或者' . htmlentities('<block>Weline\Admin\Block\Demo|Weline_Admin::block/demo.phtml</block>'),
+                'tag' => 1,
+                'attr' => ['class' => 0, 'template' => 0, 'cache' => 0],
                 'tag-self-close-with-attrs' => 1,
-                'callback'                  =>
+                'callback' =>
                     function ($tag_key, $config, $tag_data, $attributes) {
                         switch ($tag_key) {
                             //<block>Weline\Admin\Block\Demo|template=Weline_Admin::block/demo.phtml|cache=300</block>
                             case 'tag':
-                                $data   = explode('|', $tag_data[2]);
-                                $data   = array_merge($data, $attributes);
+                                $data = explode('|', $tag_data[2]);
+                                $data = array_merge($data, $attributes);
                                 $result = '<?php echo framework_view_process_block(' . w_var_export($data, true) . ');?>';
                                 break;
                             // @block{Weline\Admin\Block\Demo|Weline_Admin::block/demo.phtml}
@@ -542,24 +549,24 @@ class Taglib
                                 if (isset($attributes['vars'])) {
                                     $vars = explode(',', $attributes['vars']);
                                     foreach ($vars as $key => $var) {
-                                        $var_name    = trim($var);
-                                        $var         = '$' . $var_name;
+                                        $var_name = trim($var);
+                                        $var = '$' . $var_name;
                                         $vars_string .= "'$var_name'=>&$var,";
                                     }
                                 }
                                 $vars_string .= ']';
-                                $result      = '<?php echo framework_view_process_block(' . w_var_export($attributes, true) . ',$vars=' . $vars_string . ');?>';
+                                $result = '<?php echo framework_view_process_block(' . w_var_export($attributes, true) . ',$vars=' . $vars_string . ');?>';
                                 break;
                             default:
                         }
                         return $result;
                     }
             ],
-            'foreach'     => [
-                'attr'      => ['name' => 1, 'key' => 0, 'item' => 0],
+            'foreach' => [
+                'attr' => ['name' => 1, 'key' => 0, 'item' => 0],
                 'tag-start' => 1,
-                'tag-end'   => 1,
-                'callback'  => function ($tag_key, $config, $tag_data, $attributes) use ($template) {
+                'tag-end' => 1,
+                'callback' => function ($tag_key, $config, $tag_data, $attributes) use ($template) {
                     switch ($tag_key) {
                         // @foreach{$name as $key=>$v|<li><var>$k</var>:<var>$v</var></li>}
                         case '@tag{}':
@@ -588,7 +595,7 @@ class Taglib
                                 $attributes[$key] = $this->checkVar($attribute);
                             }
                             $vars = $this->varParser($this->checkVar($attributes['name']));
-                            $k_i  = isset($attributes['key']) ? $attributes['key'] . ' => ' . $attributes['item'] : $attributes['item'];
+                            $k_i = isset($attributes['key']) ? $attributes['key'] . ' => ' . $attributes['item'] : $attributes['item'];
                             return "<?php foreach($vars as $k_i):?>";
                         case 'tag-end':
                             return '<?php endforeach;?>';
@@ -597,69 +604,76 @@ class Taglib
                     }
                 }
             ],
-            'static'      => [
-                'tag'      => 1,
+            'static' => [
+                'tag' => 1,
                 'callback' =>
                     function ($tag_key, $config, $tag_data, $attributes) use ($template) {
                         return match ($tag_key) {
-                            'tag'   => $template->fetchTagSource('statics', trim($tag_data[2])),
+                            'tag' => $template->fetchTagSource('statics', trim($tag_data[2])),
                             default => $template->fetchTagSource('statics', trim($tag_data[1]))
                         };
                     }
             ],
-            'template'    => [
-                'tag'      => 1,
+            'template' => [
+                'tag' => 1,
+                'attr' => ['enable' => 0],
                 'callback' =>
                     function ($tag_key, $config, $tag_data, $attributes) use ($template) {
+                        $enable = $attributes['enable'] ?? 1;
+                        if (!$enable or ($enable ==='false')) {
+                            $template_string  = $tag_data[0]??'';
+                            $target_template  = $tag_data[2]??'';
+                            return "<!-- 模块被禁用：{$target_template} 原始模板：{$template_string}-->";
+                        }
                         return match ($tag_key) {
-                            'tag'   => file_get_contents($template->fetchTagSource(\Weline\Framework\View\Data\DataInterface::dir_type_TEMPLATE, trim($tag_data[2]))),
+                            'tag' => file_get_contents($template->fetchTagSource(\Weline\Framework\View\Data\DataInterface::dir_type_TEMPLATE, trim($tag_data[2]))),
                             default => file_get_contents($template->fetchTagSource(\Weline\Framework\View\Data\DataInterface::dir_type_TEMPLATE, trim($tag_data[1])))
                         };
                     }
             ],
-            'js'          => [
-                'tag'      => 1,
+            'js' => [
+                'tag' => 1,
                 'callback' =>
                     function ($tag_key, $config, $tag_data, $attributes) use ($template) {
                         return match ($tag_key) {
-                            'tag'   => "<script {$tag_data[1]} src='{$template->fetchTagSource(\Weline\Framework\View\Data\DataInterface::dir_type_STATICS, trim($tag_data[2]))}'></script>",
+                            'tag' => "<script {$tag_data[1]} src='{$template->fetchTagSource(\Weline\Framework\View\Data\DataInterface::dir_type_STATICS, trim($tag_data[2]))}'></script>",
                             default => "<script src='{$template->fetchTagSource(\Weline\Framework\View\Data\DataInterface::dir_type_STATICS, trim($tag_data[1]))}'></script>"
                         };
                     }
             ],
-            'css'         => [
-                'tag'      => 1,
+            'css' => [
+                'tag' => 1,
                 'callback' =>
                     function ($tag_key, $config, $tag_data, $attributes) use ($template) {
                         return match ($tag_key) {
-                            'tag'   => "<link {$tag_data[1]} href='{$template->fetchTagSource(\Weline\Framework\View\Data\DataInterface::dir_type_STATICS, trim($tag_data[2]))}' rel=\"stylesheet\" type=\"text/css\"/>",
+                            'tag' => "<link {$tag_data[1]} href='{$template->fetchTagSource(\Weline\Framework\View\Data\DataInterface::dir_type_STATICS, trim($tag_data[2]))}' rel=\"stylesheet\" type=\"text/css\"/>",
                             default => "<link href='{$template->fetchTagSource(\Weline\Framework\View\Data\DataInterface::dir_type_STATICS, trim($tag_data[1]))}' rel=\"stylesheet\" type=\"text/css\"/>"
                         };
                     }
             ],
-            'lang'        => [
-                'tag'      => 1,
+            'lang' => [
+                'tag' => 1,
                 'callback' =>
                     function ($tag_key, $config, $tag_data, $attributes) {
                         return match ($tag_key) {
-                            'tag'   => __($tag_data[2]),
+                            'tag' => __($tag_data[2]),
                             default => __($tag_data[1])
                         };
                     }
             ],
-            'url'         => [
-                'tag'       => 1,
+            'url' => [
+                'tag' => 1,
                 'tag-start' => 1,
-                'tag-end'   => 1,
-                'callback'  =>
+                'tag-end' => 1,
+                'callback' =>
                     function ($tag_key, $config, $tag_data, $attributes) use ($template) {
                         $result = '';
                         switch ($tag_key) {
                             case 'tag':
                                 $data = explode('|', $tag_data[2]);
-                                $var  = $data[0] ?? '';
-                                $var  = trim($var, "'\"");
-                                $var  = str_replace(' ', '', $var);
+                                $var = $data[0] ?? '';
+                                $var = trim($var, "'\"");
+                                $var = str_replace(' ', '', $var);
                                 if (isset($data[1]) && $arr_str = $data[1]) {
                                     $result .= "<?=\$this->getUrl('{$var}',{$arr_str})?>";
                                 } else {
@@ -673,25 +687,25 @@ class Taglib
                                 $result .= ')?>';
                                 break;
                             default:
-                                $data   = str_replace(' ', '', $tag_data[1]);
+                                $data = str_replace(' ', '', $tag_data[1]);
                                 $result .= "<?=\$this->getUrl({$data})?>";
                         };
                         return $result;
                     }
             ],
-            'api'         => [
-                'tag'       => 1,
+            'api' => [
+                'tag' => 1,
                 'tag-start' => 1,
-                'tag-end'   => 1,
-                'callback'  =>
+                'tag-end' => 1,
+                'callback' =>
                     function ($tag_key, $config, $tag_data, $attributes) use ($template) {
                         $result = '';
                         switch ($tag_key) {
                             case 'tag':
                                 $data = explode('|', $tag_data[2]);
-                                $var  = $data[0] ?? '';
-                                $var  = trim($var, "'\"");
-                                $var  = str_replace(' ', '', $var);
+                                $var = $data[0] ?? '';
+                                $var = trim($var, "'\"");
+                                $var = str_replace(' ', '', $var);
                                 if (isset($data[1]) && $arr_str = $data[1]) {
                                     $result .= "<?=\$this->getApi('{$var}',{$arr_str})?>";
                                 } else {
@@ -705,17 +719,17 @@ class Taglib
                                 $result .= ')?>';
                                 break;
                             default:
-                                $data   = str_replace(' ', '', $tag_data[1]);
+                                $data = str_replace(' ', '', $tag_data[1]);
                                 $result .= "<?=\$this->getApi({$data})?>";
                         };
                         return $result;
                     }
             ],
-            'admin-url'   => [
-                'tag'       => 1,
+            'admin-url' => [
+                'tag' => 1,
                 'tag-start' => 1,
-                'tag-end'   => 1,
-                'callback'  =>
+                'tag-end' => 1,
+                'callback' =>
                     function ($tag_key, $config, $tag_data, $attributes) use ($template) {
                         switch ($tag_key) {
                             case 'tag':
@@ -741,10 +755,10 @@ class Taglib
                     }
             ],
             'backend-url' => [
-                'tag'       => 1,
+                'tag' => 1,
                 'tag-start' => 1,
-                'tag-end'   => 1,
-                'callback'  =>
+                'tag-end' => 1,
+                'callback' =>
                     function ($tag_key, $config, $tag_data, $attributes) use ($template) {
                         switch ($tag_key) {
                             case 'tag':
@@ -770,10 +784,10 @@ class Taglib
                     }
             ],
             'backend-api' => [
-                'tag'       => 1,
+                'tag' => 1,
                 'tag-start' => 1,
-                'tag-end'   => 1,
-                'callback'  =>
+                'tag-end' => 1,
+                'callback' =>
                     function ($tag_key, $config, $tag_data, $attributes) use ($template) {
                         switch ($tag_key) {
                             case 'tag':
@@ -798,23 +812,23 @@ class Taglib
                         }
                     }
             ],
-            'hook'        => [
-                'tag'      => 1,
+            'hook' => [
+                'tag' => 1,
                 'callback' =>
                     function ($tag_key, $config, $tag_data, $attributes) {
                         return match ($tag_key) {
-                            'tag'   => "<?=\$this->getHook('" . trim($tag_data[2]) . "')?>",
+                            'tag' => "<?=\$this->getHook('" . trim($tag_data[2]) . "')?>",
                             default => "<?=\$this->getHook('" . trim($tag_data[1]) . "')?>"
                         };
                     }
             ],
-            'string'      => [
-                'tag'      => 1,
+            'string' => [
+                'tag' => 1,
                 'callback' =>
                     function ($tag_key, $config, $tag_data, $attributes) {
                         switch ($tag_key) {
                             case 'tag':
-                                $string  = $tag_data[2];
+                                $string = $tag_data[2];
                                 $str_arr = explode('|', $string);
                                 $str_var = $this->varParser($this->checkVar(array_shift($str_arr)));
                                 $str_len = intval(array_shift($str_arr));
@@ -825,7 +839,7 @@ class Taglib
                                 echo {$str_var};
                                 }?>";
                             default:
-                                $string  = $tag_data[1];
+                                $string = $tag_data[1];
                                 $str_arr = explode('|', $string);
                                 $str_var = $this->checkVar(array_shift($str_arr));
                                 $str_len = intval(array_shift($str_arr));
@@ -838,11 +852,11 @@ class Taglib
                         }
                     }
             ],
-            'csrf'      => [
-                'tag'      => 1,
-                'doc'                       => '@csrf{demo}或者@csrf(demo)或者' . htmlentities('<csrf name="demo"/>') . '或者' . htmlentities('<csrf>demo</csrf>').' 协助在form表单中设置csrf令牌，防止跨站请求伪造（CSRF）攻击',
-                'tag'                       => 1,
-                'attr'                      => [],
+            'csrf' => [
+                'tag' => 1,
+                'doc' => '@csrf{demo}或者@csrf(demo)或者' . htmlentities('<csrf name="demo"/>') . '或者' . htmlentities('<csrf>demo</csrf>') . ' 协助在form表单中设置csrf令牌，防止跨站请求伪造（CSRF）攻击',
+                'tag' => 1,
+                'attr' => [],
                 'tag-self-close-with-attrs' => 1,
                 'callback' =>
                     function ($tag_key, $config, $tag_data, $attributes) {
@@ -863,22 +877,22 @@ class Taglib
                         }
                     }
             ],
-            'message'      => [
-                'tag'      => 1,
-                'doc'                       => '@message{}或者@message()或者' . htmlentities('<message/>') . '或者' . htmlentities('<message></message>').' 显示消息提示：有来自后端渲染型消息会提示到此处！',
-                'tag'                       => 1,
-                'attr'                      => [],
+            'message' => [
+                'tag' => 1,
+                'doc' => '@message{}或者@message()或者' . htmlentities('<message/>') . '或者' . htmlentities('<message></message>') . ' 显示消息提示：有来自后端渲染型消息会提示到此处！',
+                'tag' => 1,
+                'attr' => [],
                 'tag-self-close-with-attrs' => 1,
                 'callback' =>
                     function ($tag_key, $config, $tag_data, $attributes) {
                         return ObjectManager::getInstance(\Weline\Framework\Manager\MessageManager::class)->__toString();
                     }
             ],
-            'msg'      => [
-                'tag'      => 1,
-                'doc'                       => '@msg{}或者@msg()或者' . htmlentities('<msg/>') . '或者' . htmlentities('<msg></msg>').' 显示消息提示：有来自后端渲染型消息会提示到此处！',
-                'tag'                       => 1,
-                'attr'                      => [],
+            'msg' => [
+                'tag' => 1,
+                'doc' => '@msg{}或者@msg()或者' . htmlentities('<msg/>') . '或者' . htmlentities('<msg></msg>') . ' 显示消息提示：有来自后端渲染型消息会提示到此处！',
+                'tag' => 1,
+                'attr' => [],
                 'tag-self-close-with-attrs' => 1,
                 'callback' =>
                     function ($tag_key, $config, $tag_data, $attributes) {
@@ -889,7 +903,7 @@ class Taglib
         # 兼容自定义tag
         /**@var EventsManager $event */
         $event = ObjectManager::getInstance(EventsManager::class);
-        $data  = (new DataObject(['template' => $template, 'tags' => $tags]));
+        $data = (new DataObject(['template' => $template, 'tags' => $tags]));
         $event->dispatch('Framework_Template::after_tags_config', ['data' => $data, 'Taglib' => $this]);
         $tags = $data->getData('tags');
         # 构造w:tag
@@ -919,12 +933,12 @@ class Taglib
         foreach ($tags as $tag => $tag_configs) {
             $tag_patterns = [
                 'tag-self-close-with-attrs' => '/<' . $tag . '([\s\S]*?)\/>/m',
-                'tag'                       => '/<' . $tag . '([\s\S]*?)>([\s\S]*?)<\/' . $tag . '>/m',
-                'tag-start'                 => '/<' . $tag . '([\s\S]*?)>/m',
-                'tag-end'                   => '/<\/' . $tag . '>/m',
-                'tag-self-close'            => '/<' . $tag . '\s*\/>/m',
-                '@tag()'                    => '/\@' . $tag . '\(([\s\S]*?)\)/m',
-                '@tag{}'                    => '/\@' . $tag . '\{([\s\S]*?)\}/m',
+                'tag' => '/<' . $tag . '([\s\S]*?)>([\s\S]*?)<\/' . $tag . '>/m',
+                'tag-start' => '/<' . $tag . '([\s\S]*?)>/m',
+                'tag-end' => '/<\/' . $tag . '>/m',
+                'tag-self-close' => '/<' . $tag . '\s*\/>/m',
+                '@tag()' => '/\@' . $tag . '\(([\s\S]*?)\)/m',
+                '@tag{}' => '/\@' . $tag . '\{([\s\S]*?)\}/m',
             ];
             # 检测标签所需要的元素，不需要的就跳过
             foreach ($tag_patterns as $tag_key => $tag_pattern) {
@@ -957,6 +971,14 @@ class Taglib
                 foreach ($customTags as $customTag) {
                     $originalTag = $customTag[0];
                     if (isset($customTag[1])) {
+                        if ($tag_key == 'tag' or $tag_key == 'tag-self-close-with-attrs' or $tag_key == 'tag-start') {
+                            // 替换操作符
+                            foreach (self::operators_symbols_to_lang as $operator => $symbol) {
+                                if (str_contains($customTag[1], $operator)) {
+                                    $customTag[1] = str_replace($operator, ' ' . $symbol . ' ', $customTag[1]);
+                                }
+                            }
+                        }
                         $customTag[1] = str_replace(PHP_EOL, '', $customTag[1]);
                     }
 
@@ -971,20 +993,20 @@ class Taglib
                         $customTag[2] = str_replace(array("\r\n", "\r", "\n", "\t"), '', $customTag[2]);
                     }
                     # 标签支持匹配->
-                    $customTag[1]       = $rawAttributes;
+                    $customTag[1] = $rawAttributes;
                     $formatedAttributes = array();
                     # 兼容：属性值单双引号
                     preg_match_all("/(\S*?)='([\s\S]*?)'/", $rawAttributes, $attributes, PREG_SET_ORDER);
                     foreach ($attributes as $attribute) {
                         if (isset($attribute[2])) {
-                            $attr                      = trim($attribute[1]);
+                            $attr = trim($attribute[1]);
                             $formatedAttributes[$attr] = trim($attribute[2]);
                         }
                     }
                     preg_match_all('/(\S*?)="([\s\S]*?)"/', $rawAttributes, $attributes, PREG_SET_ORDER);
                     foreach ($attributes as $attribute) {
                         if (isset($attribute[2])) {
-                            $attr                      = trim($attribute[1]);
+                            $attr = trim($attribute[1]);
                             $formatedAttributes[$attr] = trim($attribute[2]);
                         }
                     }
@@ -1003,7 +1025,7 @@ class Taglib
                         $attributes_keys = array_keys($formatedAttributes);
                         foreach ($attrs as $attr => $required) {
                             if ($required && !in_array($attr, $attributes_keys)) {
-                                $provide_attr  = implode(',', $attributes_keys);
+                                $provide_attr = implode(',', $attributes_keys);
                                 $template_html = htmlentities($attr);
                                 throw new TemplateException(__("代码：[{$template_html}] %1:标签必须设置属性%2, 提供的属性：3% 文件：%4", [$tag, $attr, $provide_attr, $fileName]));
                             }

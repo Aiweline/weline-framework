@@ -98,32 +98,31 @@ abstract class Query extends \Weline\Framework\Database\Connection\Api\Sql\Query
                 $fields .= "`$field`,";
             }
         }
-        $fields           = rtrim($fields, ',') . ')';
-        $origin_fields    = $this->fields;
-        $this->fields     = $fields;
+        $fields = rtrim($fields, ',') . ')';
+        $origin_fields = $this->fields;
+        $this->fields = $fields;
         $this->fetch_type = __FUNCTION__;
         $this->prepareSql(__FUNCTION__);
         $this->fields = $origin_fields;
         return $this;
     }
 
-    public function update(array|string $field, int|string $value_or_condition_field = 'id'): QueryInterface
+    public function update(array|string $field = '', int|string $value_or_condition_field = 'id'): QueryInterface
     {
-        if (empty($field)) {
-            throw new DbException(__('更新异常，不可更新空数据！'));
-        }
-        # 单条记录更新
-        if (is_string($field)) {
-            $this->single_updates[$field] = $value_or_condition_field;
-        } else {
-            // 设置数据更新依赖条件主键
-            if ($this->identity_field !== $value_or_condition_field) {
-                $this->identity_field = $value_or_condition_field;
-            }
-            if (is_string(array_key_first($field))) {
-                $this->updates[] = $field;
+        if ($field) {
+            # 单条记录更新
+            if (is_string($field)) {
+                $this->single_updates[$field] = $value_or_condition_field;
             } else {
-                $this->updates = $field;
+                // 设置数据更新依赖条件主键
+                if ($this->identity_field !== $value_or_condition_field) {
+                    $this->identity_field = $value_or_condition_field;
+                }
+                if (is_string(array_key_first($field))) {
+                    $this->updates[] = $field;
+                } else {
+                    $this->updates = $field;
+                }
             }
         }
         $this->fetch_type = __FUNCTION__;
@@ -152,8 +151,8 @@ abstract class Query extends \Weline\Framework\Database\Connection\Api\Sql\Query
             $this->fields = $fields;
         } else {
             $this->fields = $fields . ',' . $this->fields;
-            $fields       = explode(',', $this->fields);
-            $fields       = array_unique($fields);
+            $fields = explode(',', $this->fields);
+            $fields = array_unique($fields);
             $this->fields = implode(',', $fields);
         }
         return $this;
@@ -172,33 +171,16 @@ abstract class Query extends \Weline\Framework\Database\Connection\Api\Sql\Query
             $offset = $pageSize * ($page - 1) /*+ 1*/
             ;
         }
-        $this->limit              = " LIMIT $offset,$pageSize";
+        $this->limit = " LIMIT $offset,$pageSize";
         $this->pagination['page'] = $page;
         return $this;
     }
 
-    public function pagination(int $page = 1, int $pageSize = 20, array $params = []): QueryInterface
+    public function order(string $field = '', string $sort = 'DESC'): QueryInterface
     {
-        $this->pagination['page']     = $page;
-        $this->pagination['pageSize'] = $pageSize;
-        if ($params) {
-            $this->pagination = array_merge($this->pagination, $params);
+        if (empty($field)) {
+            $field = $this->identity_field;
         }
-        $this->pagination['params'] = $params;
-        $this->page(intval($this->pagination['page']), $pageSize);
-        $query                         = clone $this;
-        $total                         = $query->total();
-        $this->pagination['totalSize'] = $total;
-        $lastPage                      = intval($total / $pageSize);
-        if ($total % $pageSize) {
-            $lastPage += 1;
-        }
-        $this->pagination['lastPage'] = $lastPage;
-        return $this;
-    }
-
-    public function order(string $field, string $sort = 'DESC'): QueryInterface
-    {
         if (!is_int(strpos($field, '`'))) {
             $field = $this->parserFiled($field);
         }
@@ -208,7 +190,7 @@ abstract class Query extends \Weline\Framework\Database\Connection\Api\Sql\Query
 
     public function group(string $fields): QueryInterface
     {
-        $this->group_by = 'group by ' . $fields;
+        $this->group_by = 'GROUP BY ' . $fields;
         return $this;
     }
 
@@ -218,26 +200,15 @@ abstract class Query extends \Weline\Framework\Database\Connection\Api\Sql\Query
         return $this;
     }
 
-    public function find(): QueryInterface
+    public function find(string $find_fields=''): QueryInterface
     {
+        if($find_fields){
+            $this->find_fields = $find_fields;
+        }
         $this->limit(1, 0);
         $this->fetch_type = __FUNCTION__;
         $this->prepareSql(__FUNCTION__);
         return $this;
-    }
-
-    public function total(string $field = '*', string $alias = 'total'): int
-    {
-        $this->limit(1, 0);
-        $this->fetch_type = 'find';
-        $this->fields     = "count({$field}) as `{$alias}`";
-        $this->prepareSql('find');
-        //        p($this->getLastSql());
-        $result = $this->fetch();
-        if (isset($result[$alias])) {
-            $result = $result[$alias];
-        }
-        return intval($result);
     }
 
     public function select(string $fields = ''): QueryInterface
@@ -257,24 +228,10 @@ abstract class Query extends \Weline\Framework\Database\Connection\Api\Sql\Query
         return $this;
     }
 
-    public function query(string $sql): QueryInterface
-    {
-        $this->reset();
-        $this->sql          = $sql;
-        $this->fetch_type   = __FUNCTION__;
-        $this->PDOStatement = $this->getLink()->prepare($sql);
-        return $this;
-    }
-
     public function additional(string $additional_sql): QueryInterface
     {
         $this->additional_sql = $additional_sql;
         return $this;
-    }
-
-    public function fetchOrigin(): mixed
-    {
-        return $this->fetch();
     }
 
 
@@ -334,75 +291,6 @@ abstract class Query extends \Weline\Framework\Database\Connection\Api\Sql\Query
         $this->getLink()->commit();
     }
 
-    /**
-     * 归档数据
-     *
-     * @param string $period ['all'=>'全部','today'=>'今天','yesterday'=>'昨天','current_week'=>'这周','near_week'=>'最近一周','last_week'=>'上周','near_month'=>'近三十天','current_month'=>'本月','last_month'=>'上一月','quarter'=>'本季度','last_quarter'=>'上个季度','current_year'=>'今年','last_year'=>'上一年']
-     * @param string $field
-     *
-     * @return $this
-     */
-    public function period(string $period, string $field = 'create_time'): static
-    {
-        if (!is_int(strpos($field, '.'))) {
-            $field = $this->table_alias . '.' . $field;
-        }
-        switch ($period) {
-            case 'all':
-                break;
-            case 'today':
-                #今天
-                $this->where("TO_DAYS({$field})=TO_DAYS(NOW())");
-                break;
-            case 'yesterday':
-                #昨天
-                $this->where("DATE({$field}) = DATE(CURDATE()-1)");
-                break;
-            case 'current_week':
-                #查询当前这周的数据
-                $this->where("YEARWEEK(DATE_FORMAT({$field},'%Y-%m-%d')) = YEARWEEK(NOW())");
-                break;
-            case 'near_week':
-                #近7天
-                $this->where("DATE_SUB(CURDATE(), INTERVAL 7 DAY) <= DATE({$field})");
-                break;
-            case 'last_week':
-                #查询上周的数据
-                $this->where("YEARWEEK(DATE_FORMAT({$field},'%Y-%m-%d')) =YEARWEEK(NOW())-1");
-                break;
-            case 'near_month':
-                #近30天
-                $this->where("DATE_SUB(CURDATE(), INTERVAL 30 DAY) <= DATE({$field})");
-                break;
-            case 'current_month':
-                # 本月
-                $this->where("DATE_FORMAT({$field},'%Y%m') =DATE_FORMAT(CURDATE(),'%Y%m')");
-                break;
-            case 'last_month':
-                #上一月
-                $this->where("PERIOD_DIFF(DATE_FORMAT( NOW(),'%Y%m'),DATE_FORMAT({$field},'%Y%m')) =1");
-                break;
-            case 'quarter':
-                #查询本季度数据
-                $this->where("QUARTER({$field})=QUARTER(NOW())");
-                break;
-            case 'last_quarter':
-                #查询上季度数据
-                $this->where("QUARTER({$field})=QUARTER(DATE_SUB(NOW(),INTERVAL 1 QUARTER))");
-                break;
-            case 'current_year':
-                #查询本年数据
-                $this->where("YEAR({$field})=YEAR(NOW())");
-                break;
-            case 'last_year':
-                #查询上年数据
-                $this->where("YEAR({$field})=YEAR(DATE_SUB(NOW(),INTERVAL 1 YEAR))");
-                break;
-            default:
-        }
-        return $this;
-    }
-
     public function getPrepareSql(bool $format = true): string
     {
         if ($format) {
@@ -438,14 +326,14 @@ abstract class Query extends \Weline\Framework\Database\Connection\Api\Sql\Query
         $PDOStatement = $this->getLink()->prepare("SHOW CREATE TABLE $table");
         $PDOStatement->execute();
         $createTableResult = $PDOStatement->fetchAll(PDO::FETCH_ASSOC);
-        $createTableSql    = $createTableResult[0]['Create Table'];
-        $createTableSql    = str_replace('CREATE TABLE', 'CREATE TABLE IF NOT EXISTS', $createTableSql);
+        $createTableSql = $createTableResult[0]['Create Table'];
+        $createTableSql = str_replace('CREATE TABLE', 'CREATE TABLE IF NOT EXISTS', $createTableSql);
         // 定义备份文件路径和名称
         if (empty($backup_file)) {
             $originTable = str_replace('`', '', $table);
             $originTable = explode('.', $originTable) ?: [$table];
             $originTable = end($originTable);
-            $backupFile  = Env::backup_dir . 'db' . DS . $table . DS . $originTable . '_' . date('Y-m-d H:i:s') . '.sql';
+            $backupFile = Env::backup_dir . 'db' . DS . $table . DS . $originTable . '_' . date('Y-m-d H:i:s') . '.sql';
         } else {
             if (!str_starts_with($backup_file, BP)) {
                 $backupFile = BP . $backup_file;
@@ -457,11 +345,11 @@ abstract class Query extends \Weline\Framework\Database\Connection\Api\Sql\Query
             mkdir(dirname($backupFile), 0777, true);
         }
         // 将表的创建语句写入备份文件
-        $backupFile        = str_replace('\\', DS, $backupFile);
-        $backupFile        = str_replace('/', DS, $backupFile);
-        $backupFile        = str_replace('//', DS, $backupFile);
+        $backupFile = str_replace('\\', DS, $backupFile);
+        $backupFile = str_replace('/', DS, $backupFile);
+        $backupFile = str_replace('//', DS, $backupFile);
         $this->backup_file = $backupFile;
-        $file              = fopen($backupFile, 'w');
+        $file = fopen($backupFile, 'w');
         fwrite($file, "-- $table 建表语句" . PHP_EOL);
         fwrite($file, $createTableSql . ';' . PHP_EOL);
         // 获取表的数据并写入备份文件

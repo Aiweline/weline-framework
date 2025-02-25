@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Weline\Framework\Database\Connection\Adapter\SqLite;
 
 use PDO;
+use Weline\Framework\App\Debug;
 use Weline\Framework\App\Env;
 use Weline\Framework\App\Exception;
 use Weline\Framework\Database\Connection\Api\Sql\QueryInterface;
@@ -21,24 +22,70 @@ abstract class Query extends \Weline\Framework\Database\Connection\Api\Sql\Query
 {
     use SqlTrait;
 
+    public function splitSqlStatements($sql)
+    {
+        // 正则表达式匹配不在引号内的分号
+        $pattern = '/;(?=(?:[^\'"]|\'[^\']*\'|"[^"]*")*$)/';
+
+        // 使用正则表达式拆分SQL语句
+        $statements = preg_split($pattern, $sql);
+
+        // 去除每个语句的前后空格
+        $statements = array_map('trim', $statements);
+
+        // 过滤掉空语句
+        $statements = array_filter($statements);
+
+        return $statements;
+    }
+
     public function fetch(string $model_class = ''): mixed
     {
-//        p($this->bound_values,1);
-//        p($this->getPrepareSql(true),1);
-//        p($this->getSql(true),1,1);
-        if($this->batch and $this->fetch_type == 'insert'){
-            $origin_data      = $this->getLink()->exec($this->getSql());
-            if($origin_data === false){
+        if (Env::get('db_log.enabled') or DEBUG) {
+            $file = Env::get('db_log.file');
+            Env::log($file, $this->getSqlWithBounds($this->sql));
+        }
+        if (Debug::target('custom')) {
+            // 自定义调试类型信息
+            Debug::target('custom', '我是调试信息！');
+        }
+        # 调试环境信息
+        if (Debug::target('pre_fetch')) {
+            $msg = __('即将执行信息：') . PHP_EOL;
+            $msg .= '$this->batch:' . ($this->batch ? 'true' : 'false') . PHP_EOL;
+            $msg .= '$this->fetch_type:' . $this->fetch_type . PHP_EOL;
+            $msg .= '$this->sql:' . $this->sql . PHP_EOL;
+            $msg .= '$this->bound_values:' . json_encode($this->bound_values) . PHP_EOL;
+            Debug::target('pre_fetch', $msg);
+        }
+        if ($this->batch and $this->fetch_type == 'insert') {
+            $origin_data = $this->getLink()->exec($this->getSql());
+            if ($origin_data === false) {
                 $result = false;
-            }else{
+            } else {
                 $result = $this->getLink()->lastInsertId();
             }
             $origin_data = [];
-        }else{
-            $result      = $this->PDOStatement->execute($this->bound_values);
-            $origin_data = $this->PDOStatement->fetchAll(PDO::FETCH_ASSOC);
+            $this->reset();
+        } else {
+            # SQLITE 不支持多结果集：智能将SQL语句打散，并逐条执行后返回结果集
+            $sql = $this->getSqlWithBounds($this->sql);
+            $statements = $this->splitSqlStatements($sql);
+            if (count($statements) == 1) {
+                $result = $this->PDOStatement->execute($this->bound_values);
+                $origin_data = $this->PDOStatement->fetchAll(PDO::FETCH_ASSOC);
+            } else {
+                $origin_data = [];
+                foreach ($statements as $statement) {
+                    $state_res = $this->getLink()->exec($statement);
+                    if ($state_res !== false) {
+                        $state_res = $this->getLink()->lastInsertId();
+                    }
+                    $origin_data[] = $state_res;
+                }
+            }
         }
-
+        $this->batch = false;
         # sqlite 不支持多结果集
         $data = [];
         if ($model_class) {
@@ -59,6 +106,19 @@ abstract class Query extends \Weline\Framework\Database\Connection\Api\Sql\Query
                 $result = $this->getLink()->lastInsertId();
                 break;
             case 'query':
+                if (str_contains($this->sql, 'PRAGMA table_info(')) {
+                    # 表结构兼容转化
+                    foreach ($data as &$datum) {
+                        $datum['Field'] = $datum['name'];
+                        $datum['Type'] = $datum['type'];
+                        $datum['Null'] = $datum['notnull'] ? 'NO' : 'YES';
+                        $datum['Key'] = $datum['pk'] ? 'PRI' : '';
+                        $datum['Default'] = $datum['dflt_value'];
+                        $datum['Extra'] = $datum['dflt_value'] ? 'DEFAULT' : '';
+                        $datum['Comment'] = '';
+                        $datum['Privileges'] = 'SELECT';
+                    }
+                }
             case 'select':
                 $result = $data;
                 break;
@@ -72,13 +132,18 @@ abstract class Query extends \Weline\Framework\Database\Connection\Api\Sql\Query
         $this->fetch_type = '';
         if (Env::get('db_log.enabled') or DEBUG) {
             $file = Env::get('db_log.file');
-            $data = [
-                'prepare_sql' => $this->getPrepareSql(false),
-                'sql' => $this->getLastSql(false),
-                'data' => $this->bound_values,
-                'result' => $origin_data
-            ];
-            Env::log($file, json_encode($data));
+            Env::log($file, $this->sql);
+        }
+        # 调试环境信息
+        if (Debug::target('fetch')) {
+            $msg = __('执行后信息：') . PHP_EOL;
+            $msg .= '$this->batch:' . ($this->batch ? 'true' : 'false') . PHP_EOL;
+            $msg .= '$this->fetch_type:' . $this->fetch_type . PHP_EOL;
+            $msg .= '$this->sql:' . $this->sql . PHP_EOL;
+            $msg .= '$this->bound_values:' . json_encode($this->bound_values) . PHP_EOL;
+            $msg .= __('查询结果:') . (is_string($result) ? $result : json_encode($result)) . PHP_EOL;
+            Debug::target('fetch', $msg);
+            exit(1);
         }
         //        $this->clear();
         $this->clearQuery();
@@ -105,8 +170,8 @@ abstract class Query extends \Weline\Framework\Database\Connection\Api\Sql\Query
     {
         $sql = self::formatSql($sql);
         $this->reset();
-        $this->sql          = $sql;
-        $this->fetch_type   = __FUNCTION__;
+        $this->sql = $sql;
+        $this->fetch_type = __FUNCTION__;
         $this->PDOStatement = $this->getLink()->prepare($sql);
         return $this;
     }

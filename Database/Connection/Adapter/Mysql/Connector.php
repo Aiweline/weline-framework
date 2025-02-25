@@ -29,22 +29,28 @@ final class Connector extends Query implements ConnectorInterface
 {
     public function __construct(
         private readonly ?ConfigProviderInterface $configProvider
-    ) {
-        $this->db_name    = $this->configProvider->getDatabase();
+    )
+    {
+        $this->db_name = $this->configProvider->getDatabase();
     }
+
     protected ?PDO $link = null;
     protected ?Query $query = null;
+
     public function create(): static
     {
         $db_type = $this->configProvider->getDbType();
         if (!in_array($db_type, PDO::getAvailableDrivers())) {
             throw new LinkException(__('驱动不存在：%1,可用驱动列表：%2，更多驱动配置请转到php.ini中开启。', [$db_type, implode(',', PDO::getAvailableDrivers())]));
         }
-        $dsn     = "{$db_type}:host={$this->configProvider->getHostName()}:{$this->configProvider->getHostPort()};dbname={$this->configProvider->getDatabase()};charset={$this->configProvider->getCharset()};collate={$this->configProvider->getCollate()}";
+        $dsn = "{$db_type}:host={$this->configProvider->getHostName()}:{$this->configProvider->getHostPort()};dbname={$this->configProvider->getDatabase()};charset={$this->configProvider->getCharset()};collate={$this->configProvider->getCollate()}";
         try {
             //初始化一个Connection对象
             $this->link = new PDO($dsn, $this->configProvider->getUsername(), $this->configProvider->getPassword(), $this->configProvider->getOptions());
-            //            $this->link->exec("set names {$this->configProvider->getCharset()} COLLATE {$this->configProvider->getCollate()}");
+            if ($this->configProvider->getPreSql()) {
+                $this->link->exec($this->configProvider->getPreSql());
+            }
+//            $this->link->exec("set names {$this->configProvider->getCharset()} COLLATE {$this->configProvider->getCollate()}");
         } catch (PDOException $e) {
             throw new LinkException($e->getMessage());
         }
@@ -60,6 +66,7 @@ final class Connector extends Query implements ConnectorInterface
     {
         return $this->link;
     }
+
     public function reindex(string $table): bool
     {
         $table = str_replace('`', '', $table);
@@ -119,9 +126,9 @@ REBUILD_INDEXER_SQL;
         return true;
     }
 
-    public function getIndexFields(string $table): QueryInterface
+    public function getIndexFields(string $table): array
     {
-        return $this->query('show index from ' . $table);
+        return $this->query('show index from ' . $table)->fetchArray();
     }
 
     public function dev()
@@ -218,5 +225,22 @@ SELECT CONCAT('ALTER TABLE `', @rebuild_indexer_schema, '`.`', @rebuild_indexer_
         $stmt->execute();
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         return $result['version'];
+    }
+
+    public function hasField(string $table, string $field): bool
+    {
+        # 使用 SHOW COLUMNS 检查字段
+        $query = "SHOW COLUMNS FROM {$table} LIKE '{$field}'";
+        $stmt = $this->link->prepare($query);
+        $stmt->execute();
+        return $stmt->rowCount() > 0;
+    }
+    public function hasIndex(string $table, string $idx_name): bool
+    {
+        # 检查索引是否存在
+        $query = "SHOW INDEXES FROM {$table} WHERE Key_name = '{$idx_name}'";
+        $stmt = $this->link->prepare($query);
+        $stmt->execute();
+        return $stmt->rowCount() > 0;
     }
 }

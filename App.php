@@ -9,15 +9,12 @@
 
 namespace Weline\Framework;
 
-use SebastianBergmann\CodeCoverage\StaticAnalysis\CacheWarmer;
 use Weline\Framework\App\Env;
 use Weline\Framework\App\Exception;
 use Weline\Framework\App\Helper;
-use Weline\Framework\Cache\CacheFactory;
 use Weline\Framework\DataObject\DataObject;
 use Weline\Framework\Event\EventsManager;
 use Weline\Framework\Http\Cookie;
-use Weline\Framework\Manager\Cache\ObjectCache;
 use Weline\Framework\Manager\ObjectManager;
 
 class App
@@ -38,7 +35,7 @@ class App
      *
      * @return mixed
      */
-    public static function Env(string $key = null, $value = null): mixed
+    public static function Env(string $key = '', mixed $value = null): mixed
     {
         if (!isset(self::$_env)) {
             self::$_env = Env::getInstance();
@@ -69,6 +66,10 @@ class App
         // 执行时间
         if (!defined('START_TIME')) {
             define('START_TIME', microtime(true));
+        }
+        // 单元测试环境
+        if (!defined('ENV_TEST')) {
+            define('ENV_TEST', false);
         }
         // 运行模式
         if (!defined('CLI')) {
@@ -136,14 +137,18 @@ class App
         }
         // 调试模式
         if (!defined('DEBUG')) {
-            if (isset($config['debug_key'])) {
-                if ((!empty($_GET['debug']) && ($_GET['debug'] === $config['debug_key'])) || (Cookie::get('w_debug') === '1')) {
-                    define('DEBUG', true);
+            if (isset($config['debug']) and $config['debug']) {
+                define('DEBUG', true);
+            } else {
+                if (!defined('DEBUG') and isset($config['debug_key'])) {
+                    if ((!empty($_GET['debug']) && ($_GET['debug'] === $config['debug_key'])) || (Cookie::get('w_debug') === '1')) {
+                        define('DEBUG', true);
+                    } else {
+                        define('DEBUG', false);
+                    }
                 } else {
                     define('DEBUG', false);
                 }
-            } else {
-                define('DEBUG', false);
             }
         }
         if (isset($_GET['debug']) && isset($config['debug_key'])) {
@@ -248,7 +253,7 @@ class App
             $uri = $_SERVER['REQUEST_URI'];
             if ($uri and '/' !== $uri) {
                 # 获取路由前缀，可能是货币码或者语言码
-                $uri_arr = explode('/', ltrim($uri,'/'));
+                $uri_arr = explode('/', ltrim($uri, '/'));
                 if ($uri_arr) {
                     # 如果还有路由
                     $pre_path_1 = $uri_arr[0] ?? '';
@@ -312,12 +317,12 @@ class App
         $eventManager->dispatch('App::detect_store', ['data' => &$data]);
         if ($store_url = $data->getData('store_url') and $store_id = $data->getData('store_id')) {
             # 截取非店铺路径
-            $_SERVER['REQUEST_URI'] = substr(($_SERVER['REQUEST_SCHEME']??'http')  . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], strlen($store_url));
+            $_SERVER['REQUEST_URI'] = substr(($_SERVER['REQUEST_SCHEME'] ?? 'http') . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], strlen($store_url));
             $_SERVER['WELINE-WEBSITE-ID'] = $store_id;
             $_SERVER['WELINE-WEBSITE-URL'] = $store_url;
         } else {
             $_SERVER['WELINE-WEBSITE-ID'] = 0;
-            $_SERVER['WELINE-WEBSITE-URL'] = ($_SERVER['REQUEST_SCHEME']??'http') . '://' . $_SERVER['HTTP_HOST'];
+            $_SERVER['WELINE-WEBSITE-URL'] = ($_SERVER['REQUEST_SCHEME'] ?? 'http') . '://' . $_SERVER['HTTP_HOST'];
         }
     }
 
@@ -328,8 +333,8 @@ class App
      */
     public static function detectCurrency(string $code, string &$uri, EventsManager &$eventManager): bool
     {
-        if(!$code) return false;
-        if(isset($_COOKIE['WELINE-USER-CURRENCY']) and $_COOKIE['WELINE-USER-CURRENCY'] == $code) {
+        if (!$code) return false;
+        if (isset($_COOKIE['WELINE-USER-CURRENCY']) and $_COOKIE['WELINE-USER-CURRENCY'] == $code) {
             if (str_starts_with($uri, '/' . $code)) {
                 $uri = substr($uri, strlen('/' . $code));
             }
@@ -337,7 +342,7 @@ class App
             $_SERVER['WELINE-USER-CURRENCY'] = $code;
             return true;
         }
-        if($default_currency = Env::get('currency')){
+        if ($default_currency = Env::get('currency')) {
             if (strtolower($code) === strtolower($default_currency)) {
                 if (str_starts_with($uri, '/' . $code)) {
                     $uri = substr($uri, strlen('/' . $code));
@@ -367,8 +372,8 @@ class App
 
     public static function detectLanguage(string $code, string &$uri, EventsManager &$eventManager): bool
     {
-        if(!$code) return false;
-        if(isset($_COOKIE['WELINE-USER-LANG']) and $_COOKIE['WELINE-USER-LANG'] == $code) {
+        if (!$code) return false;
+        if (isset($_COOKIE['WELINE-USER-LANG']) and $_COOKIE['WELINE-USER-LANG'] == $code) {
             if (str_starts_with($uri, '/' . $code)) {
                 $uri = substr($uri, strlen('/' . $code));
             }
@@ -376,7 +381,7 @@ class App
             $_SERVER['WELINE-USER-LANG'] = $code;
             return true;
         }
-        if($default_lang = Env::get('lang')){
+        if ($default_lang = Env::get('lang')) {
             if (strtolower($code) === strtolower($default_lang)) {
                 if (str_starts_with($uri, '/' . $code)) {
                     $uri = substr($uri, strlen('/' . $code));
@@ -409,7 +414,7 @@ class App
      *
      * 参数区：
      */
-    public function install()
+    public function install(): void
     {
         require BP . 'setup/index.php';
     }

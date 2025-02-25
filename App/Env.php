@@ -9,8 +9,10 @@
 
 namespace Weline\Framework\App;
 
-use Weline\Framework\App\Env\Modules;
 use Weline\Framework\DataObject\DataObject;
+use Weline\Framework\Manager\ObjectManager;
+use Weline\Framework\Output\Cli\Printing;
+use Weline\Framework\Output\PrintInterface;
 use Weline\Framework\System\File\Io\File;
 
 class Env extends DataObject
@@ -96,7 +98,8 @@ class Env extends DataObject
     // 翻译词典 目录
     public const path_TRANSLATE_FILES_PATH = self::GENERATED_DIR . DS . 'language' . DS;
 
-    public const path_TRANSLATE_DEFAULT_FILE = self::GENERATED_DIR . DS . 'language' . DS . 'zh_Hans_CN.php';
+    public const default_LANGUAGE_CODE = 'zh_Hans_CN';
+    public const path_TRANSLATE_DEFAULT_FILE = self::GENERATED_DIR . DS . 'language' . DS . self::default_LANGUAGE_CODE . '.php';
 
     public const path_TRANSLATE_ALL_COLLECTIONS_WORDS_FILE = self::GENERATED_DIR . DS . 'language' . DS . 'words.php';
 
@@ -144,15 +147,17 @@ class Env extends DataObject
         'db' => [
             'default' => 'sqlite',
             'master' => [
-                'hostname' => 'demo',
-                'database' => 'demo',
-                'username' => 'demo',
-                'password' => 'demo',
                 'type' => 'sqlite',
-                'hostport' => '3306',
-                'prefix' => 'm_',
-                'charset' => 'utf8mb4',
-                'collate' => 'utf8mb4_general_ci',
+                'path' => APP_PATH . 'etc/db.sqlite',
+//                'hostname' => 'demo',
+//                'database' => 'demo',
+//                'username' => 'demo',
+//                'password' => 'demo',
+//                'type' => 'sqlite',
+//                'hostport' => '3306',
+//                'prefix' => 'm_',
+//                'charset' => 'utf8mb4',
+//                'collate' => 'utf8mb4_general_ci',
             ],
             'slaves' => [
 
@@ -165,10 +170,6 @@ class Env extends DataObject
                 'path' => APP_PATH . 'etc/sandbox_db.sqlite'
             ],
             'slaves' => [
-                [
-                    'type' => 'sqlite',
-                    'path' => APP_PATH . 'etc/sandbox_db.sqlite'
-                ]
             ],
         ],
     ];
@@ -230,11 +231,14 @@ class Env extends DataObject
     private array $config = [];
 
     private array $module_list = [];
+    private static array $module_configs = [];
     private array $active_module_list = [];
 
     private array $hasGetConfig;
 
     private array $dependencies = [];
+
+    private static $user = '';
 
     /**
      * @DESC         |私有化克隆函数
@@ -256,6 +260,37 @@ class Env extends DataObject
         } catch (Exception $e) {
             throw new Exception(__('系统加载错误：%1', $e->getMessage()));
         }
+    }
+
+    public static function check_user(): void
+    {
+        $current_user = Env::user();
+        if ($current_user !== Env::get('user')) {
+            if (CLI) {
+                /** @var Printing $printing */
+                $printing = ObjectManager::getInstance(Printing::class);
+                $msg = '[' . PHP_OS . ']' . __('运行失败： 非站点运行用户禁止执行！请检查当前用户：%1 是否与站点运行用户：%2 相同！', [
+                        $current_user, Env::get('user'),
+                    ]);
+                $printing->error($msg);
+                exit(1);
+            } else {
+                die('[' . PHP_OS . ']' . __('运行失败： 非站点运行用户禁止执行！请检查当前用户：%1 是否与站点运行用户：%2 相同！', [
+                        $current_user, Env::get('user'),
+                    ]));
+            }
+        }
+    }
+
+    public static function user(): string
+    {
+        if (self::$user) {
+            return self::$user;
+        }
+        // 读取当前脚本运行用户
+        exec('whoami', $output);
+        self::$user = $output[0] ?? 'SYSTEM';
+        return self::$user;
     }
 
     static function real_config(string $key, mixed $value = null): string|null
@@ -301,21 +336,58 @@ class Env extends DataObject
         return self::$instance;
     }
 
-    public static function get(string $name = '')
+    public static function get(string $name = '', string $module = ''): mixed
     {
+        if ($module) {
+            return self::module_env($module, $name);
+        }
         return self::getInstance()->getConfig($name);
     }
 
-    public static function set(string $name, $value)
+    public static function module_env(string $module, string $name = ''): mixed
+    {
+        if (isset(self::$module_configs[$module]) and $module_env = self::$module_configs[$module]) {
+            if(empty($name)){
+                return $module_env;
+            }
+            return $module_env[$name] ?? null;
+        }
+        $module = Env::getInstance()->getModuleInfo($module);
+        $local_env = [];
+        if (is_file($module['base_path'] . 'etc' . DS . 'env.php')) {
+            $local_env = include $module['base_path'] . 'etc' . DS . 'env.php';
+            if (!is_array($local_env)) {
+                return [];
+            }
+        }
+        self::$module_configs[$module['name']] = $local_env;
+        if (empty($name)) {
+            return $local_env;
+        }
+        return $local_env[$name] ?? null;
+    }
+
+    public static function set(string $name, $value): bool
     {
         return self::getInstance()->setConfig($name, $value);
     }
 
-    public static function log(string $filename, string $content, bool $append = true): bool
+    public static function log(string $filename, string $content, bool $append = true, bool $need_file_info = true, int $debug_level = 0): bool
     {
         $content = str_replace("\r\n", "\n", $content);
         $content = str_replace("\r", "\n", $content);
-        $content = '-------------------' . date('Y-m-d H:i:s') . '------------------------' . "\n" . $content . "\n" . '-------------------------' . date('Y-m-d H:i:s') . '------------------' . "\n";
+        $header_line = '-------------------------' . date('Y-m-d H:i:s') . ' ' . __('开始') . '------------------' . "\n";
+        $end_line = '-------------------------' . date('Y-m-d H:i:s') . ' ' . __('结束') . '------------------' . "\n";
+        if ($need_file_info) {
+            # 读取上级调用位置
+            $backtrace = debug_backtrace();
+            $backtrace = $backtrace[$debug_level];
+            $file = $backtrace['file'];
+            $line = $backtrace['line'];
+            $header_line .= '-------------------' . $file . ' line ' . $line . '------------------------' . "\n" . $header_line;
+            $end_line .= '-------------------' . $file . ' line ' . $line . '------------------------' . "\n" . $end_line;
+        }
+        $content = $header_line . "\n" . $content . "\n" . $end_line . "\n\n";
         if (!str_contains($filename, BP)) {
             $filename = BP . $filename;
         }
@@ -329,6 +401,12 @@ class Env extends DataObject
         } else {
             return file_put_contents($filename, $content);
         }
+    }
+
+    public static function sql_log(string $filename, string $sql, bool $append = true, bool $need_file_info = true): bool
+    {
+        $sql = \SqlFormatter::format($sql);
+        return self::log($filename, $sql, $append, $need_file_info, 1);
     }
 
     /**
